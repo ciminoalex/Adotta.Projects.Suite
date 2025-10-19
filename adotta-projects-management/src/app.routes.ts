@@ -1,0 +1,26 @@
+import { Routes } from '@angular/router';
+import { AppLayout } from './app/layout/component/app.layout';
+import { Dashboard } from './app/pages/dashboard/dashboard';
+import { Documentation } from './app/pages/documentation/documentation';
+import { Landing } from './app/pages/landing/landing';
+import { Notfound } from './app/pages/notfound/notfound';
+
+export const appRoutes: Routes = [
+    {
+        path: '',
+        component: AppLayout,
+        children: [
+            { path: '', component: Dashboard },
+            { path: 'projects', loadChildren: () => import('./app/pages/projects/projects.routes') },
+            { path: 'lookup', loadChildren: () => import('./app/pages/lookup/lookup.routes') },
+            { path: 'reports', loadChildren: () => import('./app/pages/reports/reports.routes') },
+            { path: 'system', loadChildren: () => import('./app/pages/system/system.routes') },
+            { path: 'documentation', component: Documentation },
+            { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') }
+        ]
+    },
+    { path: 'landing', component: Landing },
+    { path: 'notfound', component: Notfound },
+    { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
+    { path: '**', redirectTo: '/notfound' }
+];
