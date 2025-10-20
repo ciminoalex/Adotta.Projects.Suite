@@ -13,6 +13,7 @@ import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
@@ -39,7 +40,8 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
     TableModule,
     DialogModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    SkeletonModule
   ],
   providers: [MessageService, ConfirmationService],
   template: `
@@ -66,7 +68,53 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
         <!-- Informazioni Base -->
         <div class="card mb-4">
           <h3 class="text-900 font-bold text-xl mb-4">Informazioni Base</h3>
-          <div class="grid grid-cols-12 gap-4">
+          
+          <!-- Skeleton loader for project data -->
+          <div *ngIf="loadingProject" class="grid grid-cols-12 gap-4">
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-3">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-3">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="5rem"></p-skeleton>
+            </div>
+          </div>
+          
+          <!-- Actual form fields -->
+          <div *ngIf="!loadingProject" class="grid grid-cols-12 gap-4">
             <div class="col-span-12 md:col-span-6">
               <label class="block text-900 font-medium mb-2">Numero Progetto *</label>
               <input type="text" 
@@ -95,7 +143,9 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
 
             <div class="col-span-12 md:col-span-6">
               <label class="block text-900 font-medium mb-2">Cliente *</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-autoComplete 
+                *ngIf="!loadingLookupData"
                 formControlName="cliente"
                 [suggestions]="clientiNames"
                 (completeMethod)="filterClienti($event)"
@@ -109,7 +159,9 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
 
             <div class="col-span-12 md:col-span-3">
               <label class="block text-900 font-medium mb-2">Stato</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-select 
+                *ngIf="!loadingLookupData"
                 [options]="stati" 
                 formControlName="stato"
                 placeholder="Seleziona stato"
@@ -122,7 +174,9 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
 
             <div class="col-span-12 md:col-span-3">
               <label class="block text-900 font-medium mb-2">Città</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-select 
+                *ngIf="!loadingLookupData"
                 [options]="citta" 
                 formControlName="citta"
                 placeholder="Seleziona città"
@@ -187,10 +241,38 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
         <!-- Team e Responsabilità -->
         <div class="card mb-4">
           <h3 class="text-900 font-bold text-xl mb-4">Team e Responsabilità</h3>
-          <div class="grid grid-cols-12 gap-4">
+          
+          <!-- Skeleton loader for team data -->
+          <div *ngIf="loadingProject" class="grid grid-cols-12 gap-4">
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-6">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+          </div>
+          
+          <!-- Actual team fields -->
+          <div *ngIf="!loadingProject" class="grid grid-cols-12 gap-4">
             <div class="col-span-12 md:col-span-6">
               <label class="block text-900 font-medium mb-2">Team Tecnico</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-select 
+                *ngIf="!loadingLookupData"
                 [options]="teamTecnici" 
                 formControlName="teamTecnico"
                 placeholder="Seleziona team tecnico"
@@ -203,7 +285,9 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
 
             <div class="col-span-12 md:col-span-6">
               <label class="block text-900 font-medium mb-2">Team APL</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-select 
+                *ngIf="!loadingLookupData"
                 [options]="teamAPL" 
                 formControlName="teamAPL"
                 placeholder="Seleziona team APL"
@@ -216,19 +300,24 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
 
             <div class="col-span-12 md:col-span-6">
               <label class="block text-900 font-medium mb-2">Rappresentante Vendite</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-select 
+                *ngIf="!loadingLookupData"
                 [options]="sales" 
                 formControlName="sales"
                 placeholder="Seleziona sales"
                 optionLabel="nome"
-                [showClear]="true"class="w-full"
+                [showClear]="true"
+                class="w-full"
                 inputStyleClass="w-full">
               </p-select>
             </div>
 
             <div class="col-span-12 md:col-span-6">
               <label class="block text-900 font-medium mb-2">Project Manager</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-select 
+                *ngIf="!loadingLookupData"
                 [options]="projectManagers" 
                 formControlName="projectManager"
                 placeholder="Seleziona PM"
@@ -241,7 +330,9 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
 
             <div class="col-span-12">
               <label class="block text-900 font-medium mb-2">Team Installazione</label>
+              <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
               <p-select 
+                *ngIf="!loadingLookupData"
                 [options]="squadreInstallazione" 
                 formControlName="teamInstallazione"
                 placeholder="Seleziona squadra installazione"
@@ -257,7 +348,25 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
         <!-- Dati Finanziari -->
         <div class="card mb-4">
           <h3 class="text-900 font-bold text-xl mb-4">Dati Finanziari</h3>
-          <div class="grid grid-cols-12 gap-4">
+          
+          <!-- Skeleton loader for financial data -->
+          <div *ngIf="loadingProject" class="grid grid-cols-12 gap-4">
+            <div class="col-span-12 md:col-span-4">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-4">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+            <div class="col-span-12 md:col-span-4">
+              <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+              <p-skeleton height="3rem"></p-skeleton>
+            </div>
+          </div>
+          
+          <!-- Actual financial fields -->
+          <div *ngIf="!loadingProject" class="grid grid-cols-12 gap-4">
             <div class="col-span-12 md:col-span-4">
               <label class="block text-900 font-medium mb-2">Valore Progetto</label>
               <p-inputNumber 
@@ -299,13 +408,23 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
         <div class="card mb-4">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-900 font-bold text-xl">Livelli Progetto</h3>
-            <button type="button" class="p-button p-button-outlined p-button-sm" (click)="addLevel()">
+            <button *ngIf="!loadingProject" type="button" class="p-button p-button-outlined p-button-sm" (click)="addLevel()">
               <i class="pi pi-plus mr-2"></i>
               Aggiungi Livello
             </button>
           </div>
           
-          <p-table [value]="livelli" [paginator]="false" [rows]="10" styleClass="p-datatable-sm">
+          <!-- Skeleton loader for levels table -->
+          <div *ngIf="loadingProject">
+            <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem"></p-skeleton>
+          </div>
+          
+          <!-- Actual levels table -->
+          <p-table *ngIf="!loadingProject" [value]="livelli" [paginator]="false" [rows]="10" styleClass="p-datatable-sm">
             <ng-template pTemplate="header">
               <tr>
                 <th>Nome</th>
@@ -345,13 +464,23 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
         <div class="card mb-4">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-900 font-bold text-xl">Prodotti Progetto</h3>
-            <button type="button" class="p-button p-button-outlined p-button-sm" (click)="addProduct()">
+            <button *ngIf="!loadingProject" type="button" class="p-button p-button-outlined p-button-sm" (click)="addProduct()">
               <i class="pi pi-plus mr-2"></i>
               Aggiungi Prodotto
             </button>
           </div>
           
-          <p-table [value]="prodotti" [paginator]="false" [rows]="10" styleClass="p-datatable-sm">
+          <!-- Skeleton loader for products table -->
+          <div *ngIf="loadingProject">
+            <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem" class="mb-2"></p-skeleton>
+            <p-skeleton height="3rem"></p-skeleton>
+          </div>
+          
+          <!-- Actual products table -->
+          <p-table *ngIf="!loadingProject" [value]="prodotti" [paginator]="false" [rows]="10" styleClass="p-datatable-sm">
             <ng-template pTemplate="header">
               <tr>
                 <th>Tipo Prodotto</th>
@@ -461,7 +590,9 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
         <div class="grid grid-cols-12 gap-4">
           <div class="col-span-12 md:col-span-6">
             <label class="block text-900 font-medium mb-2">Tipo Prodotto *</label>
+            <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
             <p-select 
+              *ngIf="!loadingLookupData"
               [options]="prodottiMaster" 
               formControlName="tipoProdotto"
               placeholder="Seleziona tipo prodotto"
@@ -524,6 +655,10 @@ export class ProjectForm implements OnInit {
   loading = false;
   isEdit = false;
   projectId?: string;
+  
+  // Loading states
+  loadingProject = false;
+  loadingLookupData = false;
 
   // Services
   private projectService: ProjectService;
@@ -599,6 +734,7 @@ export class ProjectForm implements OnInit {
   }
 
   ngOnInit() {
+    this.loadingLookupData = true;
     this.loadLookupData();
     
     // Check if editing
@@ -606,6 +742,7 @@ export class ProjectForm implements OnInit {
       if (params['id']) {
         this.isEdit = true;
         this.projectId = params['id'];
+        this.loadingProject = true;
         // Wait a bit for lookup data to load before loading project
         setTimeout(() => {
           this.loadProject();
@@ -627,13 +764,25 @@ export class ProjectForm implements OnInit {
   }
 
   loadLookupData() {
+    let completedRequests = 0;
+    const totalRequests = 8;
+
+    const checkAllLoaded = () => {
+      completedRequests++;
+      if (completedRequests === totalRequests) {
+        this.loadingLookupData = false;
+      }
+    };
+
     this.lookupService.getClienti().subscribe({
       next: (clienti) => {
         this.clienti = clienti;
         console.log('Clienti loaded:', clienti);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading clienti:', error);
+        checkAllLoaded();
       }
     });
 
@@ -641,9 +790,11 @@ export class ProjectForm implements OnInit {
       next: (stati) => {
         this.stati = stati;
         console.log('Stati loaded:', stati);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading stati:', error);
+        checkAllLoaded();
       }
     });
 
@@ -651,9 +802,11 @@ export class ProjectForm implements OnInit {
       next: (teams) => {
         this.teamTecnici = teams;
         console.log('Team Tecnici loaded:', teams);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading team tecnici:', error);
+        checkAllLoaded();
       }
     });
 
@@ -661,9 +814,11 @@ export class ProjectForm implements OnInit {
       next: (teams) => {
         this.teamAPL = teams;
         console.log('Team APL loaded:', teams);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading team APL:', error);
+        checkAllLoaded();
       }
     });
 
@@ -671,9 +826,11 @@ export class ProjectForm implements OnInit {
       next: (sales) => {
         this.sales = sales;
         console.log('Sales loaded:', sales);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading sales:', error);
+        checkAllLoaded();
       }
     });
 
@@ -681,9 +838,11 @@ export class ProjectForm implements OnInit {
       next: (pms) => {
         this.projectManagers = pms;
         console.log('Project Managers loaded:', pms);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading project managers:', error);
+        checkAllLoaded();
       }
     });
 
@@ -691,9 +850,11 @@ export class ProjectForm implements OnInit {
       next: (squadre) => {
         this.squadreInstallazione = squadre;
         console.log('Squadre Installazione loaded:', squadre);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading squadre installazione:', error);
+        checkAllLoaded();
       }
     });
 
@@ -701,9 +862,11 @@ export class ProjectForm implements OnInit {
       next: (prodotti) => {
         this.prodottiMaster = prodotti;
         console.log('Prodotti Master loaded:', prodotti);
+        checkAllLoaded();
       },
       error: (error) => {
         console.error('Error loading prodotti master:', error);
+        checkAllLoaded();
       }
     });
   }
@@ -721,9 +884,13 @@ export class ProjectForm implements OnInit {
           
           console.log('Livelli loaded:', this.livelli);
           console.log('Prodotti loaded:', this.prodotti);
+          
+          // Hide loading skeleton
+          this.loadingProject = false;
         },
         error: (error) => {
           console.error('Error loading project:', error);
+          this.loadingProject = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',

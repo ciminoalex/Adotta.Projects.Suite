@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -78,7 +78,7 @@ import { Cliente, ProjectManager } from '../../models/lookup.model';
         [globalFilterFields]="['numeroProgetto','cliente','nomeProgetto','citta','stato','teamTecnico','teamAPL','sales','projectManager','teamInstallazione']"
         [loading]="loading"
         rowGroupMode="subheader" groupRowsBy="statoProgetto"
-        [scrollable]="true" scrollHeight="500px"
+        [scrollable]="true" [scrollHeight]="tableHeight"
         [rowHover]="true"
         [showGridlines]="true"
         styleClass="p-datatable-sm">
@@ -208,6 +208,7 @@ export class ProjectList implements OnInit {
   projects: Project[] = [];
   loading = false;
   globalFilter = '';
+  tableHeight = '500px';
 
   // Opzioni per i dropdown
   statusOptions = [
@@ -225,7 +226,8 @@ export class ProjectList implements OnInit {
 
   constructor(
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private cdr: ChangeDetectorRef
   ) {
     // Use mock services for development
     this.projectService = new MockProjectService() as any;
@@ -236,8 +238,31 @@ export class ProjectList implements OnInit {
   private lookupService: LookupService;
 
   ngOnInit() {
+    this.calculateTableHeight();
     this.loadLookupData();
     this.loadProjects();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.calculateTableHeight();
+  }
+
+  calculateTableHeight() {
+    // Calcola l'altezza disponibile sottraendo header, toolbar, padding e margini
+    const viewportHeight = window.innerHeight;
+    const headerHeight = 150; // Altezza approssimativa dell'header
+    const toolbarHeight = 60; // Altezza della toolbar
+    const paddingMargin = 100; // Padding e margini vari
+    const footerHeight = 40; // Altezza del footer se presente
+    
+    const availableHeight = viewportHeight - headerHeight - toolbarHeight - paddingMargin - footerHeight;
+    
+    // Imposta un'altezza minima di 300px e massima di 800px
+    const calculatedHeight = Math.max(300, Math.min(800, availableHeight));
+    this.tableHeight = `${calculatedHeight}px`;
+    
+    this.cdr.detectChanges();
   }
 
   loadLookupData() {
