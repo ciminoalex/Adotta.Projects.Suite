@@ -159,22 +159,22 @@ import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectSta
           <p-table [value]="livelli" styleClass="p-datatable-sm">
             <ng-template pTemplate="header">
               <tr>
+                <th>#</th>
                 <th>Nome</th>
                 <th>Descrizione</th>
-                <th>Ordine</th>
-                <th>Inizio Installazione</th>
-                <th>Fine Installazione</th>
-                <th>Caricamento</th>
+                <th style="text-align: right">Inizio Installazione</th>
+                <th style="text-align: right">Fine Installazione</th>
+                <!--th>Caricamento</th-->
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-livello>
               <tr>
+                <td>{{ livello.ordine }}</td>
                 <td class="font-bold">{{ livello.nome }}</td>
                 <td>{{ livello.descrizione }}</td>
-                <td>{{ livello.ordine }}</td>
-                <td>{{ livello.dataInizioInstallazione ? (livello.dataInizioInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
-                <td>{{ livello.dataFineInstallazione ? (livello.dataFineInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
-                <td>{{ livello.dataCaricamento ? (livello.dataCaricamento | date:'dd/MM/yyyy') : '-' }}</td>
+                <td style="text-align: right">{{ livello.dataInizioInstallazione ? (livello.dataInizioInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
+                <td style="text-align: right">{{ livello.dataFineInstallazione ? (livello.dataFineInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
+                <!--td>{{ livello.dataCaricamento ? (livello.dataCaricamento | date:'dd/MM/yyyy') : '-' }}</td-->
               </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
@@ -201,7 +201,8 @@ import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectSta
               <tr>
                 <th>Tipo</th>
                 <th>Variante</th>
-                <th>Quantità</th>
+                <th style="text-align: right">Quantità (m²)</th>
+                <th style="text-align: right">Quantità (ft)</th>
               </tr>
             </ng-template>
             <ng-template pTemplate="body" let-prodotto>
@@ -212,12 +213,13 @@ import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectSta
                   </p-tag>
                 </td>
                 <td>{{ prodotto.variante || '-' }}</td>
-                <td class="font-bold">{{ prodotto.quantita }}</td>
+                <td class="font-bold" style="text-align: right">{{ prodotto.qMq }}</td>
+                <td class="font-bold" style="text-align: right">{{ prodotto.qFt }}</td>
               </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
               <tr>
-                <td colspan="3" class="text-center p-4 text-500">
+                <td colspan="4" class="text-center p-4 text-500">
                   Nessun prodotto definito
                 </td>
               </tr>

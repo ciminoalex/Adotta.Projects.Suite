@@ -25,8 +25,9 @@ export interface Project {
   prodotti?: ProdottoProgetto[];
   storico?: StoricoModifica[];
 
-  // Proprietà calcolata per la somma delle quantità dei prodotti
-  quantitaTotaleProdotti?: number;
+  // Proprietà calcolate per le quantità totali dei prodotti
+  quantitaTotaleMq?: number;
+  quantitaTotaleFt?: number;
 }
 
 export interface LivelloProgetto {
@@ -47,7 +48,8 @@ export interface ProdottoProgetto {
   progettoId: number;
   tipoProdotto: string;
   variante: string;
-  quantita: number;
+  qMq: number;
+  qFt: number;
 }
 
 export interface StoricoModifica {

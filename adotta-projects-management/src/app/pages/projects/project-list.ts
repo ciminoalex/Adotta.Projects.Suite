@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -47,14 +47,14 @@ import { Cliente, ProjectManager } from '../../models/lookup.model';
       <p-toolbar>
         <ng-template pTemplate="left">
           <div class="flex gap-2">
-            <button class="p-button p-button-primary" routerLink="/projects/new">
+            <p-button severity="primary" routerLink="/projects/new">
               <i class="pi pi-plus mr-2"></i>
               Nuovo Progetto
-            </button>
-            <button class="p-button p-button-outlined" (click)="exportData()">
+            </p-button>
+            <p-button outlined=true (click)="exportData()">
               <i class="pi pi-download mr-2"></i>
               Export
-            </button>
+            </p-button>
           </div>
         </ng-template>
         <ng-template pTemplate="right">
@@ -79,6 +79,8 @@ import { Cliente, ProjectManager } from '../../models/lookup.model';
         [loading]="loading"
         rowGroupMode="subheader" groupRowsBy="statoProgetto"
         [scrollable]="true" scrollHeight="500px"
+        [rowHover]="true"
+        [showGridlines]="true"
         styleClass="p-datatable-sm">
         
         <ng-template #header>
@@ -86,11 +88,11 @@ import { Cliente, ProjectManager } from '../../models/lookup.model';
             <th pSortableColumn="numeroProgetto" style="width: 120px">
               #
             </th>
-            <th pSortableColumn="cliente">
-              Customer
-            </th>
             <th pSortableColumn="nomeProgetto">
               Project
+            </th>
+            <th pSortableColumn="cliente">
+              Customer
             </th>
             <th pSortableColumn="citta">
               City
@@ -126,7 +128,7 @@ import { Cliente, ProjectManager } from '../../models/lookup.model';
         </ng-template>
         <ng-template #groupheader let-project>
                     <tr pRowGroupHeader>
-                        <td colspan="5">
+                        <td colspan="13">
                             <div class="flex items-center gap-2">
                             <p-tag [value]="project?.statoProgetto" 
                               [severity]="getStatusSeverity(project?.statoProgetto)">
@@ -143,10 +145,15 @@ import { Cliente, ProjectManager } from '../../models/lookup.model';
                 {{ project.numeroProgetto }}
               </a>
             </td>
-            <td>{{ project.cliente || '-' }}</td>
             <td>{{ project.nomeProgetto || '-' }}</td>
+            <td>{{ project.cliente || '-' }}</td>
             <td>{{ project.citta || '-' }}</td>
-            <td>{{ project.stato || '-' }}</td>
+            <td>
+              <div class="flex items-center gap-2">
+                <img src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png" [class]="'flag flag-' + project.stato.toLowerCase()" style="width: 20px" />
+                <span>{{ project.stato || '-' }}</span>
+              </div>
+            </td>
             <td>{{ project.teamTecnico || '-' }}</td>
             <td>{{ project.teamAPL || '-' }}</td>
             <td>{{ project.sales || '-' }}</td>

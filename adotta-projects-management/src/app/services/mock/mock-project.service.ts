@@ -17,8 +17,8 @@ export class MockProjectService {
       numeroProgetto: 'PRJ-2024-001',
       cliente: 'TechCorp Italia',
       nomeProgetto: 'Installazione HVAC Uffici Milano',
-      citta: 'Milano',
-      stato: 'Italia', 
+      citta: 'New York',
+      stato: 'US', 
       teamTecnico: 'Team Alpha',
       teamAPL: 'APL Team 1',
       sales: 'Giuseppe Verdi',
@@ -30,14 +30,54 @@ export class MockProjectService {
       versioneWIC: 'WIC-1.0',
       ultimaModifica: new Date('2024-01-20'),
       statoProgetto: ProjectStatus.ON_GOING,
-      isInRitardo: false
+      isInRitardo: false,
+      livelli: [
+        {
+          id: 1,
+          progettoId: 1,
+          nome: 'Livello 1 - Piano Terra',
+          ordine: 1,
+          descrizione: 'Installazione impianti HVAC piano terra',
+          dataInizioInstallazione: new Date('2024-02-01'),
+          dataFineInstallazione: new Date('2024-02-15'),
+          dataCaricamento: new Date('2024-01-15')
+        },
+        {
+          id: 2,
+          progettoId: 1,
+          nome: 'Livello 2 - Primo Piano',
+          ordine: 2,
+          descrizione: 'Installazione impianti HVAC primo piano',
+          dataInizioInstallazione: new Date('2024-02-16'),
+          dataFineInstallazione: new Date('2024-03-01'),
+          dataCaricamento: new Date('2024-01-15')
+        }
+      ],
+      prodotti: [
+        {
+          id: 1,
+          progettoId: 1,
+          tipoProdotto: 'Metafora',
+          variante: 'Standard',
+          qMq: 150.5,
+          qFt: 1620.0
+        },
+        {
+          id: 2,
+          progettoId: 1,
+          tipoProdotto: 'Wallen',
+          variante: 'Premium',
+          qMq: 75.25,
+          qFt: 810.0
+        }
+      ]
     },
     {
       numeroProgetto: 'PRJ-2024-002',
       cliente: 'Roma Tech',
       nomeProgetto: 'Upgrade Server Room',
       citta: 'Roma',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Beta',
       teamAPL: 'APL Team 2',
       sales: 'Anna Rossi',
@@ -49,14 +89,44 @@ export class MockProjectService {
       versioneWIC: 'WIC-1.1',
       ultimaModifica: new Date('2024-01-25'),
       statoProgetto: ProjectStatus.ON_GOING,
-      isInRitardo: false
+      isInRitardo: false,
+      livelli: [
+        {
+          id: 3,
+          progettoId: 2,
+          nome: 'Sala Server Principale',
+          ordine: 1,
+          descrizione: 'Installazione sistemi di raffreddamento sala server',
+          dataInizioInstallazione: new Date('2024-02-15'),
+          dataFineInstallazione: new Date('2024-03-01'),
+          dataCaricamento: new Date('2024-01-20')
+        }
+      ],
+      prodotti: [
+        {
+          id: 3,
+          progettoId: 2,
+          tipoProdotto: 'Armonica',
+          variante: 'Deluxe',
+          qMq: 200.0,
+          qFt: 2152.8
+        },
+        {
+          id: 4,
+          progettoId: 2,
+          tipoProdotto: 'Metafora',
+          variante: 'Enterprise',
+          qMq: 100.0,
+          qFt: 1076.4
+        }
+      ]
     },
     {
       numeroProgetto: 'PRJ-2024-003',
       cliente: 'Napoli Industries',
       nomeProgetto: 'Data Center Cooling',
       citta: 'Napoli',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Gamma',
       teamAPL: 'APL Team 3',
       sales: 'Marco Verdi',
@@ -68,14 +138,46 @@ export class MockProjectService {
       versioneWIC: 'WIC-1.0',
       ultimaModifica: new Date('2024-01-30'),
       statoProgetto: ProjectStatus.ON_GOING,
-      isInRitardo: true
+      isInRitardo: true,
+      livelli: [
+        {
+          id: 4,
+          progettoId: 3,
+          nome: 'Livello Sotterraneo',
+          ordine: 1,
+          descrizione: 'Sistemi di raffreddamento livello sotterraneo',
+          dataInizioInstallazione: new Date('2024-03-01'),
+          dataFineInstallazione: new Date('2024-03-20'),
+          dataCaricamento: new Date('2024-01-25')
+        },
+        {
+          id: 5,
+          progettoId: 3,
+          nome: 'Livello Principale',
+          ordine: 2,
+          descrizione: 'Sistemi di raffreddamento livello principale',
+          dataInizioInstallazione: new Date('2024-03-21'),
+          dataFineInstallazione: new Date('2024-04-10'),
+          dataCaricamento: new Date('2024-01-25')
+        }
+      ],
+      prodotti: [
+        {
+          id: 5,
+          progettoId: 3,
+          tipoProdotto: 'Wallen',
+          variante: 'Industrial',
+          qMq: 300.0,
+          qFt: 3229.2
+        }
+      ]
     },
     {
       numeroProgetto: 'PRJ-2024-004',
       cliente: 'Torino Solutions',
       nomeProgetto: 'Office Renovation',
       citta: 'Torino',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Delta',
       teamAPL: 'APL Team 1',
       sales: 'Paolo Neri',
@@ -94,7 +196,7 @@ export class MockProjectService {
       cliente: 'Firenze Tech',
       nomeProgetto: 'Smart Building Implementation',
       citta: 'Firenze',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Epsilon',
       teamAPL: 'APL Team 2',
       sales: 'Laura Bianchi',
@@ -115,7 +217,7 @@ export class MockProjectService {
       cliente: 'Bologna Corp',
       nomeProgetto: 'Emergency HVAC Repair',
       citta: 'Bologna',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Alpha',
       teamAPL: 'APL Team 3',
       sales: 'Roberto Ferrari',
@@ -134,7 +236,7 @@ export class MockProjectService {
       cliente: 'Genova Industries',
       nomeProgetto: 'Critical Infrastructure Update',
       citta: 'Genova',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Beta',
       teamAPL: 'APL Team 1',
       sales: 'Marco Esposito',
@@ -153,7 +255,7 @@ export class MockProjectService {
       cliente: 'Palermo Tech',
       nomeProgetto: 'Server Room Emergency',
       citta: 'Palermo',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Gamma',
       teamAPL: 'APL Team 2',
       sales: 'Giuseppe Romano',
@@ -172,7 +274,7 @@ export class MockProjectService {
       cliente: 'Venezia Solutions',
       nomeProgetto: 'Urgent Cooling System',
       citta: 'Venezia',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Delta',
       teamAPL: 'APL Team 3',
       sales: 'Antonio Russo',
@@ -191,7 +293,7 @@ export class MockProjectService {
       cliente: 'Bari Corp',
       nomeProgetto: 'Critical Maintenance',
       citta: 'Bari',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Epsilon',
       teamAPL: 'APL Team 1',
       sales: 'Luigi Marino',
@@ -212,7 +314,7 @@ export class MockProjectService {
       cliente: 'Verona Tech',
       nomeProgetto: 'Suspended Installation',
       citta: 'Verona',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Alpha',
       teamAPL: 'APL Team 2',
       sales: 'Andrea Moretti',
@@ -231,7 +333,7 @@ export class MockProjectService {
       cliente: 'Padova Industries',
       nomeProgetto: 'Paused Project',
       citta: 'Padova',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Beta',
       teamAPL: 'APL Team 3',
       sales: 'Marco Rossi',
@@ -250,7 +352,7 @@ export class MockProjectService {
       cliente: 'Trieste Solutions',
       nomeProgetto: 'On Hold Installation',
       citta: 'Trieste',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Gamma',
       teamAPL: 'APL Team 1',
       sales: 'Paolo Verdi',
@@ -269,7 +371,7 @@ export class MockProjectService {
       cliente: 'Brescia Tech',
       nomeProgetto: 'Delayed Implementation',
       citta: 'Brescia',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Delta',
       teamAPL: 'APL Team 2',
       sales: 'Giuseppe Marino',
@@ -288,7 +390,7 @@ export class MockProjectService {
       cliente: 'Prato Corp',
       nomeProgetto: 'Suspended Upgrade',
       citta: 'Prato',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Epsilon',
       teamAPL: 'APL Team 3',
       sales: 'Roberto Conti',
@@ -309,7 +411,7 @@ export class MockProjectService {
       cliente: 'Modena Tech',
       nomeProgetto: 'Postponed Installation',
       citta: 'Modena',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Alpha',
       teamAPL: 'APL Team 1',
       sales: 'Luigi Russo',
@@ -328,7 +430,7 @@ export class MockProjectService {
       cliente: 'Parma Industries',
       nomeProgetto: 'Delayed Project',
       citta: 'Parma',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Beta',
       teamAPL: 'APL Team 2',
       sales: 'Andrea Romano',
@@ -347,7 +449,7 @@ export class MockProjectService {
       cliente: 'Reggio Solutions',
       nomeProgetto: 'Pushed Implementation',
       citta: 'Reggio Emilia',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Gamma',
       teamAPL: 'APL Team 3',
       sales: 'Marco Ferrari',
@@ -366,7 +468,7 @@ export class MockProjectService {
       cliente: 'Perugia Tech',
       nomeProgetto: 'Extended Timeline',
       citta: 'Perugia',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Delta',
       teamAPL: 'APL Team 1',
       sales: 'Giuseppe Conti',
@@ -385,7 +487,7 @@ export class MockProjectService {
       cliente: 'Livorno Corp',
       nomeProgetto: 'Rescheduled Project',
       citta: 'Livorno',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Epsilon',
       teamAPL: 'APL Team 2',
       sales: 'Paolo Moretti',
@@ -406,7 +508,7 @@ export class MockProjectService {
       cliente: 'Ravenna Tech',
       nomeProgetto: 'Urgent Implementation',
       citta: 'Ravenna',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Alpha',
       teamAPL: 'APL Team 3',
       sales: 'Marco Bianchi',
@@ -425,7 +527,7 @@ export class MockProjectService {
       cliente: 'Ferrara Industries',
       nomeProgetto: 'Fast Track Project',
       citta: 'Ferrara',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Beta',
       teamAPL: 'APL Team 1',
       sales: 'Luigi Esposito',
@@ -444,7 +546,7 @@ export class MockProjectService {
       cliente: 'Rimini Solutions',
       nomeProgetto: 'Priority Installation',
       citta: 'Rimini',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Gamma',
       teamAPL: 'APL Team 2',
       sales: 'Roberto Marino',
@@ -463,7 +565,7 @@ export class MockProjectService {
       cliente: 'Pisa Tech',
       nomeProgetto: 'Expedited Upgrade',
       citta: 'Pisa',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Delta',
       teamAPL: 'APL Team 3',
       sales: 'Andrea Ferrari',
@@ -482,7 +584,7 @@ export class MockProjectService {
       cliente: 'Siena Corp',
       nomeProgetto: 'Rush Implementation',
       citta: 'Siena',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Epsilon',
       teamAPL: 'APL Team 1',
       sales: 'Paolo Romano',
@@ -503,7 +605,7 @@ export class MockProjectService {
       cliente: 'Latina Tech',
       nomeProgetto: 'New Bid Project',
       citta: 'Latina',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Alpha',
       teamAPL: 'APL Team 2',
       sales: 'Giuseppe Esposito',
@@ -522,7 +624,7 @@ export class MockProjectService {
       cliente: 'Vicenza Industries',
       nomeProgetto: 'Proposal Phase',
       citta: 'Vicenza',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Beta',
       teamAPL: 'APL Team 3',
       sales: 'Marco Conti',
@@ -541,7 +643,7 @@ export class MockProjectService {
       cliente: 'Terni Solutions',
       nomeProgetto: 'Bidding Process',
       citta: 'Terni',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Gamma',
       teamAPL: 'APL Team 1',
       sales: 'Luigi Ferrari',
@@ -560,7 +662,7 @@ export class MockProjectService {
       cliente: 'Forlì Tech',
       nomeProgetto: 'Tender Submission',
       citta: 'Forlì',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Delta',
       teamAPL: 'APL Team 2',
       sales: 'Roberto Rossi',
@@ -579,7 +681,7 @@ export class MockProjectService {
       cliente: 'Cesena Corp',
       nomeProgetto: 'Bid Evaluation',
       citta: 'Cesena',
-      stato: 'Italia',
+      stato: 'IT',
       teamTecnico: 'Team Epsilon',
       teamAPL: 'APL Team 3',
       sales: 'Andrea Russo',
@@ -707,36 +809,102 @@ export class MockProjectService {
 
   // Livelli Progetto
   getLivelliProgetto(numeroProgetto: string): Observable<LivelloProgetto[]> {
+    const project = this.mockProjects.find(p => p.numeroProgetto === numeroProgetto);
+    if (project && project.livelli) {
+      return of(project.livelli).pipe(delay(300));
+    }
     return of([]).pipe(delay(300));
   }
 
   addLivelloProgetto(projectId: number, livello: LivelloProgetto): Observable<LivelloProgetto> {
-    return of(livello).pipe(delay(400));
+    const project = this.mockProjects.find(p => p.numeroProgetto === projectId.toString());
+    if (project) {
+      if (!project.livelli) {
+        project.livelli = [];
+      }
+      const newLivello = {
+        ...livello,
+        id: Math.max(...project.livelli.map(l => l.id || 0), 0) + 1,
+        progettoId: projectId
+      };
+      project.livelli.push(newLivello);
+      return of(newLivello).pipe(delay(400));
+    }
+    throw new Error(`Project with ID ${projectId} not found`);
   }
 
   updateLivelloProgetto(projectId: number, livelloId: number, livello: LivelloProgetto): Observable<LivelloProgetto> {
-    return of(livello).pipe(delay(400));
+    const project = this.mockProjects.find(p => p.numeroProgetto === projectId.toString());
+    if (project && project.livelli) {
+      const index = project.livelli.findIndex(l => l.id === livelloId);
+      if (index !== -1) {
+        project.livelli[index] = { ...livello, id: livelloId, progettoId: projectId };
+        return of(project.livelli[index]).pipe(delay(400));
+      }
+    }
+    throw new Error(`Livello with ID ${livelloId} not found`);
   }
 
   deleteLivelloProgetto(projectId: number, livelloId: number): Observable<void> {
-    return of(undefined).pipe(delay(300));
+    const project = this.mockProjects.find(p => p.numeroProgetto === projectId.toString());
+    if (project && project.livelli) {
+      const index = project.livelli.findIndex(l => l.id === livelloId);
+      if (index !== -1) {
+        project.livelli.splice(index, 1);
+        return of(undefined).pipe(delay(300));
+      }
+    }
+    throw new Error(`Livello with ID ${livelloId} not found`);
   }
 
   // Prodotti Progetto
   getProdottiProgetto(numeroProgetto: string): Observable<ProdottoProgetto[]> {
+    const project = this.mockProjects.find(p => p.numeroProgetto === numeroProgetto);
+    if (project && project.prodotti) {
+      return of(project.prodotti).pipe(delay(300));
+    }
     return of([]).pipe(delay(300));
   }
 
   addProdottoProgetto(projectId: number, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
-    return of(prodotto).pipe(delay(400));
+    const project = this.mockProjects.find(p => p.numeroProgetto === projectId.toString());
+    if (project) {
+      if (!project.prodotti) {
+        project.prodotti = [];
+      }
+      const newProdotto = {
+        ...prodotto,
+        id: Math.max(...project.prodotti.map(p => p.id || 0), 0) + 1,
+        progettoId: projectId
+      };
+      project.prodotti.push(newProdotto);
+      return of(newProdotto).pipe(delay(400));
+    }
+    throw new Error(`Project with ID ${projectId} not found`);
   }
 
   updateProdottoProgetto(projectId: number, prodottoId: number, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
-    return of(prodotto).pipe(delay(400));
+    const project = this.mockProjects.find(p => p.numeroProgetto === projectId.toString());
+    if (project && project.prodotti) {
+      const index = project.prodotti.findIndex(p => p.id === prodottoId);
+      if (index !== -1) {
+        project.prodotti[index] = { ...prodotto, id: prodottoId, progettoId: projectId };
+        return of(project.prodotti[index]).pipe(delay(400));
+      }
+    }
+    throw new Error(`Prodotto with ID ${prodottoId} not found`);
   }
 
   deleteProdottoProgetto(projectId: number, prodottoId: number): Observable<void> {
-    return of(undefined).pipe(delay(300));
+    const project = this.mockProjects.find(p => p.numeroProgetto === projectId.toString());
+    if (project && project.prodotti) {
+      const index = project.prodotti.findIndex(p => p.id === prodottoId);
+      if (index !== -1) {
+        project.prodotti.splice(index, 1);
+        return of(undefined).pipe(delay(300));
+      }
+    }
+    throw new Error(`Prodotto with ID ${prodottoId} not found`);
   }
 
   // Storico Modifiche WIC
