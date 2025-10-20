@@ -3,9 +3,6 @@ import { Component } from '@angular/core';
 @Component({
     standalone: true,
     selector: 'app-footer',
-    template: `<div class="layout-footer">
-        PROJECT MANAGEMENT by
-        <a href="https://adottaitalia.com" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">ADOTTA ITALIA</a>
-    </div>`
+    template: ``
 })
 export class AppFooter {}
