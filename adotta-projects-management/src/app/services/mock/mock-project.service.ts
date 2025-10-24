@@ -752,23 +752,37 @@ export class MockProjectService {
     return of(stats).pipe(delay(300));
   }
 
-  getProjectsByStatus(): Observable<any> {
+  getProjectsByStatus(): Observable<any[]> {
     const byStatus = this.mockProjects.reduce((acc, project) => {
       const status = project.statoProgetto;
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    return of(byStatus).pipe(delay(300));
+    
+    // Convert object to array format expected by template
+    const statusArray = Object.keys(byStatus).map(stato => ({
+      stato: stato,
+      count: byStatus[stato]
+    }));
+    
+    return of(statusArray).pipe(delay(300));
   }
 
-  getProjectsByMonth(): Observable<any> {
+  getProjectsByMonth(): Observable<any[]> {
     const byMonth = this.mockProjects.reduce((acc, project) => {
       const month = project.dataCreazione.getMonth();
       const monthName = project.dataCreazione.toLocaleDateString('it-IT', { month: 'short' });
       acc[monthName] = (acc[monthName] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    return of(byMonth).pipe(delay(300));
+    
+    // Convert object to array format expected by template
+    const monthArray = Object.keys(byMonth).map(monthName => ({
+      label: monthName,
+      value: byMonth[monthName]
+    }));
+    
+    return of(monthArray).pipe(delay(300));
   }
 
   // Ricerca e Filtri

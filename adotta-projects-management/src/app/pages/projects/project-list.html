@@ -1,29 +1,17 @@
 <div class="card" mb-2>
   <!-- Toolbar -->
-  <p-toolbar>
-    <ng-template pTemplate="left">
-      <div class="flex gap-2">
-        <p-button severity="primary" routerLink="/projects/new">
-          <i class="pi pi-plus mr-2"></i>
-          Nuovo Progetto
-        </p-button>
-        <p-button outlined=true (click)="exportData()">
-          <i class="pi pi-download mr-2"></i>
-          Export
-        </p-button>
-      </div>
+  <p-toolbar class="mb-6">
+    <ng-template #start>
+      <p-button severity="primary" routerLink="/projects/new">
+        <i class="pi pi-plus mr-2"></i>
+        Nuovo Progetto
+      </p-button>
     </ng-template>
-    <ng-template pTemplate="right">
-      <p-iconfield iconPosition="left">
-        <input pInputText type="text" placeholder="Cerca progetti..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
-        <p-inputicon class="pi pi-search" />
-      </p-iconfield>
+
+    <ng-template #end>
+        <p-button label="Export" icon="pi pi-upload" severity="secondary" />
     </ng-template>
-  </p-toolbar>
-
-  <!-- Spacer per migliorare la spaziatura -->
-  <div class="mb-4"></div>
-
+</p-toolbar>
   <!-- Tabella Progetti -->
   <p-table 
     [value]="projects" 
@@ -36,50 +24,33 @@
     rowGroupMode="subheader" groupRowsBy="statoProgetto"
     [scrollable]="true" [scrollHeight]="tableHeight"
     [rowHover]="true"
-    [showGridlines]="true"
+    [showGridlines]="false"
+    stripedRows
+    [resizableColumns]="true"
     styleClass="p-datatable-sm">
     
+    <ng-template #caption>
+      <div class="flex items-center justify-between">
+        <h5 class="m-0 flex-1 text-left">Project list</h5>
+        <div class="flex items-center gap-2">
+          <p-iconfield iconPosition="left">
+            <input pInputText type="text" placeholder="Cerca progetti..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+            <p-inputicon class="pi pi-search" />
+          </p-iconfield>
+          <p-multiselect display="chip" [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header" selectedItemsLabel="{0} columns selected" [style]="{ 'min-width': '200px' }" placeholder="Choose Columns" (onChange)="onColumnsChange()" />
+        </div>
+      </div>
+  </ng-template>
+
     <ng-template #header>
       <tr>
         <th pSortableColumn="numeroProgetto" style="width: 120px">
           #
         </th>
-        <th pSortableColumn="nomeProgetto">
-          Project
+        <th *ngFor="let col of selectedColumns">
+          {{ col.header }}
         </th>
-        <th pSortableColumn="cliente">
-          Customer
-        </th>
-        <th pSortableColumn="citta">
-          City
-        </th>
-        <th pSortableColumn="stato">
-          Country
-        </th>
-        <th pSortableColumn="teamTecnico">
-          Tech. Team
-        </th>
-        <th pSortableColumn="teamAPL">
-          APL Team
-        </th>
-        <th pSortableColumn="sales">
-          Sales
-        </th>
-        <th pSortableColumn="projectManager">
-          PM
-        </th>
-        <th pSortableColumn="teamInstallazione">
-          Install. Team
-        </th>
-        <th pSortableColumn="dataInizioInstallazione">
-          Start Install.
-        </th>
-        <th pSortableColumn="dataFineInstallazione">
-          End Install.
-        </th>
-        <th style="width: 80px">
-          
-        </th>
+        <th style="width: 80px"></th>
       </tr>
     </ng-template>
     <ng-template #groupheader let-project>
@@ -94,38 +65,26 @@
                 </tr>
             </ng-template>
 
-    <ng-template pTemplate="body" let-project>
+    <ng-template pTemplate="body" let-project let-expanded="expanded">
       <tr>
         <td>
           <a [routerLink]="['/projects', project.numeroProgetto]" class="font-bold text-blue-500 hover:text-blue-700">
             {{ project.numeroProgetto }}
           </a>
         </td>
-        <td>{{ project.nomeProgetto || '-' }}</td>
-        <td>{{ project.cliente || '-' }}</td>
-        <td>{{ project.citta || '-' }}</td>
-        <td>
-          <div class="flex items-center gap-2">
-            <img src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png" [class]="'flag flag-' + project.stato.toLowerCase()" style="width: 20px" />
-            <span>{{ project.stato || '-' }}</span>
-          </div>
-        </td>
-        <td>{{ project.teamTecnico || '-' }}</td>
-        <td>{{ project.teamAPL || '-' }}</td>
-        <td>{{ project.sales || '-' }}</td>
-        <td>{{ project.projectManager || '-' }}</td>
-        <td>{{ project.teamInstallazione || '-' }}</td>
-        <td>
-          <span *ngIf="project.dataInizioInstallazione" [ngClass]="getDateClass(project.dataInizioInstallazione)">
-            {{ project.dataInizioInstallazione | date:'dd/MM/yyyy' }}
-          </span>
-          <span *ngIf="!project.dataInizioInstallazione">-</span>
-        </td>
-        <td>
-          <span *ngIf="project.dataFineInstallazione" [ngClass]="getDateClass(project.dataFineInstallazione)">
-            {{ project.dataFineInstallazione | date:'dd/MM/yyyy' }}
-          </span>
-          <span *ngIf="!project.dataFineInstallazione">-</span>
+        <td *ngFor="let col of selectedColumns">
+            <div *ngIf="col.field === 'stato'" class="flex items-center gap-2">
+              <img src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png" [class]="'flag flag-' + project.stato.toLowerCase()" style="width: 20px" />
+              <span>{{ project.stato || '-' }}</span>
+            </div>
+            <ng-container *ngIf="col.field !== 'stato'">
+              <span *ngIf="col.field === 'dataInizioInstallazione' || col.field === 'dataFineInstallazione'; else defaultCell">
+                {{ project[col.field] ? (project[col.field] | date:'dd/MM/yyyy') : '-' }}
+              </span>
+              <ng-template #defaultCell>
+                {{ project[col.field] || '-' }}
+              </ng-template>
+            </ng-container>
         </td>
         <td>
           <div class="flex gap-1">
@@ -141,7 +100,6 @@
         </td>
       </tr>
     </ng-template>
-
     <ng-template pTemplate="emptymessage">
       <tr>
         <td colspan="13" class="text-center p-4">

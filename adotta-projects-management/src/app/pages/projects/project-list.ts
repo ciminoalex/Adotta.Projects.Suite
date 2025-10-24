@@ -20,6 +20,10 @@ import { MockProjectService } from '../../services/mock/mock-project.service';
 import { MockLookupService } from '../../services/mock/mock-lookup.service';
 import { Project, ProjectStatus } from '../../models/project.model';
 import { Cliente, ProjectManager } from '../../models/lookup.model';
+interface Column {
+  field: string;
+  header: string;
+}
 
 @Component({
   selector: 'app-project-list',
@@ -48,6 +52,9 @@ export class ProjectList implements OnInit {
   loading = false;
   globalFilter = '';
   tableHeight = '500px';
+  cols!: Column[];
+  selectedColumns!: Column[];
+
 
   // Opzioni per i dropdown
   statusOptions = [
@@ -80,6 +87,23 @@ export class ProjectList implements OnInit {
     this.calculateTableHeight();
     this.loadLookupData();
     this.loadProjects();
+
+    this.cols = [
+      { field: 'nomeProgetto', header: 'Project' },
+      { field: 'cliente', header: 'Customer' },
+      { field: 'citta', header: 'City' },
+      { field: 'stato', header: 'Country' },
+      { field: 'teamTecnico', header: 'Tech. Team' },
+      { field: 'teamAPL', header: 'APL Team' },
+      { field: 'sales', header: 'Sales' },
+      { field: 'projectManager', header: 'PM' },
+      { field: 'teamInstallazione', header: 'Install. Team' },
+      { field: 'dataInizioInstallazione', header: 'Start Install.' },
+      { field: 'dataFineInstallazione', header: 'End Install.' }
+    ];
+
+    // Carica la selezione delle colonne salvata o usa tutte le colonne come default
+    this.loadSelectedColumns();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -217,5 +241,50 @@ export class ProjectList implements OnInit {
     if (diffDays < 0) return 'text-red-500 font-bold';
     if (diffDays <= 3) return 'text-orange-500 font-bold';
     return 'text-green-500';
+  }
+
+  /**
+   * Carica la selezione delle colonne salvata dal localStorage
+   */
+  private loadSelectedColumns(): void {
+    try {
+      const savedColumns = localStorage.getItem('project-list-selected-columns');
+      if (savedColumns) {
+        const parsedColumns = JSON.parse(savedColumns);
+        // Verifica che le colonne salvate siano ancora valide
+        const validColumns = parsedColumns.filter((savedCol: Column) => 
+          this.cols.some(col => col.field === savedCol.field)
+        );
+        
+        if (validColumns.length > 0) {
+          this.selectedColumns = validColumns;
+        } else {
+          this.selectedColumns = this.cols;
+        }
+      } else {
+        this.selectedColumns = this.cols;
+      }
+    } catch (error) {
+      console.warn('Errore nel caricamento delle colonne salvate:', error);
+      this.selectedColumns = this.cols;
+    }
+  }
+
+  /**
+   * Salva la selezione delle colonne nel localStorage
+   */
+  private saveSelectedColumns(): void {
+    try {
+      localStorage.setItem('project-list-selected-columns', JSON.stringify(this.selectedColumns));
+    } catch (error) {
+      console.warn('Errore nel salvataggio delle colonne:', error);
+    }
+  }
+
+  /**
+   * Gestisce il cambio di selezione delle colonne
+   */
+  onColumnsChange(): void {
+    this.saveSelectedColumns();
   }
 }
