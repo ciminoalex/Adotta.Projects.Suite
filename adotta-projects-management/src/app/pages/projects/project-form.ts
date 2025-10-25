@@ -330,7 +330,7 @@ export class ProjectForm implements OnInit {
             summary: 'Successo',
             detail: `Progetto ${this.isEdit ? 'aggiornato' : 'creato'} con successo`
           });
-          this.router.navigate(['/projects']);
+          this.router.navigate(['/projects', project.numeroProgetto]);
         },
         error: (error) => {
           this.messageService.add({

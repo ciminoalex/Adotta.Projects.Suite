@@ -1,42 +1,44 @@
 <div class="grid grid-cols-12 gap-4">
-  <!-- Header Info -->
-  <div class="col-span-12">
-    <div class="card">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <button class="p-button p-button-text" routerLink="/projects">
-            <i class="pi pi-arrow-left"></i>
-          </button>
-          <div>
-            <h1 class="text-900 font-bold text-2xl m-0">
-              {{ project?.numeroProgetto }} - {{ project?.nomeProgetto }}
-            </h1>
-            <div class="flex items-center gap-4 mt-2">
-              <p-tag [value]="project?.statoProgetto" 
-                     [severity]="getStatusSeverity(project?.statoProgetto)">
-              </p-tag>
-              <span class="text-500">{{ project?.cliente }}</span>
-              <span class="text-500">{{ project?.citta }}, {{ project?.stato }}</span>
+  <!-- Main Content Column -->
+  <div class="col-span-12 lg:col-span-8">
+    <!-- Header Info -->
+    <div class="col-span-12 mb-4">
+      <p-card>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button class="p-button p-button-text" routerLink="/projects">
+              <i class="pi pi-arrow-left"></i>
+            </button>
+            <div>
+              <h1 class="text-900 font-bold text-2xl m-0">
+                {{ project?.numeroProgetto }} - {{ project?.nomeProgetto }}
+              </h1>
+              <div class="flex items-center gap-4 mt-2">
+                <p-tag [value]="project?.statoProgetto" 
+                       [severity]="getStatusSeverity(project?.statoProgetto)">
+                </p-tag>
+                <span class="text-500">{{ project?.cliente }}</span>
+                <span class="text-500">{{ project?.citta }}, {{ project?.stato }}</span>
+              </div>
             </div>
           </div>
+          <div class="flex gap-2">
+            <button class="p-button p-button-outlined" 
+                    [routerLink]="['/projects', project?.numeroProgetto, 'edit']">
+              <i class="pi pi-pencil mr-2"></i>
+              Modifica
+            </button>
+            <button class="p-button p-button-outlined">
+              <i class="pi pi-download mr-2"></i>
+              Export
+            </button>
+          </div>
         </div>
-        <div class="flex gap-2">
-          <button class="p-button p-button-outlined" 
-                  [routerLink]="['/projects', project?.numeroProgetto, 'edit']">
-            <i class="pi pi-pencil mr-2"></i>
-            Modifica
-          </button>
-          <button class="p-button p-button-outlined">
-            <i class="pi pi-download mr-2"></i>
-            Export
-          </button>
-        </div>
-      </div>
+      </p-card>
     </div>
-  </div>
 
-  <!-- Informazioni Generali -->
-  <div class="col-span-12 lg:col-span-6">
+    <!-- Informazioni Generali -->
+    <div class="col-span-12 lg:col-span-6 mb-4">
     <p-card header="Dati Principali">
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -69,10 +71,10 @@
         </div>
       </div>
     </p-card>
-  </div>
+    </div>
 
-  <div class="col-span-12 lg:col-span-6">
-    <p-card header="Team e Responsabilità">
+    <div class="col-span-12 lg:col-span-6 mb-4">
+      <p-card header="Team e Responsabilità">
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-500 text-sm">Project Manager</label>
@@ -96,10 +98,10 @@
         </div>
       </div>
     </p-card>
-  </div>
+    </div>
 
-  <div class="col-span-12 lg:col-span-6">
-    <p-card header="Pianificazione">
+    <div class="col-span-12 lg:col-span-6 mb-4">
+      <p-card header="Pianificazione">
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-500 text-sm">Data Creazione</label>
@@ -121,11 +123,11 @@
         </div>
       </div>
     </p-card>
-  </div>
+    </div>
 
-  <!-- Livelli -->
-  <div class="col-span-12">
-    <div class="card">
+    <!-- Livelli -->
+    <div class="col-span-12 mb-4">
+    <p-card>
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-900 font-bold">Livelli del Progetto</h4>
         <span class="p-tag p-tag-info">{{ livelli.length }} livelli</span>
@@ -160,12 +162,12 @@
           </tr>
         </ng-template>
       </p-table>
+    </p-card>
     </div>
-  </div>
 
-  <!-- Prodotti -->
-  <div class="col-span-12">
-    <div class="card">
+    <!-- Prodotti -->
+    <div class="col-span-12 mb-4">
+    <p-card>
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-900 font-bold">Prodotti del Progetto</h4>
         <span class="p-tag p-tag-info">{{ prodotti.length }} prodotti</span>
@@ -200,6 +202,189 @@
           </tr>
         </ng-template>
       </p-table>
+    </p-card>
+    </div>
+
+    <!-- Registro Modifiche -->
+    <div class="col-span-12 mb-4">
+      <p-card>
+        <div class="flex justify-between items-center mb-4">
+          <h4 class="text-900 font-bold">Registro Modifiche Progetto</h4>
+          <div class="flex items-center gap-3">
+            <span class="p-tag p-tag-info">{{ modificheRaggruppate.length }} istanze</span>
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-500">Visualizza:</label>
+              <p-select 
+                [(ngModel)]="filtroModifiche" 
+                [options]="opzioniFiltroModifiche"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="p-select-sm"
+                (onChange)="onFiltroModificheChange()">
+              </p-select>
+            </div>
+          </div>
+        </div>
+
+        <p-table [value]="getModificheFiltrate()" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 40px"></th>
+              <th style="width: 120px">Data/Ora</th>
+              <th style="width: 150px">Utente</th>
+              <th style="width: 100px">Campi Modificati</th>
+              <th>Dettagli Modifiche</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-istanza>
+            <!-- Riga principale dell'istanza -->
+            <tr class="bg-gray-50">
+              <td>
+                <button 
+                  class="p-button p-button-text p-button-sm"
+                  (click)="toggleExpanded(istanza)">
+                  <i [class]="istanza.expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+                </button>
+              </td>
+              <td>
+                <div class="text-sm">
+                  <div class="font-semibold">{{ istanza.dataModifica | date:'dd/MM/yyyy' }}</div>
+                  <div class="text-500">{{ istanza.dataModifica | date:'HH:mm:ss' }}</div>
+                </div>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-primary text-primary-contrast flex items-center justify-center text-xs font-semibold">
+                    {{ getInitials(istanza.utenteModifica) }}
+                  </div>
+                  <span class="font-semibold text-sm">{{ istanza.utenteModifica }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="p-tag p-tag-info text-xs">{{ istanza.modifiche.length }} campi</span>
+              </td>
+              <td>
+                <div class="text-sm text-500">
+                  <span>
+                    {{ istanza.modifiche[0]?.campoModificato }}
+                    <span *ngIf="istanza.modifiche.length > 1"> e altri {{ istanza.modifiche.length - 1 }} campi</span>
+                  </span>
+                </div>
+              </td>
+            </tr>
+            
+            <!-- Righe dettaglio espandibili -->
+            <tr *ngIf="istanza.expanded" class="bg-white">
+              <td colspan="5" class="p-0">
+                <div class="border-l-4 border-primary ml-4 p-4 bg-gray-25">
+                  <div class="grid grid-cols-1 gap-2">
+                    <div *ngFor="let modifica of istanza.modifiche" class="flex items-center gap-4 p-2 bg-white rounded border border-primary">
+                      <div class="w-48 flex-shrink-0">
+                        <div class="border border-primary rounded px-3 py-1 bg-primary-50">
+                          <span class="text-sm font-semibold text-primary-800">
+                            {{ modifica.campoModificato }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="flex-1 flex items-center gap-4">
+                        <div class="w-40">
+                          <span class="text-xs text-500">Da:</span>
+                          <span class="text-sm font-medium" *ngIf="modifica.valorePrecedente; else noValue">
+                            {{ modifica.valorePrecedente }}
+                          </span>
+                          <ng-template #noValue>
+                            <span class="text-xs text-400 italic">-</span>
+                          </ng-template>
+                        </div>
+                        <div class="w-40">
+                          <span class="text-xs text-500">A:</span>
+                          <span class="text-sm font-medium" *ngIf="modifica.nuovoValore; else noValueNew">
+                            {{ modifica.nuovoValore }}
+                          </span>
+                          <ng-template #noValueNew>
+                            <span class="text-xs text-400 italic">-</span>
+                          </ng-template>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5" class="text-center p-4 text-500">
+                <i class="pi pi-history text-2xl mb-2 block"></i>
+                <p>Nessuna modifica registrata</p>
+                <p class="text-sm">Le modifiche all'anagrafica del progetto verranno mostrate qui</p>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  </div>
+
+  <!-- Chat Column -->
+  <div class="col-span-12 lg:col-span-4">
+    <div class="sticky top-20">
+      <p-card>
+        <div class="flex justify-between items-center mb-4">
+          <h4 class="text-900 font-bold">Commenti Progetto</h4>
+          <span class="p-tag p-tag-info">{{ chatMessages.length }} messaggi</span>
+        </div>
+
+        <!-- Message Input -->
+        <div class="border-b pb-4 mb-4">
+          <div class="flex gap-2">
+            <textarea 
+              pTextarea 
+              [(ngModel)]="newMessage"
+              placeholder="Scrivi un messaggio..."
+              rows="2"
+              class="flex-1"
+              (keydown.enter)="sendMessage($event)"
+              (keydown.enter.control)="sendMessage($event)">
+            </textarea>
+            <button 
+              pButton 
+              type="button" 
+              icon="pi pi-send" 
+              class="p-button-primary"
+              [disabled]="!newMessage.trim()"
+              (click)="sendMessage()">
+            </button>
+          </div>
+          <div class="text-xs text-500 mt-2">
+            Premi Invio per inviare, Ctrl+Invio per nuova riga
+          </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="flex-1 overflow-y-auto" style="height: calc(100vh - 200px);">
+          <div class="space-y-3 p-2">
+            <div *ngFor="let message of getSortedMessages()" class="flex gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary text-primary-contrast flex items-center justify-center text-xs font-semibold">
+                {{ message.avatar || getInitials(message.utente) }}
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-sm text-900">{{ message.utente }}</span>
+                  <span class="text-xs text-500">{{ message.dataOra | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <p class="text-sm text-700 m-0">{{ message.messaggio }}</p>
+              </div>
+            </div>
+            
+            <div *ngIf="chatMessages.length === 0" class="text-center text-500 py-8">
+              <i class="pi pi-comments text-4xl mb-2 block"></i>
+              <p>Nessun messaggio ancora</p>
+              <p class="text-sm">Inizia la conversazione!</p>
+            </div>
+          </div>
+        </div>
+      </p-card>
     </div>
   </div>
 </div>

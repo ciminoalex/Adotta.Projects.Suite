@@ -6,9 +6,27 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TableModule } from 'primeng/table';
+import { TextareaModule } from 'primeng/textarea';
+import { SelectModule } from 'primeng/select';
 import { ProjectService } from '../../services/project.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
 import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus } from '../../models/project.model';
+
+export interface ChatMessage {
+  id: string;
+  utente: string;
+  messaggio: string;
+  dataOra: Date;
+  avatar?: string;
+}
+
+export interface ModificaRaggruppata {
+  id: string;
+  dataModifica: Date;
+  utenteModifica: string;
+  modifiche: StoricoModifica[];
+  expanded: boolean;
+}
 
 @Component({
   selector: 'app-project-detail',
@@ -20,7 +38,9 @@ import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectSta
     CardModule,
     ButtonModule,
     TagModule,
-    TableModule
+    TableModule,
+    TextareaModule,
+    SelectModule
   ],
   templateUrl: './project-detail.html'
 })
@@ -30,6 +50,21 @@ export class ProjectDetail implements OnInit {
   prodotti: ProdottoProgetto[] = [];
   storicoModifiche: StoricoModifica[] = [];
   loading = false;
+  
+  // Chat properties
+  chatMessages: ChatMessage[] = [];
+  newMessage = '';
+  currentUser = 'Utente Corrente'; // In un'app reale questo verrebbe dal servizio di autenticazione
+  
+  // Registro modifiche properties
+  registroModifiche: StoricoModifica[] = [];
+  modificheRaggruppate: ModificaRaggruppata[] = [];
+  filtroModifiche: string = 'ultime10';
+  opzioniFiltroModifiche = [
+    { label: 'Ultime 10', value: 'ultime10' },
+    { label: 'Ultime 50', value: 'ultime50' },
+    { label: 'Tutte', value: 'tutte' }
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -81,7 +116,79 @@ export class ProjectDetail implements OnInit {
     // Load storico modifiche
     this.projectService.getStoricoModifiche(numeroProgetto).subscribe(storico => {
       this.storicoModifiche = storico;
+      // Solo se non ci sono dati reali, usa i mock per test estetico
+      if (!storico || storico.length === 0) {
+        this.loadMockRegistroModifiche();
+      } else {
+        this.registroModifiche = storico; // Copia per il filtro
+        this.modificheRaggruppate = this.raggruppaModifiche(this.registroModifiche);
+      }
     });
+
+    // Mock data per il registro modifiche (per test estetico) - fallback
+    if (!this.registroModifiche || this.registroModifiche.length === 0) {
+      this.loadMockRegistroModifiche();
+    }
+
+    // Load chat messages
+    this.loadChatMessages(numeroProgetto);
+  }
+
+  loadChatMessages(numeroProgetto: string) {
+    // Mock data per la chat - in un'app reale questo verrebbe dal backend
+    this.chatMessages = [
+      {
+        id: '1',
+        utente: 'Mario Rossi',
+        messaggio: 'Il progetto procede secondo i tempi previsti. Tutti i materiali sono stati ordinati.',
+        dataOra: new Date('2024-01-15T10:30:00'),
+        avatar: 'MR'
+      },
+      {
+        id: '2',
+        utente: 'Giulia Bianchi',
+        messaggio: 'Ho verificato le specifiche tecniche. Tutto confermato.',
+        dataOra: new Date('2024-01-15T14:45:00'),
+        avatar: 'GB'
+      },
+      {
+        id: '3',
+        utente: 'Luca Verdi',
+        messaggio: 'L\'installazione del primo livello è stata completata con successo.',
+        dataOra: new Date('2024-01-16T09:15:00'),
+        avatar: 'LV'
+      }
+    ];
+  }
+
+  sendMessage(event?: Event) {
+    if (event && event instanceof KeyboardEvent && event.key === 'Enter' && !event.ctrlKey) {
+      event.preventDefault();
+    }
+    
+    if (this.newMessage.trim()) {
+      const message: ChatMessage = {
+        id: Date.now().toString(),
+        utente: this.currentUser,
+        messaggio: this.newMessage.trim(),
+        dataOra: new Date(),
+        avatar: this.getInitials(this.currentUser)
+      };
+      
+      this.chatMessages.unshift(message); // Aggiunge in cima per ordinamento decrescente
+      this.newMessage = '';
+      
+      // In un'app reale, qui salveresti il messaggio sul backend
+      // this.projectService.saveChatMessage(this.project?.numeroProgetto, message).subscribe();
+    }
+  }
+
+  getInitials(name: string): string {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
+
+  getSortedMessages(): ChatMessage[] {
+    return [...this.chatMessages].sort((a, b) => b.dataOra.getTime() - a.dataOra.getTime());
   }
 
   getStatusSeverity(status?: ProjectStatus): string {
@@ -119,6 +226,464 @@ export class ProjectDetail implements OnInit {
       case 'Armonica': return 'warning';
       default: return 'secondary';
     }
+  }
+
+  // Metodi per il registro modifiche
+  getModificheFiltrate(): ModificaRaggruppata[] {
+    let modificheFiltrate = this.modificheRaggruppate;
+    
+    if (this.filtroModifiche === 'ultime10') {
+      modificheFiltrate = this.modificheRaggruppate.slice(0, 10);
+    } else if (this.filtroModifiche === 'ultime50') {
+      modificheFiltrate = this.modificheRaggruppate.slice(0, 50);
+    }
+    
+    return modificheFiltrate;
+  }
+
+  onFiltroModificheChange() {
+    // Metodo per gestire il cambio del filtro
+    // Eventuali logiche aggiuntive possono essere aggiunte qui
+  }
+
+  toggleExpanded(modifica: ModificaRaggruppata) {
+    modifica.expanded = !modifica.expanded;
+  }
+
+  raggruppaModifiche(modifiche: StoricoModifica[]): ModificaRaggruppata[] {
+    const raggruppate = new Map<string, ModificaRaggruppata>();
+    
+    modifiche.forEach(modifica => {
+      // Crea una chiave unica basata su data e utente (arrotondata al minuto)
+      const dataArrotondata = new Date(modifica.dataModifica);
+      dataArrotondata.setSeconds(0, 0); // Arrotonda ai minuti
+      
+      const chiave = `${dataArrotondata.getTime()}_${modifica.utenteModifica}`;
+      
+      if (!raggruppate.has(chiave)) {
+        raggruppate.set(chiave, {
+          id: chiave,
+          dataModifica: dataArrotondata,
+          utenteModifica: modifica.utenteModifica,
+          modifiche: [],
+          expanded: false
+        });
+      }
+      
+      raggruppate.get(chiave)!.modifiche.push(modifica);
+    });
+    
+    // Ordina per data decrescente
+    return Array.from(raggruppate.values())
+      .sort((a, b) => b.dataModifica.getTime() - a.dataModifica.getTime());
+  }
+
+  loadMockRegistroModifiche() {
+    // Mock data per testare la resa estetica del registro modifiche
+    // Creo istanze con più campi modificati per sessione
+    this.registroModifiche = [
+      // Istanza 1: Mario Rossi - 20/01/2024 14:30 - Aggiornamento stato progetto
+      {
+        id: 1,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-20T14:30:00'),
+        utenteModifica: 'Mario Rossi',
+        campoModificato: 'Stato Progetto',
+        valorePrecedente: 'In Corso',
+        nuovoValore: 'Completato'
+      },
+      {
+        id: 2,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-20T14:30:00'),
+        utenteModifica: 'Mario Rossi',
+        campoModificato: 'Data Fine Installazione',
+        valorePrecedente: '30/03/2024',
+        nuovoValore: '25/03/2024'
+      },
+      {
+        id: 3,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-20T14:30:00'),
+        utenteModifica: 'Mario Rossi',
+        campoModificato: 'Versione WIC',
+        valorePrecedente: '2.1.0',
+        nuovoValore: '2.2.0'
+      },
+
+      // Istanza 2: Giulia Bianchi - 19/01/2024 10:15 - Modifica pianificazione
+      {
+        id: 4,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-19T10:15:00'),
+        utenteModifica: 'Giulia Bianchi',
+        campoModificato: 'Data Inizio Installazione',
+        valorePrecedente: '15/02/2024',
+        nuovoValore: '20/02/2024'
+      },
+      {
+        id: 5,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-19T10:15:00'),
+        utenteModifica: 'Giulia Bianchi',
+        campoModificato: 'Data Fine Installazione',
+        valorePrecedente: '30/03/2024',
+        nuovoValore: '05/04/2024'
+      },
+      {
+        id: 6,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-19T10:15:00'),
+        utenteModifica: 'Giulia Bianchi',
+        campoModificato: 'Team Installazione',
+        valorePrecedente: 'Squadra 1',
+        nuovoValore: 'Squadra 2'
+      },
+
+      // Istanza 3: Luca Verdi - 18/01/2024 16:45 - Cambio team
+      {
+        id: 7,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-18T16:45:00'),
+        utenteModifica: 'Luca Verdi',
+        campoModificato: 'Project Manager',
+        valorePrecedente: 'Anna Neri',
+        nuovoValore: 'Marco Blu'
+      },
+      {
+        id: 8,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-18T16:45:00'),
+        utenteModifica: 'Luca Verdi',
+        campoModificato: 'Team Tecnico',
+        valorePrecedente: 'Team A',
+        nuovoValore: 'Team B'
+      },
+      {
+        id: 9,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-18T16:45:00'),
+        utenteModifica: 'Luca Verdi',
+        campoModificato: 'Team APL',
+        valorePrecedente: 'Team APL-1',
+        nuovoValore: 'Team APL-2'
+      },
+      {
+        id: 10,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-18T16:45:00'),
+        utenteModifica: 'Luca Verdi',
+        campoModificato: 'Sales',
+        valorePrecedente: 'Giovanni Bianchi',
+        nuovoValore: 'Maria Rossi'
+      },
+
+      // Istanza 4: Sofia Rossi - 17/01/2024 09:20 - Aggiornamento cliente
+      {
+        id: 11,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-17T09:20:00'),
+        utenteModifica: 'Sofia Rossi',
+        campoModificato: 'Cliente',
+        valorePrecedente: 'Azienda ABC',
+        nuovoValore: 'Azienda XYZ'
+      },
+      {
+        id: 12,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-17T09:20:00'),
+        utenteModifica: 'Sofia Rossi',
+        campoModificato: 'Città',
+        valorePrecedente: 'Milano',
+        nuovoValore: 'Roma'
+      },
+      {
+        id: 13,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-17T09:20:00'),
+        utenteModifica: 'Sofia Rossi',
+        campoModificato: 'Stato',
+        valorePrecedente: 'Lombardia',
+        nuovoValore: 'Lazio'
+      },
+
+      // Istanza 5: Paolo Bianchi - 16/01/2024 13:10 - Aggiornamento tecnico
+      {
+        id: 14,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-16T13:10:00'),
+        utenteModifica: 'Paolo Bianchi',
+        campoModificato: 'Versione WIC',
+        valorePrecedente: '2.1.0',
+        nuovoValore: '2.2.0'
+      },
+      {
+        id: 15,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-16T13:10:00'),
+        utenteModifica: 'Paolo Bianchi',
+        campoModificato: 'Nome Progetto',
+        valorePrecedente: 'Progetto Alpha',
+        nuovoValore: 'Progetto Beta'
+      },
+      {
+        id: 16,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-16T13:10:00'),
+        utenteModifica: 'Paolo Bianchi',
+        campoModificato: 'Numero Progetto',
+        valorePrecedente: 'PRJ-2024-001',
+        nuovoValore: 'PRJ-2024-002'
+      },
+
+      // Istanza 6: Elena Verde - 15/01/2024 11:30 - Riorganizzazione team
+      {
+        id: 17,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-15T11:30:00'),
+        utenteModifica: 'Elena Verde',
+        campoModificato: 'Team Tecnico',
+        valorePrecedente: 'Team A',
+        nuovoValore: 'Team B'
+      },
+      {
+        id: 18,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-15T11:30:00'),
+        utenteModifica: 'Elena Verde',
+        campoModificato: 'Team APL',
+        valorePrecedente: 'Team APL-1',
+        nuovoValore: 'Team APL-2'
+      },
+      {
+        id: 19,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-15T11:30:00'),
+        utenteModifica: 'Elena Verde',
+        campoModificato: 'Team Installazione',
+        valorePrecedente: 'Squadra 1',
+        nuovoValore: 'Squadra 2'
+      },
+      {
+        id: 20,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-15T11:30:00'),
+        utenteModifica: 'Elena Verde',
+        campoModificato: 'Sales',
+        valorePrecedente: 'Giovanni Bianchi',
+        nuovoValore: 'Maria Rossi'
+      },
+
+      // Istanza 7: Roberto Nero - 14/01/2024 15:25 - Modifica localizzazione
+      {
+        id: 21,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-14T15:25:00'),
+        utenteModifica: 'Roberto Nero',
+        campoModificato: 'Città',
+        valorePrecedente: 'Milano',
+        nuovoValore: 'Roma'
+      },
+      {
+        id: 22,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-14T15:25:00'),
+        utenteModifica: 'Roberto Nero',
+        campoModificato: 'Stato',
+        valorePrecedente: 'Lombardia',
+        nuovoValore: 'Lazio'
+      },
+
+      // Istanza 8: Francesca Gialli - 13/01/2024 08:45 - Aggiornamento date
+      {
+        id: 23,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-13T08:45:00'),
+        utenteModifica: 'Francesca Gialli',
+        campoModificato: 'Data Inizio Installazione',
+        valorePrecedente: '15/02/2024',
+        nuovoValore: '20/02/2024'
+      },
+      {
+        id: 24,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-13T08:45:00'),
+        utenteModifica: 'Francesca Gialli',
+        campoModificato: 'Data Fine Installazione',
+        valorePrecedente: '30/03/2024',
+        nuovoValore: '05/04/2024'
+      },
+      {
+        id: 25,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-13T08:45:00'),
+        utenteModifica: 'Francesca Gialli',
+        campoModificato: 'Data Creazione',
+        valorePrecedente: '01/01/2024',
+        nuovoValore: '02/01/2024'
+      },
+
+      // Istanza 9: Antonio Rossi - 12/01/2024 12:15 - Cambio responsabili
+      {
+        id: 26,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-12T12:15:00'),
+        utenteModifica: 'Antonio Rossi',
+        campoModificato: 'Sales',
+        valorePrecedente: 'Giovanni Bianchi',
+        nuovoValore: 'Maria Rossi'
+      },
+      {
+        id: 27,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-12T12:15:00'),
+        utenteModifica: 'Antonio Rossi',
+        campoModificato: 'Project Manager',
+        valorePrecedente: 'Marco Blu',
+        nuovoValore: 'Anna Neri'
+      },
+
+      // Istanza 10: Chiara Blu - 11/01/2024 14:50 - Aggiornamento team APL
+      {
+        id: 28,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-11T14:50:00'),
+        utenteModifica: 'Chiara Blu',
+        campoModificato: 'Team APL',
+        valorePrecedente: 'Team APL-1',
+        nuovoValore: 'Team APL-2'
+      },
+      {
+        id: 29,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-11T14:50:00'),
+        utenteModifica: 'Chiara Blu',
+        campoModificato: 'Versione WIC',
+        valorePrecedente: '2.0.5',
+        nuovoValore: '2.1.0'
+      },
+
+      // Istanza 11: Davide Verde - 10/01/2024 10:30 - Rinomina progetto
+      {
+        id: 30,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-10T10:30:00'),
+        utenteModifica: 'Davide Verde',
+        campoModificato: 'Nome Progetto',
+        valorePrecedente: 'Progetto Alpha',
+        nuovoValore: 'Progetto Beta'
+      },
+      {
+        id: 31,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-10T10:30:00'),
+        utenteModifica: 'Davide Verde',
+        campoModificato: 'Numero Progetto',
+        valorePrecedente: 'PRJ-2024-001',
+        nuovoValore: 'PRJ-2024-002'
+      },
+      {
+        id: 32,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-10T10:30:00'),
+        utenteModifica: 'Davide Verde',
+        campoModificato: 'Stato Progetto',
+        valorePrecedente: 'In Corso',
+        nuovoValore: 'In Revisione'
+      },
+
+      // Istanza 12: Valentina Neri - 09/01/2024 16:20 - Modifica squadre
+      {
+        id: 33,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-09T16:20:00'),
+        utenteModifica: 'Valentina Neri',
+        campoModificato: 'Team Installazione',
+        valorePrecedente: 'Squadra 1',
+        nuovoValore: 'Squadra 2'
+      },
+      {
+        id: 34,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-09T16:20:00'),
+        utenteModifica: 'Valentina Neri',
+        campoModificato: 'Team Tecnico',
+        valorePrecedente: 'Team A',
+        nuovoValore: 'Team C'
+      },
+
+      // Istanza 13: Simone Gialli - 08/01/2024 09:10 - Cambio stato
+      {
+        id: 35,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-08T09:10:00'),
+        utenteModifica: 'Simone Gialli',
+        campoModificato: 'Stato',
+        valorePrecedente: 'Lombardia',
+        nuovoValore: 'Emilia-Romagna'
+      },
+      {
+        id: 36,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-08T09:10:00'),
+        utenteModifica: 'Simone Gialli',
+        campoModificato: 'Città',
+        valorePrecedente: 'Milano',
+        nuovoValore: 'Bologna'
+      },
+
+      // Istanza 14: Laura Rossi - 07/01/2024 13:40 - Aggiornamento date progetto
+      {
+        id: 37,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-07T13:40:00'),
+        utenteModifica: 'Laura Rossi',
+        campoModificato: 'Data Creazione',
+        valorePrecedente: '01/01/2024',
+        nuovoValore: '02/01/2024'
+      },
+      {
+        id: 38,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-07T13:40:00'),
+        utenteModifica: 'Laura Rossi',
+        campoModificato: 'Data Inizio Installazione',
+        valorePrecedente: '15/02/2024',
+        nuovoValore: '20/02/2024'
+      },
+      {
+        id: 39,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-07T13:40:00'),
+        utenteModifica: 'Laura Rossi',
+        campoModificato: 'Data Fine Installazione',
+        valorePrecedente: '30/03/2024',
+        nuovoValore: '05/04/2024'
+      },
+
+      // Istanza 15: Marco Bianchi - 06/01/2024 11:25 - Cambio numerazione
+      {
+        id: 40,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-06T11:25:00'),
+        utenteModifica: 'Marco Bianchi',
+        campoModificato: 'Numero Progetto',
+        valorePrecedente: 'PRJ-2024-001',
+        nuovoValore: 'PRJ-2024-002'
+      },
+      {
+        id: 41,
+        progettoId: 1,
+        dataModifica: new Date('2024-01-06T11:25:00'),
+        utenteModifica: 'Marco Bianchi',
+        campoModificato: 'Nome Progetto',
+        valorePrecedente: 'Progetto Alpha',
+        nuovoValore: 'Progetto Gamma'
+      }
+    ];
+    
+    // Raggruppa le modifiche per istanza di salvataggio
+    this.modificheRaggruppate = this.raggruppaModifiche(this.registroModifiche);
   }
 
 }

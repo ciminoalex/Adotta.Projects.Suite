@@ -4,16 +4,16 @@
       {{ isEdit ? 'Modifica Progetto' : 'Nuovo Progetto' }}
     </h2>
     <div class="flex gap-2">
-      <button class="p-button p-button-outlined" routerLink="/projects">
+      <p-button [outlined]="true" routerLink="/projects">
         <i class="pi pi-times mr-2"></i>
         Annulla
-      </button>
-      <button class="p-button p-button-primary" 
+      </p-button>
+      <p-button severity="primary"
               (click)="saveProject()" 
               [disabled]="!projectForm.valid || loading">
         <i class="pi pi-save mr-2"></i>
         {{ loading ? 'Salvataggio...' : 'Salva' }}
-      </button>
+      </p-button>
     </div>
   </div>
 
@@ -361,10 +361,10 @@
     <div class="card mb-4">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-900 font-bold text-xl">Livelli Progetto</h3>
-        <button *ngIf="!loadingProject" type="button" class="p-button p-button-outlined p-button-sm" (click)="addLevel()">
+        <p-button *ngIf="!loadingProject" [outlined]="true" (click)="addLevel()">
           <i class="pi pi-plus mr-2"></i>
           Aggiungi Livello
-        </button>
+        </p-button>
       </div>
       
       <!-- Skeleton loader for levels table -->
@@ -396,12 +396,12 @@
             <td>{{ livello.dataInizioInstallazione | date:'dd/MM/yyyy' }}</td>
             <td>{{ livello.dataFineInstallazione | date:'dd/MM/yyyy' }}</td>
             <td>
-              <button type="button" class="p-button p-button-text p-button-sm" (click)="editLevel(livello)">
+              <p-button type="button" class="p-button p-button-text p-button-sm" (click)="editLevel(livello)">
                 <i class="pi pi-pencil"></i>
-              </button>
-              <button type="button" class="p-button p-button-text p-button-sm p-button-danger" (click)="deleteLevel(livello)">
+              </p-button>
+              <p-button type="button" class="p-button p-button-text p-button-sm p-button-danger" (click)="deleteLevel(livello)">
                 <i class="pi pi-trash"></i>
-              </button>
+              </p-button>
             </td>
           </tr>
         </ng-template>
@@ -417,10 +417,10 @@
     <div class="card mb-4">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-900 font-bold text-xl">Prodotti Progetto</h3>
-        <button *ngIf="!loadingProject" type="button" class="p-button p-button-outlined p-button-sm" (click)="addProduct()">
+        <p-button *ngIf="!loadingProject" [outlined]="true" (click)="addProduct()">
           <i class="pi pi-plus mr-2"></i>
           Aggiungi Prodotto
-        </button>
+        </p-button>
       </div>
       
       <!-- Skeleton loader for products table -->
@@ -450,12 +450,12 @@
             <td>{{ prodotto.qMq }}</td>
             <td>{{ prodotto.qFt }}</td>
             <td>
-              <button type="button" class="p-button p-button-text p-button-sm" (click)="editProduct(prodotto)">
+              <p-button [text]="true" (click)="editProduct(prodotto)">
                 <i class="pi pi-pencil"></i>
-              </button>
-              <button type="button" class="p-button p-button-text p-button-sm p-button-danger" (click)="deleteProduct(prodotto)">
+              </p-button>
+              <p-button [text]="true" [severity]="'danger'" (click)="deleteProduct(prodotto)">
                 <i class="pi pi-trash"></i>
-              </button>
+              </p-button>
             </td>
           </tr>
         </ng-template>
