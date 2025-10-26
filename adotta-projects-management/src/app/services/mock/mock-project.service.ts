@@ -217,31 +217,13 @@ export class MockProjectService {
 
   addMessaggioProgetto(messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
     const newMessaggio = this.mockData.addMessaggio(messaggio);
-    
-    // Add change log entry
-    this.mockData.addChangeLog({
-      progettoId: messaggio.progettoId,
-      data: new Date(),
-      utente: messaggio.utente,
-      azione: 'message_added',
-      descrizione: `Nuovo messaggio aggiunto: ${messaggio.messaggio.substring(0, 50)}`
-    });
-    
+    // Messages are not tracked in change log
     return of(newMessaggio).pipe(delay(400));
   }
 
   updateMessaggioProgetto(id: number, messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
     const updated = this.mockData.updateMessaggio(id, messaggio);
-    
-    // Add change log entry
-    this.mockData.addChangeLog({
-      progettoId: messaggio.progettoId,
-      data: new Date(),
-      utente: messaggio.utente,
-      azione: 'message_updated',
-      descrizione: `Messaggio aggiornato`
-    });
-    
+    // Messages are not tracked in change log
     return of(updated).pipe(delay(400));
   }
 
@@ -249,15 +231,7 @@ export class MockProjectService {
     const messaggio = this.mockData.getMessaggiByProgetto(0).find(m => m.id === id);
     if (messaggio) {
       this.mockData.deleteMessaggio(id);
-      
-      // Add change log entry
-      this.mockData.addChangeLog({
-        progettoId: messaggio.progettoId,
-        data: new Date(),
-        utente: 'System',
-        azione: 'message_deleted',
-        descrizione: `Messaggio eliminato`
-      });
+      // Messages are not tracked in change log
     }
     return of(undefined).pipe(delay(300));
   }
