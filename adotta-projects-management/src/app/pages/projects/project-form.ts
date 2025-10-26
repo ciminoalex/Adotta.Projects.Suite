@@ -74,7 +74,6 @@ export class ProjectForm implements OnInit {
   clienti: Cliente[] = [];
   filteredClienti: Cliente[] = [];
   stati: Stato[] = [];
-  citta: Citta[] = [];
   teamTecnici: TeamTecnico[] = [];
   teamAPL: TeamAPL[] = [];
   sales: Sales[] = [];
@@ -110,7 +109,7 @@ export class ProjectForm implements OnInit {
       nomeProgetto: ['', Validators.required],
       cliente: ['', Validators.required],
       citta: [''],
-      stato: [''],
+      stato: [''], // Will store the codiceISO as string
       codiceSAP: [''],
       teamTecnico: [''],
       teamAPL: [''],
@@ -148,17 +147,6 @@ export class ProjectForm implements OnInit {
       }
     });
 
-    // Watch for stato changes to load citta
-    this.projectForm.get('stato')?.valueChanges.subscribe(statoId => {
-      if (statoId) {
-        this.lookupService.getCittaByStato(statoId).subscribe(citta => {
-          this.citta = citta;
-        });
-      } else {
-        this.citta = [];
-        this.projectForm.get('citta')?.setValue(null);
-      }
-    });
   }
 
   loadLookupData() {
@@ -291,9 +279,13 @@ export class ProjectForm implements OnInit {
           this.loadingProject = false;
           this.messageService.add({
             severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore nel caricamento del progetto'
+            summary: 'Progetto non trovato',
+            detail: `Il progetto ${this.projectId} non esiste. Verrai reindirizzato alla lista progetti.`
           });
+          // Redirect to project list after a short delay
+          setTimeout(() => {
+            this.router.navigate(['/projects']);
+          }, 2000);
         }
       });
     }

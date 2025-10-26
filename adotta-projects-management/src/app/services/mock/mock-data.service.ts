@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Cliente, TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione, ProdottoMaster } from '../../models/lookup.model';
+import { Cliente, Stato, TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione, ProdottoMaster } from '../../models/lookup.model';
 import { Project, MessaggioProgetto, ChangeLog, LivelloProgetto, ProdottoProgetto, ProjectStatus } from '../../models/project.model';
 
 // Singleton instance
@@ -11,6 +11,7 @@ let mockDataInstance: MockDataService | null = null;
 export class MockDataService {
   // In-memory storage
   private clienti: Cliente[] = [];
+  private stati: Stato[] = [];
   private teamTecnici: TeamTecnico[] = [];
   private teamAPL: TeamAPL[] = [];
   private sales: Sales[] = [];
@@ -38,6 +39,27 @@ export class MockDataService {
   private initializeData() {
     // Initialize sample projects
     this.initializeSampleProjects();
+    
+    // Initialize Stati (Stati europei e principali)
+    this.stati = [
+      { id: 1, nome: 'Italia', codiceISO: 'IT', continente: 'Europa' },
+      { id: 2, nome: 'USA', codiceISO: 'US', continente: 'Nord America' },
+      { id: 3, nome: 'Germania', codiceISO: 'DE', continente: 'Europa' },
+      { id: 4, nome: 'Francia', codiceISO: 'FR', continente: 'Europa' },
+      { id: 5, nome: 'Spagna', codiceISO: 'ES', continente: 'Europa' },
+      { id: 6, nome: 'Regno Unito', codiceISO: 'GB', continente: 'Europa' },
+      { id: 7, nome: 'Austria', codiceISO: 'AT', continente: 'Europa' },
+      { id: 8, nome: 'Svizzera', codiceISO: 'CH', continente: 'Europa' },
+      { id: 9, nome: 'Belgio', codiceISO: 'BE', continente: 'Europa' },
+      { id: 10, nome: 'Paesi Bassi', codiceISO: 'NL', continente: 'Europa' },
+      { id: 11, nome: 'Polonia', codiceISO: 'PL', continente: 'Europa' },
+      { id: 12, nome: 'Portogallo', codiceISO: 'PT', continente: 'Europa' },
+      { id: 13, nome: 'Grecia', codiceISO: 'GR', continente: 'Europa' },
+      { id: 14, nome: 'Svezia', codiceISO: 'SE', continente: 'Europa' },
+      { id: 15, nome: 'Norvegia', codiceISO: 'NO', continente: 'Europa' },
+      { id: 16, nome: 'Danimarca', codiceISO: 'DK', continente: 'Europa' },
+      { id: 17, nome: 'Finlandia', codiceISO: 'FI', continente: 'Europa' }
+    ];
     
     // Initialize Clienti
     this.clienti = [
@@ -319,11 +341,59 @@ export class MockDataService {
               qFt: 1620.0
             }
           ]
+        },
+        {
+          numeroProgetto: 'PRJ-2024-002',
+          cliente: 'Immobiliare Roma SRL',
+          nomeProgetto: 'Sistema Climatizzazione Roma Centro',
+          citta: 'Roma',
+          stato: 'IT',
+          teamTecnico: 'Team HVAC Roma',
+          teamAPL: 'Team APL Centro',
+          sales: 'Laura Commerciale',
+          projectManager: 'Giulia Bianchi',
+          teamInstallazione: 'Squadra Elettrica Roma',
+          dataCreazione: new Date('2024-02-10'),
+          dataInizioInstallazione: new Date('2024-03-01'),
+          dataFineInstallazione: new Date('2024-04-30'),
+          versioneWIC: 'WIC-1.5',
+          ultimaModifica: new Date('2024-02-15'),
+          statoProgetto: ProjectStatus.RUSH,
+          isInRitardo: false,
+          note: 'Progetto prioritario per cliente importante'
+        },
+        {
+          numeroProgetto: 'PRJ-2024-003',
+          cliente: 'Napoli Centro',
+          nomeProgetto: 'Ristrutturazione Impianti Idraulici',
+          citta: 'Napoli',
+          stato: 'IT',
+          teamTecnico: 'Team Idraulico Napoli',
+          teamAPL: 'Team APL Sud',
+          sales: 'Giuseppe Sud',
+          projectManager: 'Antonio Verdi',
+          teamInstallazione: 'Squadra Idraulica Napoli',
+          dataCreazione: new Date('2024-01-20'),
+          dataInizioInstallazione: new Date('2024-03-15'),
+          dataFineInstallazione: new Date('2024-05-20'),
+          versioneWIC: 'WIC-1.2',
+          ultimaModifica: new Date('2024-02-01'),
+          statoProgetto: ProjectStatus.UPCOMING,
+          isInRitardo: false
         }
       ];
 
       sampleProjects.forEach(p => this.projects.push(p));
     }
+  }
+
+  // Stati
+  getStati(): Stato[] {
+    return [...this.stati];
+  }
+
+  findStato(id: number): Stato | undefined {
+    return this.stati.find(s => s.id === id);
   }
 
   // Clienti

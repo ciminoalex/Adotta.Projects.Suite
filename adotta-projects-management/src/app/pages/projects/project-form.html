@@ -119,6 +119,7 @@
             formControlName="stato"
             placeholder="Seleziona stato"
             optionLabel="nome"
+            optionValue="codiceISO"
             [showClear]="true"
             class="w-full"
             inputStyleClass="w-full">
@@ -128,17 +129,13 @@
         <div class="col-span-12 md:col-span-3">
           <label class="block text-900 font-medium mb-2">Città</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
-          <p-select 
+          <input 
             *ngIf="!loadingLookupData"
-            [options]="citta" 
+            type="text" 
+            pInputText 
             formControlName="citta"
-            placeholder="Seleziona città"
-            optionLabel="nome"
-            [showClear]="true"
-            [disabled]="!projectForm.get('stato')?.value"
-            class="w-full"
-            inputStyleClass="w-full">
-          </p-select>
+            placeholder="Inserisci città"
+            class="w-full">
         </div>
 
         <div class="col-span-12 md:col-span-6">

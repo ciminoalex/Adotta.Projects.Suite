@@ -49,6 +49,7 @@ interface Column {
 })
 export class ProjectList implements OnInit {
   projects: Project[] = [];
+  filteredProjects: Project[] = [];
   loading = false;
   globalFilter = '';
   tableHeight = '500px';
@@ -143,6 +144,7 @@ export class ProjectList implements OnInit {
     this.projectService.getProjects().subscribe({
       next: (projects) => {
         this.projects = projects;
+        this.filteredProjects = projects;
         this.loading = false;
       },
       error: (error) => {
@@ -153,8 +155,26 @@ export class ProjectList implements OnInit {
   }
 
   filterGlobal(event: any) {
-    this.globalFilter = event.target.value;
-    // Implementare filtro globale se necessario
+    const filterValue = event.target.value.toLowerCase();
+    if (!filterValue) {
+      this.filteredProjects = this.projects;
+      return;
+    }
+    
+    this.filteredProjects = this.projects.filter(project => {
+      return (
+        project.numeroProgetto?.toLowerCase().includes(filterValue) ||
+        project.cliente?.toLowerCase().includes(filterValue) ||
+        project.nomeProgetto?.toLowerCase().includes(filterValue) ||
+        project.citta?.toLowerCase().includes(filterValue) ||
+        project.stato?.toLowerCase().includes(filterValue) ||
+        project.teamTecnico?.toLowerCase().includes(filterValue) ||
+        project.teamAPL?.toLowerCase().includes(filterValue) ||
+        project.sales?.toLowerCase().includes(filterValue) ||
+        project.projectManager?.toLowerCase().includes(filterValue) ||
+        project.teamInstallazione?.toLowerCase().includes(filterValue)
+      );
+    });
   }
 
   deleteProject(project: Project) {

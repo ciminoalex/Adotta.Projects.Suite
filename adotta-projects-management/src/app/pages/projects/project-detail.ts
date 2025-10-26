@@ -8,6 +8,8 @@ import { TagModule } from 'primeng/tag';
 import { TableModule } from 'primeng/table';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
 import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus, MessaggioProgetto } from '../../models/project.model';
@@ -40,8 +42,10 @@ export interface ModificaRaggruppata {
     TagModule,
     TableModule,
     TextareaModule,
-    SelectModule
+    SelectModule,
+    ToastModule
   ],
+  providers: [MessageService],
   templateUrl: './project-detail.html'
 })
 export class ProjectDetail implements OnInit {
@@ -68,7 +72,8 @@ export class ProjectDetail implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private messageService: MessageService
   ) {
     // Usa servizi mock in assenza di backend
     this.projectService = new MockProjectService() as any;
@@ -98,6 +103,15 @@ export class ProjectDetail implements OnInit {
       error: (error) => {
         console.error('Errore nel caricamento progetto:', error);
         this.loading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Progetto non trovato',
+          detail: `Il progetto ${numeroProgetto} non esiste. Verrai reindirizzato alla lista progetti.`
+        });
+        // Redirect to project list after a short delay
+        setTimeout(() => {
+          this.router.navigate(['/projects']);
+        }, 2000);
       }
     });
   }

@@ -14,12 +14,11 @@
 </p-toolbar>
   <!-- Tabella Progetti -->
   <p-table 
-    [value]="projects" 
+    [value]="filteredProjects" 
     [paginator]="true" 
     [rows]="100"
     [showCurrentPageReport]="true"
     currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} progetti"
-    [globalFilterFields]="['numeroProgetto','cliente','nomeProgetto','citta','stato','teamTecnico','teamAPL','sales','projectManager','teamInstallazione']"
     [loading]="loading"
     rowGroupMode="subheader" groupRowsBy="statoProgetto"
     [scrollable]="true" [scrollHeight]="tableHeight"

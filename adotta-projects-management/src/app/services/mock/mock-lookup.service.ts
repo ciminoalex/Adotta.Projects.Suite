@@ -227,7 +227,7 @@ export class MockLookupService {
 
   // Stati
   getStati(): Observable<Stato[]> {
-    return of([]).pipe(delay(300));
+    return of(this.mockData.getStati()).pipe(delay(300));
   }
 
   getStato(id: number): Observable<Stato> {
