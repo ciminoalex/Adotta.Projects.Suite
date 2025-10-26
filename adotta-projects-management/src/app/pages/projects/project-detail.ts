@@ -10,7 +10,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ProjectService } from '../../services/project.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
-import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus } from '../../models/project.model';
+import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus, MessaggioProgetto } from '../../models/project.model';
 
 export interface ChatMessage {
   id: string;
@@ -135,30 +135,23 @@ export class ProjectDetail implements OnInit {
   }
 
   loadChatMessages(numeroProgetto: string) {
-    // Mock data per la chat - in un'app reale questo verrebbe dal backend
-    this.chatMessages = [
-      {
-        id: '1',
-        utente: 'Mario Rossi',
-        messaggio: 'Il progetto procede secondo i tempi previsti. Tutti i materiali sono stati ordinati.',
-        dataOra: new Date('2024-01-15T10:30:00'),
-        avatar: 'MR'
+    // Load messages from service
+    this.projectService.getMessaggiProgetto(numeroProgetto).subscribe({
+      next: (messaggi) => {
+        // Convert MessaggioProgetto to ChatMessage
+        this.chatMessages = messaggi.map(msg => ({
+          id: msg.id?.toString() || '0',
+          utente: msg.utente,
+          messaggio: msg.messaggio,
+          dataOra: msg.data,
+          avatar: this.getInitials(msg.utente)
+        }));
       },
-      {
-        id: '2',
-        utente: 'Giulia Bianchi',
-        messaggio: 'Ho verificato le specifiche tecniche. Tutto confermato.',
-        dataOra: new Date('2024-01-15T14:45:00'),
-        avatar: 'GB'
-      },
-      {
-        id: '3',
-        utente: 'Luca Verdi',
-        messaggio: 'L\'installazione del primo livello è stata completata con successo.',
-        dataOra: new Date('2024-01-16T09:15:00'),
-        avatar: 'LV'
+      error: (error) => {
+        console.error('Error loading chat messages:', error);
+        this.chatMessages = [];
       }
-    ];
+    });
   }
 
   sendMessage(event?: Event) {
@@ -166,20 +159,37 @@ export class ProjectDetail implements OnInit {
       event.preventDefault();
     }
     
-    if (this.newMessage.trim()) {
-      const message: ChatMessage = {
-        id: Date.now().toString(),
+    if (this.newMessage.trim() && this.project?.numeroProgetto) {
+      // Get project ID (simple implementation for mock)
+      const projectId = 1; // This will be mapped correctly by the service
+      
+      const messaggio: MessaggioProgetto = {
+        progettoId: projectId,
+        data: new Date(),
         utente: this.currentUser,
         messaggio: this.newMessage.trim(),
-        dataOra: new Date(),
-        avatar: this.getInitials(this.currentUser)
+        tipo: 'info'
       };
       
-      this.chatMessages.unshift(message); // Aggiunge in cima per ordinamento decrescente
-      this.newMessage = '';
-      
-      // In un'app reale, qui salveresti il messaggio sul backend
-      // this.projectService.saveChatMessage(this.project?.numeroProgetto, message).subscribe();
+      // Save message via service
+      this.projectService.addMessaggioProgetto(messaggio).subscribe({
+        next: (savedMessage) => {
+          // Add to local array for immediate display
+          const chatMsg: ChatMessage = {
+            id: savedMessage.id?.toString() || Date.now().toString(),
+            utente: savedMessage.utente,
+            messaggio: savedMessage.messaggio,
+            dataOra: savedMessage.data,
+            avatar: this.getInitials(savedMessage.utente)
+          };
+          
+          this.chatMessages.unshift(chatMsg);
+          this.newMessage = '';
+        },
+        error: (error) => {
+          console.error('Error saving message:', error);
+        }
+      });
     }
   }
 
