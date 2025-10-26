@@ -12,6 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
+import { AuthService } from '../../services/auth.service';
 import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus, MessaggioProgetto } from '../../models/project.model';
 
 export interface ChatMessage {
@@ -58,7 +59,7 @@ export class ProjectDetail implements OnInit {
   // Chat properties
   chatMessages: ChatMessage[] = [];
   newMessage = '';
-  currentUser = 'Utente Corrente'; // In un'app reale questo verrebbe dal servizio di autenticazione
+  currentUser = '';
   
   // Registro modifiche properties
   registroModifiche: StoricoModifica[] = [];
@@ -73,7 +74,8 @@ export class ProjectDetail implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authService: AuthService
   ) {
     // Usa servizi mock in assenza di backend
     this.projectService = new MockProjectService() as any;
@@ -83,6 +85,10 @@ export class ProjectDetail implements OnInit {
   
 
   ngOnInit() {
+    // Get current user from auth service
+    const user = this.authService.getCurrentUser();
+    this.currentUser = user ? this.authService.getFullName() : 'Utente Anonimo';
+    
     this.route.params.subscribe(params => {
       const numeroProgetto = params['id'];
       if (numeroProgetto) {

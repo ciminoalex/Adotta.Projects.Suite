@@ -2,6 +2,18 @@ import { Injectable } from '@angular/core';
 import { Cliente, Stato, TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione, ProdottoMaster } from '../../models/lookup.model';
 import { Project, MessaggioProgetto, ChangeLog, LivelloProgetto, ProdottoProgetto, ProjectStatus } from '../../models/project.model';
 
+// Extended User interface with password for mock data
+interface UserWithPassword {
+  id?: number;
+  username: string;
+  password: string;
+  email: string;
+  nome: string;
+  cognome: string;
+  ruolo?: string;
+  isActive?: boolean;
+}
+
 // Singleton instance
 let mockDataInstance: MockDataService | null = null;
 
@@ -21,6 +33,7 @@ export class MockDataService {
   private projects: Project[] = [];
   private messaggi: MessaggioProgetto[] = [];
   private changeLogs: ChangeLog[] = [];
+  private users: UserWithPassword[] = [];
 
   private constructor() {
     this.initializeData();
@@ -37,6 +50,9 @@ export class MockDataService {
   }
 
   private initializeData() {
+    // Initialize users
+    this.initializeUsers();
+    
     // Initialize sample projects
     this.initializeSampleProjects();
     
@@ -293,6 +309,41 @@ export class MockDataService {
         codiceSAP: 'COND001',
         descrizione: 'Condotti per ventilazione industriale',
         variantiDisponibili: ['Diametro 100mm', 'Diametro 150mm', 'Diametro 200mm']
+      }
+    ];
+  }
+
+  private initializeUsers() {
+    this.users = [
+      {
+        id: 1,
+        username: 'admin',
+        password: 'admin123',
+        email: 'admin@adotta.it',
+        nome: 'Mario',
+        cognome: 'Rossi',
+        ruolo: 'Administrator',
+        isActive: true
+      },
+      {
+        id: 2,
+        username: 'manager',
+        password: 'manager123',
+        email: 'manager@adotta.it',
+        nome: 'Giulia',
+        cognome: 'Bianchi',
+        ruolo: 'Project Manager',
+        isActive: true
+      },
+      {
+        id: 3,
+        username: 'user',
+        password: 'user123',
+        email: 'user@adotta.it',
+        nome: 'Antonio',
+        cognome: 'Verdi',
+        ruolo: 'User',
+        isActive: true
       }
     ];
   }
@@ -636,6 +687,40 @@ export class MockDataService {
     const newChangeLog = { ...changeLog, id: newId };
     this.changeLogs.push(newChangeLog);
     return newChangeLog;
+  }
+
+  // Users
+  getUsers(): UserWithPassword[] {
+    return [...this.users];
+  }
+
+  addUser(user: UserWithPassword): UserWithPassword {
+    const newId = Math.max(...this.users.map(u => u.id || 0), 0) + 1;
+    const newUser = { ...user, id: newId };
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  updateUser(id: number, user: UserWithPassword): UserWithPassword {
+    const index = this.users.findIndex(u => u.id === id);
+    if (index !== -1) {
+      this.users[index] = { ...user, id };
+      return this.users[index];
+    }
+    throw new Error(`User with id ${id} not found`);
+  }
+
+  deleteUser(id: number): void {
+    const index = this.users.findIndex(u => u.id === id);
+    if (index !== -1) {
+      this.users.splice(index, 1);
+    } else {
+      throw new Error(`User with id ${id} not found`);
+    }
+  }
+
+  findUser(id: number): UserWithPassword | undefined {
+    return this.users.find(u => u.id === id);
   }
 }
 

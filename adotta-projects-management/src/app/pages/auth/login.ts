@@ -1,18 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator],
+    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, ToastModule],
+    providers: [MessageService],
     template: `
+        <p-toast></p-toast>
         <app-floating-configurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
             <div class="flex flex-col items-center justify-center">
@@ -54,7 +59,7 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                             </div>
-                            <p-button label="Sign In" styleClass="w-full" routerLink="/"></p-button>
+                            <p-button label="Sign In" styleClass="w-full" (click)="onLogin()" [loading]="loading"></p-button>
                         </div>
                     </div>
                 </div>
@@ -62,10 +67,62 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
         </div>
     `
 })
-export class Login {
-    email: string = '';
+export class Login implements OnInit {
+    email: string = 'admin';
 
-    password: string = '';
+    password: string = 'admin123';
 
     checked: boolean = false;
+
+    loading: boolean = false;
+
+    constructor(
+        private authService: AuthService,
+        private router: Router,
+        private messageService: MessageService
+    ) {}
+
+    ngOnInit() {
+        // If already authenticated, redirect to dashboard
+        if (this.authService.isAuthenticated()) {
+            this.router.navigate(['/']);
+        }
+    }
+
+    onLogin() {
+        if (!this.email || !this.password) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Attenzione',
+                detail: 'Inserisci username e password'
+            });
+            return;
+        }
+
+        this.loading = true;
+        
+        this.authService.login(this.email, this.password).subscribe({
+            next: (user) => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Login effettuato',
+                    detail: `Benvenuto ${user.nome}!`
+                });
+                
+                // Navigate to dashboard after short delay
+                setTimeout(() => {
+                    this.loading = false;
+                    this.router.navigate(['/']);
+                }, 1000);
+            },
+            error: (error) => {
+                this.loading = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Errore',
+                    detail: 'Username o password non validi'
+                });
+            }
+        });
+    }
 }

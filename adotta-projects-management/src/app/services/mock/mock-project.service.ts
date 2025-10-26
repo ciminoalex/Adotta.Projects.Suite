@@ -15,6 +15,22 @@ export class MockProjectService {
     this.mockData = mockData || MockDataService.getInstance();
   }
 
+  private getCurrentUserName(): string {
+    // Try to get current user from localStorage
+    try {
+      const sessionStr = localStorage.getItem('auth_session');
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        if (session.user) {
+          return `${session.user.nome} ${session.user.cognome}`;
+        }
+      }
+    } catch (e) {
+      // Session might not be available
+    }
+    return 'System';
+  }
+
   // Field labels mapping for user-friendly display
   private getFieldLabel(fieldName: string): string {
     const fieldLabels: Record<string, string> = {
@@ -64,7 +80,7 @@ export class MockProjectService {
     this.mockData.addChangeLog({
       progettoId: numericId,
       data: new Date(),
-      utente: 'System',
+      utente: this.getCurrentUserName(),
       azione: 'created',
       descrizione: `Progetto ${newProject.numeroProgetto} creato`
     });
@@ -155,7 +171,7 @@ export class MockProjectService {
       this.mockData.addChangeLog({
         progettoId: numericId,
         data: new Date(),
-        utente: 'System',
+        utente: this.getCurrentUserName(),
         azione: 'updated',
         descrizione: `${change.campo}: "${change.vecchioValore || '-'}" → "${change.nuovoValore || '-'}"`,
         dettagli: { campo: change.campo, vecchioValore: change.vecchioValore, nuovoValore: change.nuovoValore }
@@ -167,7 +183,7 @@ export class MockProjectService {
       this.mockData.addChangeLog({
         progettoId: numericId,
         data: new Date(),
-        utente: 'System',
+        utente: this.getCurrentUserName(),
         azione: 'updated',
         descrizione: 'Progetto aggiornato (nessuna modifica rilevata)'
       });
@@ -185,7 +201,7 @@ export class MockProjectService {
     this.mockData.addChangeLog({
       progettoId: numericId,
       data: new Date(),
-      utente: 'System',
+      utente: this.getCurrentUserName(),
       azione: 'updated',
       descrizione: `Campi modificati: ${changedFields}`
     });
@@ -200,7 +216,7 @@ export class MockProjectService {
     this.mockData.addChangeLog({
       progettoId: numericId,
       data: new Date(),
-      utente: 'System',
+      utente: this.getCurrentUserName(),
       azione: 'deleted',
       descrizione: `Progetto ${numeroProgetto} eliminato`
     });
@@ -279,7 +295,7 @@ export class MockProjectService {
     this.mockData.addChangeLog({
       progettoId: numericId,
       data: new Date(),
-      utente: 'System',
+      utente: this.getCurrentUserName(),
       azione: 'livello_added',
       descrizione: `Livello "${newLivello.nome}" aggiunto`
     });
@@ -303,7 +319,7 @@ export class MockProjectService {
       this.mockData.addChangeLog({
         progettoId: numericId,
         data: new Date(),
-        utente: 'System',
+        utente: this.getCurrentUserName(),
         azione: 'livello_updated',
         descrizione: `Livello aggiornato`
       });
@@ -329,7 +345,7 @@ export class MockProjectService {
       this.mockData.addChangeLog({
         progettoId: numericId,
         data: new Date(),
-        utente: 'System',
+        utente: this.getCurrentUserName(),
         azione: 'livello_deleted',
         descrizione: `Livello eliminato`
       });
@@ -372,7 +388,7 @@ export class MockProjectService {
     this.mockData.addChangeLog({
       progettoId: numericId,
       data: new Date(),
-      utente: 'System',
+      utente: this.getCurrentUserName(),
       azione: 'prodotto_added',
       descrizione: `Prodotto "${newProdotto.tipoProdotto}" aggiunto`
     });
@@ -396,7 +412,7 @@ export class MockProjectService {
       this.mockData.addChangeLog({
         progettoId: numericId,
         data: new Date(),
-        utente: 'System',
+        utente: this.getCurrentUserName(),
         azione: 'prodotto_updated',
         descrizione: `Prodotto aggiornato`
       });
@@ -422,7 +438,7 @@ export class MockProjectService {
       this.mockData.addChangeLog({
         progettoId: numericId,
         data: new Date(),
-        utente: 'System',
+        utente: this.getCurrentUserName(),
         azione: 'prodotto_deleted',
         descrizione: `Prodotto eliminato`
       });
