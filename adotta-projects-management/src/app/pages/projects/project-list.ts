@@ -70,6 +70,9 @@ export class ProjectList implements OnInit {
   clienti: Cliente[] = [];
   projectManagers: ProjectManager[] = [];
 
+  private projectService: ProjectService;
+  private lookupService: LookupService;
+
   constructor(
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
@@ -79,9 +82,6 @@ export class ProjectList implements OnInit {
     this.projectService = new MockProjectService() as any;
     this.lookupService = new MockLookupService() as any;
   }
-
-  private projectService: ProjectService;
-  private lookupService: LookupService;
 
   ngOnInit() {
     this.calculateTableHeight();

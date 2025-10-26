@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica } from '../models/project.model';
+import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, MessaggioProgetto, ChangeLog } from '../models/project.model';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +28,10 @@ export class ProjectService {
 
   updateProject(numeroProgetto: string, project: Project): Observable<Project> {
     return this.http.put<Project>(`${this.apiUrl}/${numeroProgetto}`, project);
+  }
+
+  patchProject(numeroProgetto: string, partial: Partial<Project>): Observable<Project> {
+    return this.http.patch<Project>(`${this.apiUrl}/${numeroProgetto}`, partial);
   }
 
   deleteProject(numeroProgetto: string): Observable<void> {
@@ -77,6 +81,31 @@ export class ProjectService {
     return this.http.post<StoricoModifica[]>(`${this.apiUrl}/${projectId}/wic-snapshot`, {});
   }
 
+  // Messaggi Progetto
+  getMessaggiProgetto(numeroProgetto: string): Observable<MessaggioProgetto[]> {
+    return this.http.get<MessaggioProgetto[]>(`${this.apiUrl}/${numeroProgetto}/messaggi`);
+  }
+
+  addMessaggioProgetto(messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
+    return this.http.post<MessaggioProgetto>(`${this.apiUrl}/${messaggio.progettoId}/messaggi`, messaggio);
+  }
+
+  updateMessaggioProgetto(id: number, messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
+    return this.http.put<MessaggioProgetto>(`${this.apiUrl}/${messaggio.progettoId}/messaggi/${id}`, messaggio);
+  }
+
+  deleteMessaggioProgetto(progettoId: number, messaggioId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${progettoId}/messaggi/${messaggioId}`);
+  }
+
+  // Change Log
+  getChangeLogProgetto(numeroProgetto: string): Observable<ChangeLog[]> {
+    return this.http.get<ChangeLog[]>(`${this.apiUrl}/${numeroProgetto}/changelog`);
+  }
+
+  addChangeLogProgetto(changeLog: ChangeLog): Observable<ChangeLog> {
+    return this.http.post<ChangeLog>(`${this.apiUrl}/${changeLog.progettoId}/changelog`, changeLog);
+  }
 
   // Ricerca e Filtri
   searchProjects(searchTerm: string): Observable<Project[]> {

@@ -16,6 +16,7 @@ export interface Project {
   versioneWIC?: string;
   ultimaModifica?: Date;
   statoProgetto: ProjectStatus;
+  note?: string;
 
   // Metodi dell'entità Progetto
   isInRitardo?: boolean; // Calcolato dal metodo IsInRitardo()
@@ -24,6 +25,8 @@ export interface Project {
   livelli?: LivelloProgetto[];
   prodotti?: ProdottoProgetto[];
   storico?: StoricoModifica[];
+  messaggi?: MessaggioProgetto[];
+  changeLog?: ChangeLog[];
 
   // Proprietà calcolate per le quantità totali dei prodotti
   quantitaTotaleMq?: number;
@@ -61,6 +64,28 @@ export interface StoricoModifica {
   campoModificato: string;
   valorePrecedente?: string;
   nuovoValore?: string;
+}
+
+export interface MessaggioProgetto {
+  // Messaggi per il progetto
+  id?: number;
+  progettoId: number;
+  data: Date;
+  utente: string;
+  messaggio: string;
+  tipo?: 'info' | 'warning' | 'error' | 'success';
+  allegato?: string;
+}
+
+export interface ChangeLog {
+  // Registro modifiche per il progetto
+  id?: number;
+  progettoId: number;
+  data: Date;
+  utente: string;
+  azione: string; // 'created', 'updated', 'deleted', 'status_changed', etc.
+  descrizione: string;
+  dettagli?: Record<string, any>;
 }
 
 // Enums per i nuovi stati del progetto (mantenuti per compatibilità con l'interfaccia esistente)
