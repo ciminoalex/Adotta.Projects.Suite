@@ -396,12 +396,14 @@
             <td>{{ livello.dataInizioInstallazione | date:'dd/MM/yyyy' }}</td>
             <td>{{ livello.dataFineInstallazione | date:'dd/MM/yyyy' }}</td>
             <td>
-              <p-button type="button" class="p-button p-button-text p-button-sm" (click)="editLevel(livello)">
-                <i class="pi pi-pencil"></i>
-              </p-button>
-              <p-button type="button" class="p-button p-button-text p-button-sm p-button-danger" (click)="deleteLevel(livello)">
-                <i class="pi pi-trash"></i>
-              </p-button>
+              <div class="flex gap-1">
+                <p-button [text]="true" size="small" (click)="editLevel(livello)">
+                  <i class="pi pi-pencil"></i>
+                </p-button>
+                <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteLevel(livello)">
+                  <i class="pi pi-trash"></i>
+                </p-button>
+              </div>
             </td>
           </tr>
         </ng-template>
@@ -450,12 +452,14 @@
             <td>{{ prodotto.qMq }}</td>
             <td>{{ prodotto.qFt }}</td>
             <td>
-              <p-button [text]="true" (click)="editProduct(prodotto)">
-                <i class="pi pi-pencil"></i>
-              </p-button>
-              <p-button [text]="true" [severity]="'danger'" (click)="deleteProduct(prodotto)">
-                <i class="pi pi-trash"></i>
-              </p-button>
+              <div class="flex gap-1">
+                <p-button [text]="true" size="small" (click)="editProduct(prodotto)">
+                  <i class="pi pi-pencil"></i>
+                </p-button>
+                <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteProduct(prodotto)">
+                  <i class="pi pi-trash"></i>
+                </p-button>
+              </div>
             </td>
           </tr>
         </ng-template>
@@ -550,7 +554,8 @@
           formControlName="tipoProdotto"
           placeholder="Seleziona tipo prodotto"
           optionLabel="nome"
-          [showClear]="true">
+          [showClear]="true"
+          [appendTo]="'body'">
         </p-select>
       </div>
       
