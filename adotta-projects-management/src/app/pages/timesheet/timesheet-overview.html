@@ -1,0 +1,170 @@
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 mb-4" *ngIf="summary">
+    <!-- Totale Ore Card -->
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
+      <div class="flex justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Totale Ore</span>
+          <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.totaleOre }}h</div>
+        </div>
+        <div class="flex items-center justify-center bg-linear-to-b from-blue-400 dark:from-blue-300 to-blue-600 dark:to-blue-500 rounded-lg w-10 h-10">
+          <i class="pi pi-clock text-surface-0 dark:text-surface-900 text-xl! leading-none!"></i>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">Totali rendicontate</span>
+      </div>
+    </div>
+
+    <!-- Rendicontazioni Card -->
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
+      <div class="flex justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Rendicontazioni</span>
+          <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.totaleRendicontazioni }}</div>
+        </div>
+        <div class="flex items-center justify-center bg-linear-to-b from-orange-400 dark:from-orange-300 to-orange-600 dark:to-orange-500 rounded-lg w-10 h-10">
+          <i class="pi pi-file text-surface-0 dark:text-surface-900 text-xl! leading-none!"></i>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">Timesheet totali</span>
+      </div>
+    </div>
+
+    <!-- Progetti Card -->
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
+      <div class="flex justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Progetti</span>
+          <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.progettiRendicontati }}</div>
+        </div>
+        <div class="flex items-center justify-center bg-linear-to-b from-green-400 dark:from-green-300 to-green-600 dark:to-green-500 rounded-lg w-10 h-10">
+          <i class="pi pi-briefcase text-surface-0 dark:text-surface-900 text-xl! leading-none!"></i>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">Con timesheet attivi</span>
+      </div>
+    </div>
+
+    <!-- Media Ore Card -->
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
+      <div class="flex justify-between gap-4">
+        <div class="flex flex-col gap-2">
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Media Ore/Progetto</span>
+          <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.mediaOrePerProgetto }}h</div>
+        </div>
+        <div class="flex items-center justify-center bg-linear-to-b from-purple-400 dark:from-purple-300 to-purple-600 dark:to-purple-500 rounded-lg w-10 h-10">
+          <i class="pi pi-chart-line text-surface-0 dark:text-surface-900 text-xl! leading-none!"></i>
+        </div>
+      </div>
+      <div class="mt-4">
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">Media per progetto</span>
+      </div>
+    </div>
+  </div>
+  <!-- Toolbar -->
+  <div class="card mb-4">
+    <div class="flex align-items-center gap-2">
+      <p-button label="Nuova Rendicontazione" icon="pi pi-plus" severity="primary" routerLink="/timesheet/new"></p-button>
+      
+      <div class="flex align-items-center gap-2 ml-auto">
+        <p-iconfield iconPosition="left" [style]="{'width': '200px'}">
+          <input pInputText 
+                 type="text" 
+                 placeholder="Cerca progetto, cliente..." 
+                 [(ngModel)]="globalFilter" 
+                 (input)="filterGlobal($event)" 
+                 class="w-full" />
+          <p-inputicon class="pi pi-search" />
+        </p-iconfield>
+        <p-datepicker 
+          [(ngModel)]="dateRange" 
+          selectionMode="range" 
+          [showIcon]="true"
+          placeholder="Filtra per data"
+          [showButtonBar]="true"
+          (onSelect)="applyDateFilter()"
+          [showClear]="true"
+          [style]="{'width': '200px'}"
+          inputStyleClass="w-full">
+        </p-datepicker>
+        <p-button label="Export" icon="pi pi-upload" severity="secondary" (click)="exportExcel()"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <p-table 
+      [value]="filteredTimesheets" 
+      [paginator]="true" 
+      [rows]="25"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} progetti"
+      [loading]="loading"
+      [scrollable]="true" 
+      [scrollHeight]="tableHeight"
+      [rowHover]="true"
+      [showGridlines]="false"
+      stripedRows
+      styleClass="p-datatable-sm text-sm">
+      
+      <ng-template #caption>
+        <div class="flex align-items-center justify-content-between">
+          <h5 class="m-0">Timesheet Overview</h5>
+        </div>
+      </ng-template>
+
+    <ng-template #header>
+      <tr>
+        <th style="width: 150px"># Progetto</th>
+        <th>Nome Progetto</th>
+        <th class="hidden md:table-cell">Cliente</th>
+        <th style="width: 120px">Totale Ore</th>
+        <th class="hidden lg:table-cell" style="width: 150px">Rendicontazioni</th>
+        <th class="hidden lg:table-cell" style="width: 180px">Ultima Rendicontazione</th>
+        <th style="width: 80px">Azioni</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td class="font-bold text-blue-500">{{ item.numeroProgetto }}</td>
+        <td>{{ item.nomeProgetto }}</td>
+        <td class="hidden md:table-cell">{{ item.cliente }}</td>
+        <td>
+          <p-tag [value]="item.totaleOre + 'h'" severity="info"></p-tag>
+        </td>
+        <td class="text-center hidden lg:table-cell">{{ item.numeroRendicontazioni }}</td>
+        <td class="hidden lg:table-cell">
+          {{ item.ultimaRendicontazione ? (item.ultimaRendicontazione | date:'dd/MM/yyyy') : '-' }}
+        </td>
+        <td>
+          <p-button 
+            icon="pi pi-eye" 
+            [text]="true" 
+            severity="secondary"
+            pTooltip="Visualizza dettagli"
+            [routerLink]="['/timesheet/project', item.numeroProgetto]">
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center p-4">
+          <div class="text-500">
+            <i class="pi pi-info-circle mr-2"></i>
+            Nessun timesheet trovato
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    </p-table>
+  </div>
+
+<p-toast></p-toast>

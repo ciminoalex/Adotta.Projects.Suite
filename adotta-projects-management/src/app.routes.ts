@@ -15,6 +15,7 @@ export const appRoutes: Routes = [
             { path: '', component: Dashboard },
             { path: 'projects', loadChildren: () => import('./app/pages/projects/projects.routes') },
             { path: 'lookup', loadChildren: () => import('./app/pages/lookup/lookup.routes') },
+            { path: 'timesheet', loadChildren: () => import('./app/pages/timesheet/timesheet.routes') },
             { path: 'reports', loadChildren: () => import('./app/pages/reports/reports.routes') },
             { path: 'system', loadChildren: () => import('./app/pages/system/system.routes') },
             { path: 'documentation', component: Documentation },

@@ -32,6 +32,13 @@ export class AppMenu {
                 ]
             },
             {
+                label: 'Timesheet',
+                items: [
+                    { label: 'Overview', icon: 'pi pi-fw pi-clock', routerLink: ['/timesheet'] },
+                    { label: 'Nuova Rendicontazione', icon: 'pi pi-fw pi-plus-circle', routerLink: ['/timesheet/new'] }
+                ]
+            },
+            {
                 label: 'Anagrafiche',
                 items: [
                     { label: 'Clienti', icon: 'pi pi-fw pi-users', routerLink: ['/lookup/clienti'] },
