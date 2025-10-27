@@ -873,9 +873,346 @@ Crea uno snapshot WIC del progetto (registra tutte le modifiche correnti).
 
 ---
 
-## 5. RICERCA E FILTRI API
+## 5. MESSAGGI E CHANGE LOG API
 
-### 5.1 Search Projects
+### 5.1 Messaggi Progetto
+
+#### 5.1.1 Get Messaggi Progetto
+
+Recupera tutti i messaggi associati a un progetto.
+
+**Endpoint:** `GET /api/projects/{numeroProgetto}/messaggi`
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "progettoId": 1,
+    "data": "2024-01-20T14:30:00",
+    "utente": "Mario Rossi",
+    "messaggio": "Installazione completata con successo",
+    "tipo": "success",
+    "allegato": null
+  }
+]
+```
+
+**Tipi messaggio:**
+- `info`: Informazione generica
+- `success`: Operazione completata con successo
+- `warning`: Avviso
+- `error`: Errore
+
+#### 5.1.2 Create Messaggio Progetto
+
+Aggiunge un nuovo messaggio al progetto.
+
+**Endpoint:** `POST /api/projects/{projectId}/messaggi`
+
+**Parameters:**
+- `projectId` (int, required)
+
+**Request Body:**
+```json
+{
+  "progettoId": 1,
+  "data": "2024-01-20T14:30:00",
+  "utente": "Mario Rossi",
+  "messaggio": "Installazione completata con successo",
+  "tipo": "success",
+  "allegato": null
+}
+```
+
+**Response:** `201 Created`
+
+#### 5.1.3 Update Messaggio Progetto
+
+Aggiorna un messaggio esistente.
+
+**Endpoint:** `PUT /api/projects/{projectId}/messaggi/{messaggioId}`
+
+**Parameters:**
+- `projectId` (int, required)
+- `messaggioId` (int, required)
+
+**Response:** `200 OK`
+
+#### 5.1.4 Delete Messaggio Progetto
+
+Elimina un messaggio dal progetto.
+
+**Endpoint:** `DELETE /api/projects/{projectId}/messaggi/{messaggioId}`
+
+**Parameters:**
+- `projectId` (int, required)
+- `messaggioId` (int, required)
+
+**Response:** `204 No Content`
+
+---
+
+### 5.2 Change Log Progetto
+
+#### 5.2.1 Get Change Log Progetto
+
+Recupera il log completo delle modifiche di un progetto.
+
+**Endpoint:** `GET /api/projects/{numeroProgetto}/changelog`
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "progettoId": 1,
+    "data": "2024-01-20T14:30:00",
+    "utente": "Mario Rossi",
+    "azione": "updated",
+    "descrizione": "Stato Progetto: \"ON_GOING\" → \"CRITICAL\"",
+    "dettagli": {
+      "campo": "Stato Progetto",
+      "vecchioValore": "ON_GOING",
+      "nuovoValore": "CRITICAL"
+    }
+  }
+]
+```
+
+**Azioni possibili:**
+- `created`: Progetto creato
+- `updated`: Progetto aggiornato
+- `deleted`: Progetto eliminato
+- `status_changed`: Stato progetto modificato
+- `message_added`: Messaggio aggiunto
+- `level_added`: Livello aggiunto
+- `product_added`: Prodotto aggiunto
+
+#### 5.2.2 Create Change Log Entry
+
+Crea una nuova voce nel change log (normalmente gestito automaticamente).
+
+**Endpoint:** `POST /api/projects/{projectId}/changelog`
+
+**Request Body:**
+```json
+{
+  "progettoId": 1,
+  "data": "2024-01-20T14:30:00",
+  "utente": "Mario Rossi",
+  "azione": "updated",
+  "descrizione": "Modifica campo specifico",
+  "dettagli": {
+    "campo": "Nome Progetto",
+    "vecchioValore": "Vecchio Nome",
+    "nuovoValore": "Nuovo Nome"
+  }
+}
+```
+
+**Response:** `201 Created`
+
+**Note:** Il change log viene generalmente popolato automaticamente dal sistema quando si verificano modifiche ai progetti.
+
+---
+
+## 6. TIMESHEET API
+
+Il sistema Timesheet permette di registrare le ore lavorate sui progetti per la rendicontazione.
+
+### 6.1 Get All Timesheet Entries
+
+Recupera tutte le rendicontazioni di ore lavorate.
+
+**Endpoint:** `GET /api/timesheet`
+
+**Response:** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "progettoId": "PRJ-2024-001",
+    "numeroProgetto": "PRJ-2024-001",
+    "nomeProgetto": "Installazione HVAC Uffici Milano",
+    "cliente": "TechCorp Italia",
+    "dataRendicontazione": "2024-01-20T00:00:00",
+    "oreLavorate": 8.0,
+    "note": "Installazione impianti primo piano",
+    "utente": "Mario Rossi",
+    "dataCreazione": "2024-01-20T08:00:00",
+    "ultimaModifica": "2024-01-20T08:00:00"
+  }
+]
+```
+
+---
+
+### 6.2 Get Timesheet Entry by ID
+
+Recupera una singola rendicontazione.
+
+**Endpoint:** `GET /api/timesheet/{id}`
+
+**Parameters:**
+- `id` (int, required): ID della rendicontazione
+
+**Response:** `200 OK`
+
+---
+
+### 6.3 Create Timesheet Entry
+
+Crea una nuova rendicontazione di ore lavorate.
+
+**Endpoint:** `POST /api/timesheet`
+
+**Request Body:**
+```json
+{
+  "progettoId": "PRJ-2024-001",
+  "dataRendicontazione": "2024-01-20T00:00:00",
+  "oreLavorate": 8.0,
+  "note": "Installazione impianti primo piano",
+  "utente": "Mario Rossi"
+}
+```
+
+**Validation Rules:**
+- `progettoId`: Required
+- `dataRendicontazione`: Required, date format
+- `oreLavorate`: Required, >= 0
+- `utente`: Required
+
+**Response:** `201 Created`
+
+---
+
+### 6.4 Update Timesheet Entry
+
+Aggiorna una rendicontazione esistente.
+
+**Endpoint:** `PUT /api/timesheet/{id}`
+
+**Parameters:**
+- `id` (int, required)
+
+**Request Body:** Same as Create
+
+**Response:** `200 OK`
+
+---
+
+### 6.5 Delete Timesheet Entry
+
+Elimina una rendicontazione.
+
+**Endpoint:** `DELETE /api/timesheet/{id}`
+
+**Parameters:**
+- `id` (int, required)
+
+**Response:** `204 No Content`
+
+---
+
+### 6.6 Get Timesheet by Project
+
+Recupera tutte le rendicontazioni per un progetto specifico.
+
+**Endpoint:** `GET /api/timesheet/project/{numeroProgetto}`
+
+**Parameters:**
+- `numeroProgetto` (string, required)
+
+**Response:** `200 OK`
+
+Array di rendicontazioni filtrate per progetto.
+
+---
+
+### 6.7 Get Timesheet Overview
+
+Recupera una panoramica delle rendicontazioni con statistiche.
+
+**Endpoint:** `GET /api/timesheet/overview`
+
+**Query Parameters:**
+- `fromDate` (date, optional): Data inizio filtro
+- `toDate` (date, optional): Data fine filtro
+- `utente` (string, optional): Filtro per utente
+
+**Response:** `200 OK`
+
+```json
+{
+  "timesheets": [
+    {
+      "numeroProgetto": "PRJ-2024-001",
+      "nomeProgetto": "Installazione HVAC Uffici Milano",
+      "cliente": "TechCorp Italia",
+      "totaleOre": 40.0,
+      "numeroRendicontazioni": 5,
+      "ultimaRendicontazione": "2024-01-24T00:00:00",
+      "rendicontazioni": [...]
+    }
+  ],
+  "summary": {
+    "totaleOre": 120.0,
+    "totaleRendicontazioni": 15,
+    "progettiRendicontati": 8,
+    "mediaOrePerProgetto": 15.0
+  }
+}
+```
+
+---
+
+### 6.8 Get Timesheet Summary
+
+Recupera statistiche riassuntive delle rendicontazioni.
+
+**Endpoint:** `GET /api/timesheet/summary`
+
+**Query Parameters:**
+- `fromDate` (date, optional)
+- `toDate` (date, optional)
+- `utente` (string, optional)
+
+**Response:** `200 OK`
+
+```json
+{
+  "totaleOre": 120.0,
+  "totaleRendicontazioni": 15,
+  "progettiRendicontati": 8,
+  "mediaOrePerProgetto": 15.0
+}
+```
+
+---
+
+### 6.9 Get Timesheet by User
+
+Recupera tutte le rendicontazioni di un utente specifico.
+
+**Endpoint:** `GET /api/timesheet/user/{utente}`
+
+**Parameters:**
+- `utente` (string, required): Nome utente
+
+**Response:** `200 OK`
+
+Array di rendicontazioni filtrate per utente.
+
+---
+
+## 7. RICERCA E FILTRI API
+
+### 7.1 Search Projects
 
 Cerca progetti per termine di ricerca.
 
@@ -890,7 +1227,7 @@ Restituisce l'elenco dei progetti che matchano il termine di ricerca (nome proge
 
 ---
 
-### 5.2 Filter Projects
+### 7.2 Filter Projects
 
 Filtra progetti per parametri multipli.
 
@@ -912,9 +1249,9 @@ Array di progetti che soddisfano i criteri di filtro.
 
 ---
 
-## 6. STATISTICHE E KPI API
+## 8. STATISTICHE E KPI API
 
-### 6.1 Get Project Stats
+### 8.1 Get Project Stats
 
 Recupera statistiche generali sui progetti.
 
@@ -933,7 +1270,7 @@ Recupera statistiche generali sui progetti.
 
 ---
 
-### 6.2 Get Projects by Status
+### 8.2 Get Projects by Status
 
 Recupera la distribuzione dei progetti per stato.
 
@@ -960,7 +1297,7 @@ Recupera la distribuzione dei progetti per stato.
 
 ---
 
-### 6.3 Get Projects by Month
+### 8.3 Get Projects by Month
 
 Recupera la distribuzione dei progetti per mese.
 
@@ -987,9 +1324,9 @@ Recupera la distribuzione dei progetti per mese.
 
 ---
 
-## 7. EXPORT API
+## 9. EXPORT API
 
-### 7.1 Export Projects
+### 9.1 Export Projects
 
 Esporta i progetti in vari formati.
 
@@ -1019,15 +1356,15 @@ Esporta i progetti in vari formati.
 
 ---
 
-## 8. LOOKUP API
+## 10. LOOKUP API
 
-### 8.1 Clienti (Clients)
+### 10.1 Clienti (Clients)
 
 > **⚠️ IMPORTANTE**: I clienti sono mappati direttamente ai **Business Partner** standard di SAP Business One. 
 > Il backend .NET deve recuperare i dati dalla tabella `OCRD` (Business Partners) di SAP, filtrare per tipo "C" (Customer),
 > e restituire i dati in formato compatibile con l'interfaccia Angular.
 
-#### 8.1.1 Get All Clienti
+#### 10.1.1 Get All Clienti
 
 **Endpoint:** `GET /api/lookup/clienti`
 
@@ -1076,13 +1413,13 @@ Esporta i progetti in vari formati.
 - `Notes` → `note`
 - `BPAddresses[0]` → `addresses[0]`, `indirizzoCompleto`
 
-#### 8.1.2 Get Cliente by ID
+#### 10.1.2 Get Cliente by ID
 
 **Endpoint:** `GET /api/lookup/clienti/{id}`
 
 **Response:** `200 OK`
 
-#### 8.1.3 Create Cliente
+#### 10.1.3 Create Cliente
 
 **Endpoint:** `POST /api/lookup/clienti`
 
@@ -1103,23 +1440,23 @@ Esporta i progetti in vari formati.
 **Validation Rules:**
 - `nome`: Required, max 200 chars
 
-#### 8.1.4 Update Cliente
+#### 10.1.4 Update Cliente
 
 **Endpoint:** `PUT /api/lookup/clienti/{id}`
 
-#### 8.1.5 Delete Cliente
+#### 10.1.5 Delete Cliente
 
 **Endpoint:** `DELETE /api/lookup/clienti/{id}`
 
-#### 8.1.6 Search Cliente
+#### 10.1.6 Search Cliente
 
 **Endpoint:** `GET /api/lookup/clienti/search?q={searchTerm}`
 
 ---
 
-### 8.2 Stati (States)
+### 10.2 Stati (States)
 
-#### 8.2.1 Get All Stati
+#### 10.2.1 Get All Stati
 
 **Endpoint:** `GET /api/lookup/stati`
 
@@ -1136,15 +1473,15 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.2.2 Get Stato by ID
+#### 10.2.2 Get Stato by ID
 
 **Endpoint:** `GET /api/lookup/stati/{id}`
 
 ---
 
-### 8.3 Città (Cities)
+### 10.3 Città (Cities)
 
-#### 8.3.1 Get All Città
+#### 10.3.1 Get All Città
 
 **Endpoint:** `GET /api/lookup/citta`
 
@@ -1163,19 +1500,19 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.3.2 Get Città by Stato
+#### 10.3.2 Get Città by Stato
 
 **Endpoint:** `GET /api/lookup/citta?statoId={statoId}`
 
-#### 8.3.3 Get Città by ID
+#### 10.3.3 Get Città by ID
 
 **Endpoint:** `GET /api/lookup/citta/{id}`
 
 ---
 
-### 8.4 Team Tecnici
+### 10.4 Team Tecnici
 
-#### 8.4.1 Get All Team Tecnici
+#### 10.4.1 Get All Team Tecnici
 
 **Endpoint:** `GET /api/lookup/team-tecnici`
 
@@ -1195,27 +1532,27 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.4.2 Get Team Tecnico by ID
+#### 10.4.2 Get Team Tecnico by ID
 
 **Endpoint:** `GET /api/lookup/team-tecnici/{id}`
 
-#### 8.4.3 Create Team Tecnico
+#### 10.4.3 Create Team Tecnico
 
 **Endpoint:** `POST /api/lookup/team-tecnici`
 
-#### 8.4.4 Update Team Tecnico
+#### 10.4.4 Update Team Tecnico
 
 **Endpoint:** `PUT /api/lookup/team-tecnici/{id}`
 
-#### 8.4.5 Delete Team Tecnico
+#### 10.4.5 Delete Team Tecnico
 
 **Endpoint:** `DELETE /api/lookup/team-tecnici/{id}`
 
 ---
 
-### 8.5 Team APL
+### 10.5 Team APL
 
-#### 8.5.1 Get All Team APL
+#### 10.5.1 Get All Team APL
 
 **Endpoint:** `GET /api/lookup/team-apl`
 
@@ -1234,27 +1571,27 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.5.2 Get Team APL by ID
+#### 10.5.2 Get Team APL by ID
 
 **Endpoint:** `GET /api/lookup/team-apl/{id}`
 
-#### 8.5.3 Create Team APL
+#### 10.5.3 Create Team APL
 
 **Endpoint:** `POST /api/lookup/team-apl`
 
-#### 8.5.4 Update Team APL
+#### 10.5.4 Update Team APL
 
 **Endpoint:** `PUT /api/lookup/team-apl/{id}`
 
-#### 8.5.5 Delete Team APL
+#### 10.5.5 Delete Team APL
 
 **Endpoint:** `DELETE /api/lookup/team-apl/{id}`
 
 ---
 
-### 8.6 Sales
+### 10.6 Sales
 
-#### 8.6.1 Get All Sales
+#### 10.6.1 Get All Sales
 
 **Endpoint:** `GET /api/lookup/sales`
 
@@ -1274,27 +1611,27 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.6.2 Get Sales by ID
+#### 10.6.2 Get Sales by ID
 
 **Endpoint:** `GET /api/lookup/sales/{id}`
 
-#### 8.6.3 Create Sales
+#### 10.6.3 Create Sales
 
 **Endpoint:** `POST /api/lookup/sales`
 
-#### 8.6.4 Update Sales
+#### 10.6.4 Update Sales
 
 **Endpoint:** `PUT /api/lookup/sales/{id}`
 
-#### 8.6.5 Delete Sales
+#### 10.6.5 Delete Sales
 
 **Endpoint:** `DELETE /api/lookup/sales/{id}`
 
 ---
 
-### 8.7 Project Managers
+### 10.7 Project Managers
 
-#### 8.7.1 Get All Project Managers
+#### 10.7.1 Get All Project Managers
 
 **Endpoint:** `GET /api/lookup/project-managers`
 
@@ -1314,27 +1651,27 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.7.2 Get Project Manager by ID
+#### 10.7.2 Get Project Manager by ID
 
 **Endpoint:** `GET /api/lookup/project-managers/{id}`
 
-#### 8.7.3 Create Project Manager
+#### 10.7.3 Create Project Manager
 
 **Endpoint:** `POST /api/lookup/project-managers`
 
-#### 8.7.4 Update Project Manager
+#### 10.7.4 Update Project Manager
 
 **Endpoint:** `PUT /api/lookup/project-managers/{id}`
 
-#### 8.7.5 Delete Project Manager
+#### 10.7.5 Delete Project Manager
 
 **Endpoint:** `DELETE /api/lookup/project-managers/{id}`
 
 ---
 
-### 8.8 Squadre Installazione
+### 10.8 Squadre Installazione
 
-#### 8.8.1 Get All Squadre Installazione
+#### 10.8.1 Get All Squadre Installazione
 
 **Endpoint:** `GET /api/lookup/squadre-installazione`
 
@@ -1354,27 +1691,27 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.8.2 Get Squadra Installazione by ID
+#### 10.8.2 Get Squadra Installazione by ID
 
 **Endpoint:** `GET /api/lookup/squadre-installazione/{id}`
 
-#### 8.8.3 Create Squadra Installazione
+#### 10.8.3 Create Squadra Installazione
 
 **Endpoint:** `POST /api/lookup/squadre-installazione`
 
-#### 8.8.4 Update Squadra Installazione
+#### 10.8.4 Update Squadra Installazione
 
 **Endpoint:** `PUT /api/lookup/squadre-installazione/{id}`
 
-#### 8.8.5 Delete Squadra Installazione
+#### 10.8.5 Delete Squadra Installazione
 
 **Endpoint:** `DELETE /api/lookup/squadre-installazione/{id}`
 
 ---
 
-### 8.9 Prodotti Master
+### 10.9 Prodotti Master
 
-#### 8.9.1 Get All Prodotti Master
+#### 10.9.1 Get All Prodotti Master
 
 **Endpoint:** `GET /api/lookup/prodotti-master`
 
@@ -1394,34 +1731,34 @@ Esporta i progetti in vari formati.
 ]
 ```
 
-#### 8.9.2 Get Prodotti Master by Categoria
+#### 10.9.2 Get Prodotti Master by Categoria
 
 **Endpoint:** `GET /api/lookup/prodotti-master?categoria={categoria}`
 
 **Parameters:**
 - `categoria`: Metafora / Wallen / Armonica
 
-#### 8.9.3 Get Prodotto Master by ID
+#### 10.9.3 Get Prodotto Master by ID
 
 **Endpoint:** `GET /api/lookup/prodotti-master/{id}`
 
-#### 8.9.4 Create Prodotto Master
+#### 10.9.4 Create Prodotto Master
 
 **Endpoint:** `POST /api/lookup/prodotti-master`
 
-#### 8.9.5 Update Prodotto Master
+#### 10.9.5 Update Prodotto Master
 
 **Endpoint:** `PUT /api/lookup/prodotti-master/{id}`
 
-#### 8.9.6 Delete Prodotto Master
+#### 10.9.6 Delete Prodotto Master
 
 **Endpoint:** `DELETE /api/lookup/prodotti-master/{id}`
 
 ---
 
-## 9. Modelli Dati C# .NET
+## 11. Modelli Dati C# .NET
 
-### 9.1 Project Model
+### 11.1 Project Model
 
 ```csharp
 public class Project
@@ -1467,7 +1804,7 @@ public enum ProjectStatus
 }
 ```
 
-### 9.2 LivelloProgetto Model
+### 11.2 LivelloProgetto Model
 
 ```csharp
 public class LivelloProgetto
@@ -1486,7 +1823,7 @@ public class LivelloProgetto
 }
 ```
 
-### 9.3 ProdottoProgetto Model
+### 11.3 ProdottoProgetto Model
 
 ```csharp
 public class ProdottoProgetto
@@ -1503,7 +1840,7 @@ public class ProdottoProgetto
 }
 ```
 
-### 9.4 StoricoModifica Model
+### 11.4 StoricoModifica Model
 
 ```csharp
 public class StoricoModifica
@@ -1521,7 +1858,62 @@ public class StoricoModifica
 }
 ```
 
-### 9.5 Lookup Models
+### 11.5 MessaggioProgetto Model
+
+```csharp
+public class MessaggioProgetto
+{
+    public int Id { get; set; }
+    public int ProgettoId { get; set; }
+    public DateTime Data { get; set; }
+    public string Utente { get; set; }
+    public string Messaggio { get; set; }
+    public string? Tipo { get; set; } // 'info', 'success', 'warning', 'error'
+    public string? Allegato { get; set; }
+    
+    // Navigation property
+    public Project? Progetto { get; set; }
+}
+```
+
+### 11.6 ChangeLog Model
+
+```csharp
+public class ChangeLog
+{
+    public int Id { get; set; }
+    public int ProgettoId { get; set; }
+    public DateTime Data { get; set; }
+    public string Utente { get; set; }
+    public string Azione { get; set; } // 'created', 'updated', 'deleted', etc.
+    public string Descrizione { get; set; }
+    public Dictionary<string, object>? Dettagli { get; set; }
+    
+    // Navigation property
+    public Project? Progetto { get; set; }
+}
+```
+
+### 11.7 TimesheetEntry Model
+
+```csharp
+public class TimesheetEntry
+{
+    public int Id { get; set; }
+    public string ProgettoId { get; set; }
+    public string NumeroProgetto { get; set; }
+    public string NomeProgetto { get; set; }
+    public string Cliente { get; set; }
+    public DateTime DataRendicontazione { get; set; }
+    public double OreLavorate { get; set; }
+    public string Note { get; set; }
+    public string Utente { get; set; }
+    public DateTime? DataCreazione { get; set; }
+    public DateTime? UltimaModifica { get; set; }
+}
+```
+
+### 11.8 Lookup Models
 
 ```csharp
 public class Cliente
@@ -1625,9 +2017,9 @@ public class ProdottoMaster
 
 ---
 
-## 10. Note Implementative
+## 12. Note Implementative
 
-### 10.1 Paginazione
+### 12.1 Paginazione
 
 Per endpoint che restituiscono liste (es. GET /api/projects), considerare l'aggiunta di paginazione:
 
@@ -1635,7 +2027,7 @@ Per endpoint che restituiscono liste (es. GET /api/projects), considerare l'aggi
 GET /api/projects?page=1&pageSize=50
 ```
 
-### 10.2 Filtri e Sorting
+### 12.2 Filtri e Sorting
 
 Estendere l'endpoint GET /api/projects con filtri e ordinamento:
 
@@ -1643,7 +2035,7 @@ Estendere l'endpoint GET /api/projects con filtri e ordinamento:
 GET /api/projects?status=ON_GOING&sortBy=dataCreazione&sortDirection=desc
 ```
 
-### 10.3 CORS Configuration
+### 12.3 CORS Configuration
 
 Assicurarsi che il backend configuri CORS per permettere richieste dalla WebApp Angular:
 
@@ -1660,7 +2052,7 @@ services.AddCors(options =>
 });
 ```
 
-#### Middleware per Propagazione SessionId SAP
+#### 12.3.1 Middleware per Propagazione SessionId SAP
 
 ```csharp
 public class SAPSessionMiddleware
@@ -1691,7 +2083,7 @@ public class SAPSessionMiddleware
 app.UseMiddleware<SAPSessionMiddleware>();
 ```
 
-### 10.4 Validation
+### 12.4 Validation
 
 Implementare validation usando Data Annotations o FluentValidation:
 
@@ -1708,7 +2100,7 @@ public class ProjectValidator : AbstractValidator<Project>
 }
 ```
 
-### 10.5 Database Schema
+### 12.5 Database Schema
 
 > **⚠️ IMPORTANTE**: Il database utilizzato è **SAP Business One**. Non viene creato un database separato.
 > Tutte le tabelle sono User Defined Tables/Objects nel database SAP.
@@ -1743,7 +2135,7 @@ public class ProjectValidator : AbstractValidator<Project>
 
 **Nota**: Non utilizzare database esterni. Tutti i dati risiedono nel database SAP Business One.
 
-### 10.6 Error Handling
+### 12.6 Error Handling
 
 Implementare un gestore centralizzato degli errori:
 
@@ -1766,23 +2158,23 @@ public class GlobalExceptionMiddleware
 
 ---
 
-## 11. Test Cases
+## 13. Test Cases
 
-### 11.1 Unit Tests
+### 13.1 Unit Tests
 
 Testare:
 - Logica di business
 - Validation rules
 - Calculation logic (es. isInRitardo)
 
-### 11.2 Integration Tests
+### 13.2 Integration Tests
 
 Testare:
 - CRUD operations
 - Relationship management
 - Search and filter functionality
 
-### 11.3 End-to-End Tests
+### 13.3 End-to-End Tests
 
 Testare:
 - Complete workflow from create to delete
@@ -1791,9 +2183,9 @@ Testare:
 
 ---
 
-## 12. Deployment
+## 14. Deployment
 
-### 12.1 Environment Variables
+### 14.1 Environment Variables
 
 ```
 ConnectionString=Server=localhost;Database=AdottaProjects;...
@@ -1801,7 +2193,7 @@ EnableSwagger=true
 LogLevel=Information
 ```
 
-### 12.2 Build and Publish
+### 14.2 Build and Publish
 
 ```bash
 dotnet build
@@ -1810,7 +2202,7 @@ dotnet publish -c Release -o ./publish
 
 ---
 
-## 13. Security Considerations
+## 15. Security Considerations
 
 1. **Autenticazione SAP Business One**: Utilizzare SessionId del Service Layer
    - Gestire timeout di sessione (default 30 minuti)
@@ -1848,9 +2240,9 @@ dotnet publish -c Release -o ./publish
 
 ---
 
-## 14. Deployment e Configurazione
+## 16. Deployment e Configurazione
 
-### 14.1 SAP Business One Setup
+### 16.1 SAP Business One Setup
 
 Prima di utilizzare l'API, configurare in SAP Business One:
 
@@ -1888,9 +2280,9 @@ Prima di utilizzare l'API, configurare in SAP Business One:
    - Configurare utenze e permessi
    ```
 
-### 14.2 Configurazione API .NET
+### 16.2 Configurazione API .NET
 
-#### appsettings.json Production
+#### 16.2.1 appsettings.json Production
 
 ```json
 {
@@ -1918,7 +2310,7 @@ Prima di utilizzare l'API, configurare in SAP Business One:
 }
 ```
 
-### 14.3 Environment Variables
+### 16.3 Environment Variables
 
 ```bash
 # Development
@@ -1934,7 +2326,7 @@ SAP_USERNAME=<Azure Key Vault Secret>
 SAP_PASSWORD=<Azure Key Vault Secret>
 ```
 
-### 14.4 Build and Publish
+### 16.4 Build and Publish
 
 ```bash
 # Build
@@ -1950,7 +2342,76 @@ docker run -p 5000:5000 adotta-api
 
 ---
 
-## Changelog
+## 17. Implementazione Attuale
+
+### 17.1 Stato Implementazione
+
+Il sistema è attualmente in fase di sviluppo con le seguenti funzionalità implementate:
+
+#### Frontend (Angular)
+- ✅ **Gestione Progetti**: CRUD completo per progetti
+- ✅ **Messaggi Progetto**: Sistema di messaggistica per progetti
+- ✅ **Change Log**: Tracciamento automatico modifiche
+- ✅ **Timesheet**: Sistema di rendicontazione ore lavorate
+- ✅ **Lookup Tables**: Gestione tabelle di supporto
+- ✅ **Autenticazione**: Sistema session-based con localStorage
+- ✅ **Dashboard**: Dashboard principale con statistiche progetti
+
+#### Servizi Mock
+- ✅ Mock Project Service
+- ✅ Mock Lookup Service
+- ✅ Mock Timesheet Service
+- ✅ Mock Auth Service
+- ✅ Mock Data Service (gestione dati in-memory)
+
+#### API Endpoints (Preparati per Backend .NET)
+- ✅ Interfacce complete per tutte le API
+- ✅ Modelli TypeScript/Interfaces definiti
+- ✅ Servizi Angular con HttpClient configurati
+
+### 17.2 Architettura Autenticazione Attuale
+
+Il sistema utilizza attualmente un'autenticazione basata su **session token** memorizzato nel localStorage:
+
+```typescript
+// Session Structure
+interface Session {
+  token: string;
+  user: User;
+  expiresAt: Date;
+}
+```
+
+**Flusso Autenticazione:**
+1. Frontend riceve credenziali utente
+2. AuthService valida credenziali
+3. Crea session token
+4. Salva session nel localStorage
+5. Include token in tutte le richieste successive (via HTTP interceptor)
+
+**Prossimi Sviluppi:**
+- Integrazione con SAP Business One Service Layer
+- Sostituzione session token con SAP SessionId
+- Propagazione SessionId in tutte le chiamate API
+
+### 17.3 Modelli Dati Implementati
+
+Tutti i modelli sono stati implementati in TypeScript:
+- `Project` con relazioni a Livelli, Prodotti, Storico, Messaggi, ChangeLog
+- `LivelloProgetto`, `ProdottoProgetto`, `StoricoModifica`
+- `MessaggioProgetto`, `ChangeLog`
+- `TimesheetEntry` con statistiche
+- Tutte le lookup models (Cliente, Stato, Città, Team, etc.)
+
+---
+
+## 18. Changelog
+
+- **v1.2** (2024-12): Implementate funzionalità Messaggi, Change Log e Timesheet
+  - Aggiunto sistema messaggistica progetti
+  - Implementato change log automatico
+  - Creato sistema timesheet per rendicontazione ore
+  - Aggiornati modelli dati e API specification
 
 - **v1.1** (2024-01-20): Aggiunta integrazione SAP Business One Service Layer
   - Implementata autenticazione via SessionId SAP
