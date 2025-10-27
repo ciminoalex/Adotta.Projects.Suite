@@ -58,6 +58,9 @@ import { ProjectManager } from '../../models/lookup.model';
         [value]="projectManagers" 
         [paginator]="true" 
         [rows]="25"
+        [rowHover]="true"
+        [showGridlines]="false"
+        stripedRows
         [showCurrentPageReport]="true"
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} project managers"
         [globalFilterFields]="['nome','email','specializzazione']"

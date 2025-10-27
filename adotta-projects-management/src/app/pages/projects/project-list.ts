@@ -13,13 +13,17 @@ import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
 import { MockLookupService } from '../../services/mock/mock-lookup.service';
 import { Project, ProjectStatus } from '../../models/project.model';
 import { Cliente, ProjectManager } from '../../models/lookup.model';
+
 interface Column {
   field: string;
   header: string;
@@ -42,7 +46,10 @@ interface Column {
     TagModule,
     ToolbarModule,
     ConfirmDialogModule,
-    ToastModule
+    ToastModule,
+    DialogModule,
+    TooltipModule,
+    DragDropModule
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './project-list.html'
@@ -55,6 +62,7 @@ export class ProjectList implements OnInit {
   tableHeight = '500px';
   cols!: Column[];
   selectedColumns!: Column[];
+  showColumnOrderDialog = false;
 
 
   // Opzioni per i dropdown
@@ -100,7 +108,9 @@ export class ProjectList implements OnInit {
       { field: 'projectManager', header: 'PM' },
       { field: 'teamInstallazione', header: 'Install. Team' },
       { field: 'dataInizioInstallazione', header: 'Start Install.' },
-      { field: 'dataFineInstallazione', header: 'End Install.' }
+      { field: 'dataFineInstallazione', header: 'End Install.' },
+      { field: 'quantitaTotaleMq', header: 'Total Mq' },
+      { field: 'quantitaTotaleFt', header: 'Total Ft' }
     ];
 
     // Carica la selezione delle colonne salvata o usa tutte le colonne come default
@@ -206,23 +216,85 @@ export class ProjectList implements OnInit {
     });
   }
 
-  exportData() {
-    this.projectService.exportProjects('excel').subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `progetti_${new Date().toISOString().split('T')[0]}.xlsx`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Errore',
-          detail: 'Errore nell\'export dei dati'
-        });
+  exportExcel() {
+    if (!this.filteredProjects || this.filteredProjects.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attenzione',
+        detail: 'Nessun dato da esportare'
+      });
+      return;
+    }
+
+    // Funzione per formattare i valori CSV (gestisce virgole e virgolette)
+    const formatCsvValue = (value: any): string => {
+      if (value === null || value === undefined) {
+        return '';
       }
+      const stringValue = String(value);
+      // Se il valore contiene virgole, virgolette o ritorni a capo, va quotato
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    };
+
+    // Prepara l'header CSV
+    const headers = ['#', ...this.selectedColumns.map(col => col.header)];
+    const csvContent: string[] = [headers.map(formatCsvValue).join(',')];
+
+    // Prepara i dati
+    this.filteredProjects.forEach(project => {
+      const row: string[] = [
+        formatCsvValue(project.numeroProgetto || ''),
+        ...this.selectedColumns.map(col => {
+          const value = project[col.field as keyof Project];
+          
+          // Gestisci le date
+          if (col.field === 'dataInizioInstallazione' || col.field === 'dataFineInstallazione') {
+            if (value && typeof value === 'string') {
+              try {
+                const date = new Date(value);
+                return formatCsvValue(date.toLocaleDateString('it-IT'));
+              } catch {
+                return '';
+              }
+            }
+            return '';
+          }
+          
+          // Gestisci le quantità totali calcolate
+          if (col.field === 'quantitaTotaleMq') {
+            return formatCsvValue(this.getTotalMq(project).toString());
+          }
+          
+          if (col.field === 'quantitaTotaleFt') {
+            return formatCsvValue(this.getTotalFt(project).toString());
+          }
+          
+          // Gestisci valori null/undefined
+          return value ? formatCsvValue(value) : '';
+        })
+      ];
+      csvContent.push(row.join(','));
+    });
+
+    // Crea il file CSV con BOM UTF-8 per Excel
+    const csv = csvContent.join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `progetti_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Successo',
+      detail: 'Export completato'
     });
   }
 
@@ -264,6 +336,26 @@ export class ProjectList implements OnInit {
   }
 
   /**
+   * Calcola la quantità totale Mq dai prodotti del progetto
+   */
+  getTotalMq(project: Project): number {
+    if (!project.prodotti || project.prodotti.length === 0) {
+      return 0;
+    }
+    return project.prodotti.reduce((sum, prodotto) => sum + (prodotto.qMq || 0), 0);
+  }
+
+  /**
+   * Calcola la quantità totale Ft dai prodotti del progetto
+   */
+  getTotalFt(project: Project): number {
+    if (!project.prodotti || project.prodotti.length === 0) {
+      return 0;
+    }
+    return project.prodotti.reduce((sum, prodotto) => sum + (prodotto.qFt || 0), 0);
+  }
+
+  /**
    * Carica la selezione delle colonne salvata dal localStorage
    */
   private loadSelectedColumns(): void {
@@ -278,15 +370,17 @@ export class ProjectList implements OnInit {
         
         if (validColumns.length > 0) {
           this.selectedColumns = validColumns;
+          // Applica l'ordine salvato
+          this.applyColumnOrder();
         } else {
-          this.selectedColumns = this.cols;
+          this.selectedColumns = [...this.cols];
         }
       } else {
-        this.selectedColumns = this.cols;
+        this.selectedColumns = [...this.cols];
       }
     } catch (error) {
       console.warn('Errore nel caricamento delle colonne salvate:', error);
-      this.selectedColumns = this.cols;
+      this.selectedColumns = [...this.cols];
     }
   }
 
@@ -296,6 +390,8 @@ export class ProjectList implements OnInit {
   private saveSelectedColumns(): void {
     try {
       localStorage.setItem('project-list-selected-columns', JSON.stringify(this.selectedColumns));
+      // Salva anche l'ordine
+      this.saveColumnOrder();
     } catch (error) {
       console.warn('Errore nel salvataggio delle colonne:', error);
     }
@@ -306,5 +402,70 @@ export class ProjectList implements OnInit {
    */
   onColumnsChange(): void {
     this.saveSelectedColumns();
+  }
+
+  /**
+   * Apre il dialog per l'ordinamento delle colonne
+   */
+  openColumnOrderDialog(): void {
+    this.showColumnOrderDialog = true;
+  }
+
+  /**
+   * Chiude il dialog per l'ordinamento delle colonne
+   */
+  closeColumnOrderDialog(): void {
+    this.showColumnOrderDialog = false;
+  }
+
+  /**
+   * Gestisce il drag and drop delle colonne
+   */
+  dropColumn(event: any): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+    
+    const prevIndex = event.previousIndex;
+    const currentIndex = event.currentIndex;
+    
+    // Sposta l'elemento nell'array
+    const movedItem = this.selectedColumns.splice(prevIndex, 1)[0];
+    this.selectedColumns.splice(currentIndex, 0, movedItem);
+    
+    // Salva il nuovo ordine
+    this.saveSelectedColumns();
+  }
+
+  /**
+   * Applica l'ordine delle colonne salvato
+   */
+  private applyColumnOrder(): void {
+    try {
+      const savedOrder = localStorage.getItem('project-list-column-order');
+      if (savedOrder) {
+        const orderArray = JSON.parse(savedOrder);
+        // Ordina selectedColumns secondo l'ordine salvato
+        this.selectedColumns.sort((a, b) => {
+          const indexA = orderArray.indexOf(a.field);
+          const indexB = orderArray.indexOf(b.field);
+          return indexA - indexB;
+        });
+      }
+    } catch (error) {
+      console.warn('Errore nell\'applicazione dell\'ordine colonne:', error);
+    }
+  }
+
+  /**
+   * Salva l'ordine delle colonne nel localStorage
+   */
+  private saveColumnOrder(): void {
+    try {
+      const orderArray = this.selectedColumns.map(col => col.field);
+      localStorage.setItem('project-list-column-order', JSON.stringify(orderArray));
+    } catch (error) {
+      console.warn('Errore nel salvataggio dell\'ordine colonne:', error);
+    }
   }
 }

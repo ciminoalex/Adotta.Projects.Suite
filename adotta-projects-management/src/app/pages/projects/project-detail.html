@@ -4,24 +4,11 @@
     <!-- Header Info -->
     <div class="col-span-12 mb-4">
       <p-card>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <button class="p-button p-button-text" routerLink="/projects">
-              <i class="pi pi-arrow-left"></i>
-            </button>
-            <div>
-              <h1 class="text-900 font-bold text-2xl m-0">
-                {{ project?.numeroProgetto }} - {{ project?.nomeProgetto }}
-              </h1>
-              <div class="flex items-center gap-4 mt-2">
-                <p-tag [value]="project?.statoProgetto" 
-                       [severity]="getStatusSeverity(project?.statoProgetto)">
-                </p-tag>
-                <span class="text-500">{{ project?.cliente }}</span>
-                <span class="text-500">{{ project?.citta }}, {{ project?.stato }}</span>
-              </div>
-            </div>
-          </div>
+        <!-- Top row with buttons aligned -->
+        <div class="flex items-center justify-between mb-4">
+          <button class="p-button p-button-text" routerLink="/projects">
+            <i class="pi pi-arrow-left"></i>
+          </button>
           <div class="flex gap-2">
             <button class="p-button p-button-outlined" 
                     [routerLink]="['/projects', project?.numeroProgetto, 'edit']">
@@ -32,6 +19,19 @@
               <i class="pi pi-download mr-2"></i>
               Export
             </button>
+          </div>
+        </div>
+        <!-- Project details -->
+        <div>
+          <h1 class="text-900 font-bold text-2xl m-0 mb-2">
+            {{ project?.numeroProgetto }} - {{ project?.nomeProgetto }}
+          </h1>
+          <div class="flex items-center gap-4">
+            <p-tag [value]="project?.statoProgetto" 
+                   [severity]="getStatusSeverity(project?.statoProgetto)">
+            </p-tag>
+            <span class="text-500">{{ project?.cliente }}</span>
+            <span class="text-500">{{ project?.citta }}, {{ project?.stato }}</span>
           </div>
         </div>
       </p-card>
@@ -357,7 +357,7 @@
             </button>
           </div>
           <div class="text-xs text-500 mt-2">
-            Premi Invio per inviare, Ctrl+Invio per nuova riga
+            Premi Invio per inviare, Shift+Invio per nuova riga
           </div>
         </div>
 
@@ -373,7 +373,9 @@
                   <span class="font-semibold text-sm text-900">{{ message.utente }}</span>
                   <span class="text-xs text-500">{{ message.dataOra | date:'dd/MM/yyyy HH:mm' }}</span>
                 </div>
-                <p class="text-sm text-700 m-0">{{ message.messaggio }}</p>
+                <p class="text-sm text-700 m-0 message-bubble">
+                  {{ message.messaggio }}
+                </p>
               </div>
             </div>
             

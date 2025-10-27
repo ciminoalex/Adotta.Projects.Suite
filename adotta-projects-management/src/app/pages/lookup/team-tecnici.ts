@@ -58,6 +58,9 @@ import { TeamTecnico } from '../../models/lookup.model';
         [value]="teamTecnici" 
         [paginator]="true" 
         [rows]="25"
+        [rowHover]="true"
+        [showGridlines]="false"
+        stripedRows
         [showCurrentPageReport]="true"
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} team tecnici"
         [globalFilterFields]="['nome','specializzazione','email']"

@@ -47,7 +47,8 @@ export interface ModificaRaggruppata {
     ToastModule
   ],
   providers: [MessageService],
-  templateUrl: './project-detail.html'
+  templateUrl: './project-detail.html',
+  styleUrl: './project-detail.css'
 })
 export class ProjectDetail implements OnInit {
   project?: Project;

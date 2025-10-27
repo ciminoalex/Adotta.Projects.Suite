@@ -1,0 +1,8 @@
+.message-bubble {
+  border: 1px solid lightgray;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: #ffffe9;
+  white-space: pre-wrap;
+}
+

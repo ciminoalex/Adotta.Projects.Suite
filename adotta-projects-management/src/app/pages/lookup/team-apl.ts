@@ -58,6 +58,9 @@ import { TeamAPL } from '../../models/lookup.model';
         [value]="teamAPL" 
         [paginator]="true" 
         [rows]="25"
+        [rowHover]="true"
+        [showGridlines]="false"
+        stripedRows
         [showCurrentPageReport]="true"
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} team APL"
         [globalFilterFields]="['nome','ruolo','email']"

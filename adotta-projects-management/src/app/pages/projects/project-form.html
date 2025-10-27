@@ -227,6 +227,7 @@
             formControlName="teamTecnico"
             placeholder="Seleziona team tecnico"
             optionLabel="nome"
+            optionValue="nome"
             [showClear]="true"
             class="w-full"
             inputStyleClass="w-full">
@@ -242,6 +243,7 @@
             formControlName="teamAPL"
             placeholder="Seleziona team APL"
             optionLabel="nome"
+            optionValue="nome"
             [showClear]="true"
             class="w-full"
             inputStyleClass="w-full">
@@ -257,6 +259,7 @@
             formControlName="sales"
             placeholder="Seleziona sales"
             optionLabel="nome"
+            optionValue="nome"
             [showClear]="true"
             class="w-full"
             inputStyleClass="w-full">
@@ -272,6 +275,7 @@
             formControlName="projectManager"
             placeholder="Seleziona PM"
             optionLabel="nome"
+            optionValue="nome"
             [showClear]="true"
             class="w-full"
             inputStyleClass="w-full">
@@ -287,6 +291,7 @@
             formControlName="teamInstallazione"
             placeholder="Seleziona squadra installazione"
             optionLabel="nome"
+            optionValue="nome"
             [showClear]="true"
             class="w-full"
             inputStyleClass="w-full">
@@ -444,7 +449,7 @@
         </ng-template>
         <ng-template pTemplate="body" let-prodotto>
           <tr>
-            <td>{{ prodotto.tipoProdotto.descrizione }}</td>
+            <td>{{ prodotto.tipoProdotto }}</td>
             <td>{{ prodotto.variante }}</td>
             <td>{{ prodotto.qMq }}</td>
             <td>{{ prodotto.qFt }}</td>
@@ -551,6 +556,7 @@
           formControlName="tipoProdotto"
           placeholder="Seleziona tipo prodotto"
           optionLabel="nome"
+          optionValue="nome"
           [showClear]="true"
           [appendTo]="'body'">
         </p-select>

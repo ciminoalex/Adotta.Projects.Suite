@@ -58,6 +58,9 @@ import { SquadraInstallazione } from '../../models/lookup.model';
         [value]="squadreInstallazione" 
         [paginator]="true" 
         [rows]="25"
+        [rowHover]="true"
+        [showGridlines]="false"
+        stripedRows
         [showCurrentPageReport]="true"
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} squadre installazione"
         [globalFilterFields]="['nome','capoSquadra','specializzazione']"

@@ -59,6 +59,9 @@ import { Cliente } from '../../models/lookup.model';
         [paginator]="true" 
         [rows]="25"
         [showCurrentPageReport]="true"
+        [rowHover]="true"
+        [showGridlines]="false"
+        stripedRows
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} clienti"
         [globalFilterFields]="['nome','email','partitaIVA']"
         [loading]="loading"

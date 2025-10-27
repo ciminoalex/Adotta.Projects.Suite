@@ -83,6 +83,7 @@ export class ProjectForm implements OnInit {
 
   // Form options
   statusOptions = [
+    { label: 'ON GOING', value: ProjectStatus.ON_GOING },
     { label: 'CRITICAL', value: ProjectStatus.CRITICAL },
     { label: 'HOLD ON', value: ProjectStatus.HOLD_ON },
     { label: 'RUSH', value: ProjectStatus.RUSH },

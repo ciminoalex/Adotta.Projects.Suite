@@ -58,6 +58,9 @@ import { Sales } from '../../models/lookup.model';
         [value]="sales" 
         [paginator]="true" 
         [rows]="25"
+        [rowHover]="true"
+        [showGridlines]="false"
+        stripedRows
         [showCurrentPageReport]="true"
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} sales"
         [globalFilterFields]="['nome','email','area']"

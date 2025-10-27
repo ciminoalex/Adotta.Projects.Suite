@@ -58,6 +58,9 @@ import { ProdottoMaster } from '../../models/lookup.model';
         [value]="prodottiMaster" 
         [paginator]="true" 
         [rows]="25"
+        [rowHover]="true"
+        [showGridlines]="false"
+        stripedRows
         [showCurrentPageReport]="true"
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} prodotti master"
         [globalFilterFields]="['nome','categoria','codice']"

@@ -9,14 +9,14 @@
     </ng-template>
 
     <ng-template #end>
-        <p-button label="Export" icon="pi pi-upload" severity="secondary" />
+        <p-button label="Export" icon="pi pi-upload" severity="secondary" (click)="exportExcel()" />
     </ng-template>
 </p-toolbar>
   <!-- Tabella Progetti -->
   <p-table 
     [value]="filteredProjects" 
     [paginator]="true" 
-    [rows]="100"
+    [rows]="25"
     [showCurrentPageReport]="true"
     currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} progetti"
     [loading]="loading"
@@ -26,7 +26,7 @@
     [showGridlines]="false"
     stripedRows
     [resizableColumns]="true"
-    styleClass="p-datatable-sm">
+    styleClass="p-datatable-sm text-sm">
     
     <ng-template #caption>
       <div class="flex items-center justify-between">
@@ -37,6 +37,7 @@
             <p-inputicon class="pi pi-search" />
           </p-iconfield>
           <p-multiselect display="chip" [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header" selectedItemsLabel="{0} columns selected" [style]="{ 'min-width': '200px' }" placeholder="Choose Columns" (onChange)="onColumnsChange()" />
+          <p-button icon="pi pi-sort-alt" [text]="true" [rounded]="true" severity="secondary" pTooltip="Ordina colonne" tooltipPosition="left" (click)="openColumnOrderDialog()" />
         </div>
       </div>
   </ng-template>
@@ -54,7 +55,7 @@
     </ng-template>
     <ng-template #groupheader let-project>
                 <tr pRowGroupHeader>
-                    <td colspan="13">
+                    <td colspan="15">
                         <div class="flex items-center gap-2">
                         <p-tag [value]="project?.statoProgetto" 
                           [severity]="getStatusSeverity(project?.statoProgetto)">
@@ -77,12 +78,22 @@
               <span>{{ project.stato || '-' }}</span>
             </div>
             <ng-container *ngIf="col.field !== 'stato'">
-              <span *ngIf="col.field === 'dataInizioInstallazione' || col.field === 'dataFineInstallazione'; else defaultCell">
+              <!-- Date columns -->
+              <span *ngIf="col.field === 'dataInizioInstallazione' || col.field === 'dataFineInstallazione'">
                 {{ project[col.field] ? (project[col.field] | date:'dd/MM/yyyy') : '-' }}
               </span>
-              <ng-template #defaultCell>
+              <!-- Total Mq column -->
+              <span *ngIf="col.field === 'quantitaTotaleMq'">
+                {{ getTotalMq(project).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}
+              </span>
+              <!-- Total Ft column -->
+              <span *ngIf="col.field === 'quantitaTotaleFt'">
+                {{ getTotalFt(project).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}
+              </span>
+              <!-- Default columns -->
+              <span *ngIf="col.field !== 'dataInizioInstallazione' && col.field !== 'dataFineInstallazione' && col.field !== 'quantitaTotaleMq' && col.field !== 'quantitaTotaleFt' && col.field !== 'stato'">
                 {{ project[col.field] || '-' }}
-              </ng-template>
+              </span>
             </ng-container>
         </td>
         <td>
@@ -101,7 +112,7 @@
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="13" class="text-center p-4">
+        <td colspan="15" class="text-center p-4">
           <div class="text-500">
             <i class="pi pi-info-circle mr-2"></i>
             Nessun progetto trovato
@@ -115,3 +126,39 @@
 <!-- Dialog di conferma -->
 <p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>
+
+<!-- Dialog per ordinamento colonne -->
+<p-dialog 
+  [(visible)]="showColumnOrderDialog" 
+  [style]="{ width: '450px' }" 
+  [modal]="true"
+  header="Ordina Colonne"
+  [draggable]="false"
+  [resizable]="false">
+  <div class="flex flex-column gap-3">
+    <p class="m-0 text-sm text-600 mb-4">
+      Trascina le colonne per riordinarle. L'ordine verrà salvato automaticamente.
+    </p>
+  </div>
+  <div cdkDropList class="column-list mt-2" (cdkDropListDropped)="dropColumn($event)">
+    <div 
+      *ngFor="let col of selectedColumns; let i = index" 
+      cdkDrag
+      class="column-drag-item p-3 mb-2 flex align-items-center justify-content-between border-round "
+      [style.cursor]="'move'">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-bars text-color"></i>
+        <span class="font-medium">{{ col.header }}</span>
+      </div>
+      <i class="pi pi-grip-vertical text-500"></i>
+    </div>
+  </div>
+<ng-template pTemplate="footer">
+    <p-button 
+      label="Chiudi" 
+      icon="pi pi-check" 
+      (click)="closeColumnOrderDialog()"
+      [style]="{ width: '100%' }">
+    </p-button>
+  </ng-template>
+</p-dialog>
