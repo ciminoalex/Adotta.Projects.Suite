@@ -111,6 +111,41 @@ export class MockTimesheetService {
     }).pipe(delay(300));
   }
 
+  getTimesheetOverviewByProject(numeroProgetto: string): Observable<TimesheetOverview> {
+    const entries = this.mockTimesheetEntries.filter(e => e.numeroProgetto === numeroProgetto);
+    
+    if (entries.length === 0) {
+      return of({
+        numeroProgetto,
+        nomeProgetto: '',
+        cliente: '',
+        totaleOre: 0,
+        numeroRendicontazioni: 0,
+        rendicontazioni: []
+      }).pipe(delay(300));
+    }
+
+    const totaleOre = entries.reduce((sum, entry) => sum + entry.oreLavorate, 0);
+    const ultimeRendicontazioni = [...entries].sort((a, b) => 
+      b.dataRendicontazione.getTime() - a.dataRendicontazione.getTime()
+    );
+
+    return of({
+      numeroProgetto,
+      nomeProgetto: entries[0].nomeProgetto,
+      cliente: entries[0].cliente,
+      totaleOre,
+      numeroRendicontazioni: entries.length,
+      ultimaRendicontazione: ultimeRendicontazioni[0]?.dataRendicontazione,
+      rendicontazioni: entries
+    }).pipe(delay(300));
+  }
+
+  getTimesheetByProject(numeroProgetto: string): Observable<TimesheetEntry[]> {
+    const entries = this.mockTimesheetEntries.filter(e => e.numeroProgetto === numeroProgetto);
+    return of([...entries]).pipe(delay(300));
+  }
+
   private groupByProject(entries: TimesheetEntry[]): TimesheetOverview[] {
     const map = new Map<string, TimesheetEntry[]>();
     

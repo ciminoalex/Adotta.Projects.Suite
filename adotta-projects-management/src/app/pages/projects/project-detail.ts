@@ -13,7 +13,10 @@ import { MessageService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
 import { AuthService } from '../../services/auth.service';
+import { TimesheetService } from '../../services/timesheet.service';
+import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
 import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus, MessaggioProgetto } from '../../models/project.model';
+import { TimesheetOverview } from '../../models/timesheet.model';
 
 export interface ChatMessage {
   id: string;
@@ -57,6 +60,11 @@ export class ProjectDetail implements OnInit {
   storicoModifiche: StoricoModifica[] = [];
   loading = false;
   
+  // Timesheet properties
+  timesheetOverview?: TimesheetOverview;
+  totaleOreRendicontate: number = 0;
+  numeroRendicontazioni: number = 0;
+  
   // Chat properties
   chatMessages: ChatMessage[] = [];
   newMessage = '';
@@ -80,9 +88,11 @@ export class ProjectDetail implements OnInit {
   ) {
     // Usa servizi mock in assenza di backend
     this.projectService = new MockProjectService() as any;
+    this.timesheetService = new MockTimesheetService() as any;
   }
 
   private projectService: ProjectService;
+  private timesheetService: TimesheetService;
   
 
   ngOnInit() {
@@ -132,6 +142,20 @@ export class ProjectDetail implements OnInit {
     // Load prodotti
     this.projectService.getProdottiProgetto(numeroProgetto).subscribe(prodotti => {
       this.prodotti = prodotti;
+    });
+
+    // Load timesheet overview
+    this.timesheetService.getTimesheetOverviewByProject(numeroProgetto).subscribe({
+      next: (overview) => {
+        this.timesheetOverview = overview;
+        this.totaleOreRendicontate = overview.totaleOre;
+        this.numeroRendicontazioni = overview.numeroRendicontazioni;
+      },
+      error: (error) => {
+        console.error('Error loading timesheet overview:', error);
+        this.totaleOreRendicontate = 0;
+        this.numeroRendicontazioni = 0;
+      }
     });
 
     // Load storico modifiche

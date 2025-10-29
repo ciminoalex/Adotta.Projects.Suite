@@ -6,3 +6,8 @@
   white-space: pre-wrap;
 }
 
+.p-card {
+  display: block;
+  border-top: 3px solid;
+  border-color: var(--primary-color);
+}

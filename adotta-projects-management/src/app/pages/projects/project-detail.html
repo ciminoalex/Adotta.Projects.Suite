@@ -125,6 +125,27 @@
     </p-card>
     </div>
 
+    <div class="col-span-12 lg:col-span-6 mb-4">
+      <p-card header="Ore Rendicontate">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-500 text-sm">Totale Ore</label>
+          <div class="font-bold text-2xl">{{ totaleOreRendicontate }} h</div>
+        </div>
+        <div>
+          <label class="text-500 text-sm">Numero Rendicontazioni</label>
+          <div class="font-bold">{{ numeroRendicontazioni }}</div>
+        </div>
+        <div class="col-span-2">
+          <label class="text-500 text-sm">Ultima Rendicontazione</label>
+          <div class="font-bold">
+            {{ timesheetOverview?.ultimaRendicontazione ? (timesheetOverview?.ultimaRendicontazione | date:'dd/MM/yyyy') : 'Nessuna rendicontazione' }}
+          </div>
+        </div>
+      </div>
+    </p-card>
+    </div>
+
     <!-- Livelli -->
     <div class="col-span-12 mb-4">
     <p-card>
