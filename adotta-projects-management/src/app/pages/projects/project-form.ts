@@ -296,9 +296,20 @@ export class ProjectForm implements OnInit {
           
           // Convert statoProgetto from integer to enum string if needed
           const projectData = { ...project };
-          if (typeof project.statoProgetto === 'number') {
-            projectData.statoProgetto = this.intToStatus(project.statoProgetto);
+          
+          // Convert statoProgetto from number to enum string if it's a number
+          if (projectData.statoProgetto !== undefined && projectData.statoProgetto !== null) {
+            if (typeof projectData.statoProgetto === 'number') {
+              projectData.statoProgetto = this.intToStatus(projectData.statoProgetto);
+            } else if (typeof projectData.statoProgetto === 'string' && /^\d+$/.test(projectData.statoProgetto)) {
+              // If it's a string representation of a number, convert it
+              projectData.statoProgetto = this.intToStatus(parseInt(projectData.statoProgetto));
+            }
+            // If it's already a valid enum string, keep it as is
           }
+          
+          console.log('Project data:', projectData);
+          console.log('Project data statoProgetto:', projectData.statoProgetto);
           
           this.projectForm.patchValue(projectData);
           
@@ -389,7 +400,7 @@ export class ProjectForm implements OnInit {
         valoreProgetto: cleanValue(formValue.valoreProgetto),
         marginePrevisto: cleanValue(formValue.marginePrevisto),
         costiSostenuti: formValue.costiSostenuti || 0,
-        statoProgetto: formValue.statoProgetto ? this.statusToInt(formValue.statoProgetto) : 0,
+        statoProgetto: formValue.statoProgetto || ProjectStatus.UPCOMING,
         note: cleanValue(formValue.note)
       };
 

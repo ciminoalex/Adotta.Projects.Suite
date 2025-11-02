@@ -555,7 +555,7 @@ export class MockProjectService {
   getProjectsByStatus(): Observable<any[]> {
     const byStatus = this.mockData.getProjects().reduce((acc, project) => {
       const status = project.statoProgetto;
-      acc[status] = (acc[status] || 0) + 1;
+      acc[status || ''] = (acc[status || ''] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     

@@ -15,7 +15,7 @@ export interface Project {
   dataFineInstallazione: Date;
   versioneWIC?: string;
   ultimaModifica?: Date;
-  statoProgetto: ProjectStatus;
+  statoProgetto?: ProjectStatus | string; // Should be a ProjectStatus enum value (string)
   note?: string;
 
   // Metodi dell'entità Progetto
