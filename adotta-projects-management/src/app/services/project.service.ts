@@ -30,7 +30,9 @@ export class ProjectService {
     return this.http.put<Project>(`${this.apiUrl}/${numeroProgetto}`, project);
   }
 
+  // Note: PATCH is not in swagger, only PUT is available
   patchProject(numeroProgetto: string, partial: Partial<Project>): Observable<Project> {
+    // This endpoint is not in swagger - keeping for backward compatibility but may not work with real API
     return this.http.patch<Project>(`${this.apiUrl}/${numeroProgetto}`, partial);
   }
 
@@ -43,16 +45,18 @@ export class ProjectService {
     return this.http.get<LivelloProgetto[]>(`${this.apiUrl}/${numeroProgetto}/livelli`);
   }
 
-  addLivelloProgetto(projectId: number, livello: LivelloProgetto): Observable<LivelloProgetto> {
-    return this.http.post<LivelloProgetto>(`${this.apiUrl}/${projectId}/livelli`, livello);
+  addLivelloProgetto(numeroProgetto: string, livello: LivelloProgetto): Observable<LivelloProgetto> {
+    return this.http.post<LivelloProgetto>(`${this.apiUrl}/${numeroProgetto}/livelli`, livello);
   }
 
-  updateLivelloProgetto(projectId: number, livelloId: number, livello: LivelloProgetto): Observable<LivelloProgetto> {
-    return this.http.put<LivelloProgetto>(`${this.apiUrl}/${projectId}/livelli/${livelloId}`, livello);
+  // Note: PUT for update is not in swagger, only POST (create) and DELETE are available
+  updateLivelloProgetto(numeroProgetto: string, livelloId: number, livello: LivelloProgetto): Observable<LivelloProgetto> {
+    // This endpoint is not in swagger - keeping for backward compatibility but may not work with real API
+    return this.http.put<LivelloProgetto>(`${this.apiUrl}/${numeroProgetto}/livelli/${livelloId}`, livello);
   }
 
-  deleteLivelloProgetto(projectId: number, livelloId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${projectId}/livelli/${livelloId}`);
+  deleteLivelloProgetto(numeroProgetto: string, livelloId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${numeroProgetto}/livelli/${livelloId}`);
   }
 
   // Prodotti Progetto
@@ -60,16 +64,18 @@ export class ProjectService {
     return this.http.get<ProdottoProgetto[]>(`${this.apiUrl}/${numeroProgetto}/prodotti`);
   }
 
-  addProdottoProgetto(projectId: number, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
-    return this.http.post<ProdottoProgetto>(`${this.apiUrl}/${projectId}/prodotti`, prodotto);
+  addProdottoProgetto(numeroProgetto: string, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
+    return this.http.post<ProdottoProgetto>(`${this.apiUrl}/${numeroProgetto}/prodotti`, prodotto);
   }
 
-  updateProdottoProgetto(projectId: number, prodottoId: number, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
-    return this.http.put<ProdottoProgetto>(`${this.apiUrl}/${projectId}/prodotti/${prodottoId}`, prodotto);
+  // Note: PUT for update is not in swagger, only POST (create) and DELETE are available
+  updateProdottoProgetto(numeroProgetto: string, prodottoId: number, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
+    // This endpoint is not in swagger - keeping for backward compatibility but may not work with real API
+    return this.http.put<ProdottoProgetto>(`${this.apiUrl}/${numeroProgetto}/prodotti/${prodottoId}`, prodotto);
   }
 
-  deleteProdottoProgetto(projectId: number, prodottoId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${projectId}/prodotti/${prodottoId}`);
+  deleteProdottoProgetto(numeroProgetto: string, prodottoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${numeroProgetto}/prodotti/${prodottoId}`);
   }
 
   // Storico Modifiche WIC
@@ -77,8 +83,8 @@ export class ProjectService {
     return this.http.get<StoricoModifica[]>(`${this.apiUrl}/${numeroProgetto}/storico`);
   }
 
-  createSnapshotWIC(projectId: number): Observable<StoricoModifica[]> {
-    return this.http.post<StoricoModifica[]>(`${this.apiUrl}/${projectId}/wic-snapshot`, {});
+  createSnapshotWIC(numeroProgetto: string): Observable<StoricoModifica[]> {
+    return this.http.post<StoricoModifica[]>(`${this.apiUrl}/${numeroProgetto}/wic-snapshot`, {});
   }
 
   // Messaggi Progetto

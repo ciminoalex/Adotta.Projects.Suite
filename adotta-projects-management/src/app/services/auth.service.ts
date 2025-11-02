@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, throwError } from 'rxjs';
-import { User, Session } from '../models/user.model';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Session, LoginRequest, LoginResponse } from '../models/user.model';
+import { ServiceConfigurationService } from './service-configuration.service';
 import { MockDataService } from './mock/mock-data.service';
 
 @Injectable({
@@ -9,40 +12,130 @@ import { MockDataService } from './mock/mock-data.service';
 })
 export class AuthService {
   private readonly SESSION_KEY = 'auth_session';
-  private mockData: MockDataService;
+  private readonly API_URL = '/api/Auth';
+  private mockData: MockDataService | null = null;
 
-  constructor(private router: Router) {
-    this.mockData = MockDataService.getInstance();
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private serviceConfig: ServiceConfigurationService
+  ) {
+    if (this.serviceConfig.getUseMockServices()) {
+      this.mockData = MockDataService.getInstance();
+    }
   }
 
-  login(username: string, password: string): Observable<User> {
-    // Get users from mock data
-    const users = this.mockData.getUsers();
-    const user = users.find(u => u.username === username && u.password === password);
+  login(username: string, password: string, companyDB?: string): Observable<LoginResponse | any> {
+    // Use mock if configured
+    if (this.serviceConfig.getUseMockServices() && this.mockData) {
+      const users = this.mockData.getUsers();
+      const user = users.find(u => u.username === username && u.password === password);
 
-    if (user) {
-      // Create session
-      const session: Session = {
-        token: this.generateToken(),
-        user: { ...user, password: undefined } as any, // Remove password from session
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-      };
+      if (user) {
+        // Create session from mock data
+        const mockSessionId = `MOCK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const session: Session = {
+          sessionId: mockSessionId,
+          version: '1.0.0',
+          sessionTimeout: 30,
+          user: { ...user, password: undefined } as any,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+        };
 
-      // Store session
-      localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+        // Store session
+        localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
 
-      return of(user);
+        // Return mock response compatible with LoginResponse
+        const mockResponse: LoginResponse = {
+          sessionId: mockSessionId,
+          version: '1.0.0',
+          sessionTimeout: 30
+        };
+
+        return of(mockResponse);
+      }
+
+      return throwError(() => new Error('Credenziali non valide'));
     }
 
-    return throwError(() => new Error('Credenziali non valide'));
+    // Use real API
+    const loginRequest: LoginRequest = {
+      companyDB: companyDB,
+      userName: username,
+      password: password
+    };
+
+    return this.http.post<LoginResponse>(`${this.API_URL}/login`, loginRequest).pipe(
+      map((response) => {
+        // Create session from response
+        const session: Session = {
+          sessionId: response.sessionId,
+          version: response.version,
+          sessionTimeout: response.sessionTimeout,
+          expiresAt: new Date(Date.now() + (response.sessionTimeout || 30) * 60 * 1000) // Convert minutes to milliseconds
+        };
+
+        // Store session
+        localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+
+        return response;
+      }),
+      catchError((error) => {
+        // Gestione errori più dettagliata
+        let errorMessage = 'Credenziali non valide';
+        
+        if (error.status === 404) {
+          errorMessage = 'Endpoint API non trovato. Verificare la configurazione del server.';
+        } else if (error.status === 401) {
+          errorMessage = 'Username o password non validi';
+        } else if (error.status === 0 || error.status === undefined) {
+          errorMessage = 'Impossibile raggiungere il server. Verificare la connessione.';
+        } else if (error.status >= 500) {
+          errorMessage = 'Errore del server. Riprovare più tardi.';
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        return throwError(() => new Error(errorMessage));
+      })
+    );
   }
 
-  logout(): void {
-    localStorage.removeItem(this.SESSION_KEY);
-    this.router.navigate(['/auth/login']);
+  logout(): Observable<void> {
+    // Use mock if configured
+    if (this.serviceConfig.getUseMockServices()) {
+      this.clearSession();
+      return of(undefined);
+    }
+
+    // Use real API
+    const sessionId = this.getSessionId();
+    
+    if (sessionId) {
+      // Call logout API
+      return this.http.post<void>(`${this.API_URL}/logout`, null, {
+        headers: {
+          'X-SAP-Session-Id': sessionId
+        }
+      }).pipe(
+        catchError((error) => {
+          // Even if logout API fails, clear local session
+          this.clearSession();
+          return throwError(() => error);
+        }),
+        map(() => {
+          this.clearSession();
+        })
+      );
+    }
+
+    this.clearSession();
+    return of(undefined);
   }
 
-  getCurrentUser(): User | null {
+  getSessionId(): string | null {
     const sessionStr = localStorage.getItem(this.SESSION_KEY);
     if (!sessionStr) {
       return null;
@@ -53,17 +146,17 @@ export class AuthService {
       
       // Check if session is expired
       if (new Date(session.expiresAt) < new Date()) {
-        this.logout();
+        this.clearSession();
         return null;
       }
 
-      return session.user;
+      return session.sessionId;
     } catch {
       return null;
     }
   }
 
-  getSessionToken(): string | null {
+  getSession(): Session | null {
     const sessionStr = localStorage.getItem(this.SESSION_KEY);
     if (!sessionStr) {
       return null;
@@ -74,18 +167,26 @@ export class AuthService {
       
       // Check if session is expired
       if (new Date(session.expiresAt) < new Date()) {
-        this.logout();
+        this.clearSession();
         return null;
       }
 
-      return session.token;
+      return session;
     } catch {
       return null;
     }
   }
 
   isAuthenticated(): boolean {
-    return this.getCurrentUser() !== null && this.getSessionToken() !== null;
+    return this.getSessionId() !== null;
+  }
+
+  getCurrentUser(): any {
+    // Note: User information is not returned by the login API
+    // This is kept for backward compatibility
+    // In a real implementation, you might need to fetch user info from a separate endpoint
+    const session = this.getSession();
+    return session?.user || null;
   }
 
   getUserInitials(): string {
@@ -106,12 +207,12 @@ export class AuthService {
     if (!user) {
       return '';
     }
-    return `${user.nome} ${user.cognome}`;
+    return `${user.nome || ''} ${user.cognome || ''}`.trim() || 'Utente';
   }
 
-  private generateToken(): string {
-    // Simple token generation - in production, use a proper JWT library
-    return btoa(`${Date.now()}-${Math.random()}`).replace(/[^a-zA-Z0-9]/g, '');
+  private clearSession(): void {
+    localStorage.removeItem(this.SESSION_KEY);
+    this.router.navigate(['/auth/login']);
   }
 
   // Redirect to login if not authenticated

@@ -85,11 +85,11 @@ export class Login implements OnInit {
         this.loading = true;
         
         this.authService.login(this.email, this.password).subscribe({
-            next: (user) => {
+            next: (response) => {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Login effettuato',
-                    detail: `Benvenuto ${user.nome}!`
+                    detail: 'Autenticazione riuscita'
                 });
                 
                 // Navigate to dashboard after short delay
@@ -100,10 +100,14 @@ export class Login implements OnInit {
             },
             error: (error) => {
                 this.loading = false;
+                // Estrai il messaggio di errore in modo più affidabile
+                const errorMessage = error?.message || error?.error?.message || 'Errore durante il login. Riprovare.';
+                
                 this.messageService.add({
                     severity: 'error',
-                    summary: 'Errore',
-                    detail: 'Username o password non validi'
+                    summary: 'Errore di autenticazione',
+                    detail: errorMessage,
+                    life: 5000
                 });
             }
         });

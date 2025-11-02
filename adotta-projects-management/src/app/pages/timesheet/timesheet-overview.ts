@@ -17,7 +17,7 @@ import { TimesheetService } from '../../services/timesheet.service';
 import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
 import { ProjectService } from '../../services/project.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
-import { TimesheetOverview, TimesheetSummary } from '../../models/timesheet.model';
+import { TimesheetProjectDto, TimesheetSummary } from '../../models/timesheet.model';
 import { Project } from '../../models/project.model';
 
 @Component({
@@ -42,8 +42,8 @@ import { Project } from '../../models/project.model';
   templateUrl: './timesheet-overview.html'
 })
 export class TimesheetOverviewComponent implements OnInit {
-  timesheets: TimesheetOverview[] = [];
-  filteredTimesheets: TimesheetOverview[] = [];
+  timesheets: TimesheetProjectDto[] = [];
+  filteredTimesheets: TimesheetProjectDto[] = [];
   summary: TimesheetSummary | null = null;
   loading = false;
   globalFilter = '';
@@ -89,8 +89,10 @@ export class TimesheetOverviewComponent implements OnInit {
     this.loading = true;
     this.timesheetService.getTimesheetOverview().subscribe({
       next: (data) => {
-        this.timesheets = data;
-        this.filteredTimesheets = data;
+        // TimesheetOverview has structure: { timesheets: TimesheetProjectDto[], summary: TimesheetSummaryDto }
+        this.timesheets = data.timesheets || [];
+        this.filteredTimesheets = data.timesheets || [];
+        this.summary = data.summary || null;
         this.loading = false;
       },
       error: (error) => {
@@ -141,11 +143,11 @@ export class TimesheetOverviewComponent implements OnInit {
 
     this.filteredTimesheets = this.timesheets.map(item => ({
       ...item,
-      rendicontazioni: item.rendicontazioni.filter(entry => {
+      rendicontazioni: (item.rendicontazioni || []).filter(entry => {
         const entryDate = new Date(entry.dataRendicontazione);
         return entryDate >= startDate && entryDate <= endDate;
       })
-    })).filter(item => item.rendicontazioni.length > 0);
+    })).filter(item => (item.rendicontazioni?.length || 0) > 0);
   }
 
   clearDateFilter() {

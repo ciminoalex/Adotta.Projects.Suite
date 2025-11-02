@@ -9,8 +9,22 @@ export interface User {
 }
 
 export interface Session {
-  token: string;
-  user: User;
+  sessionId: string;
+  version?: string;
+  sessionTimeout?: number;
+  user?: User;
   expiresAt: Date;
+}
+
+export interface LoginRequest {
+  companyDB?: string;
+  userName: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  sessionId: string;
+  version?: string;
+  sessionTimeout: number;
 }
 

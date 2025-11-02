@@ -144,14 +144,28 @@ export class ProjectDetail implements OnInit {
       this.prodotti = prodotti;
     });
 
-    // Load timesheet overview
-    this.timesheetService.getTimesheetOverviewByProject(numeroProgetto).subscribe({
-      next: (overview) => {
-        this.timesheetOverview = overview;
-        this.totaleOreRendicontate = overview.totaleOre;
-        this.numeroRendicontazioni = overview.numeroRendicontazioni;
+    // Load timesheet overview - use getTimesheetByProject and calculate overview
+    this.timesheetService.getTimesheetByProject(numeroProgetto).subscribe({
+      next: (entries) => {
+        // Calculate overview from entries
+        const totaleOre = entries.reduce((sum, entry) => sum + entry.oreLavorate, 0);
+        this.totaleOreRendicontate = totaleOre;
+        this.numeroRendicontazioni = entries.length;
+        
+        // Create overview object if needed
+        if (entries.length > 0) {
+          this.timesheetOverview = {
+            numeroProgetto: entries[0].numeroProgetto,
+            nomeProgetto: entries[0].nomeProgetto,
+            cliente: entries[0].cliente || '',
+            totaleOre: totaleOre,
+            numeroRendicontazioni: entries.length,
+            ultimaRendicontazione: entries.length > 0 ? entries[entries.length - 1].dataRendicontazione : undefined,
+            rendicontazioni: entries
+          };
+        }
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading timesheet overview:', error);
         this.totaleOreRendicontate = 0;
         this.numeroRendicontazioni = 0;

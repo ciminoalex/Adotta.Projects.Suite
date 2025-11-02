@@ -16,7 +16,7 @@ export class LookupService {
     return this.http.get<Cliente[]>(`${this.apiUrl}/clienti`);
   }
 
-  getCliente(id: number): Observable<Cliente> {
+  getCliente(id: string): Observable<Cliente> {
     return this.http.get<Cliente>(`${this.apiUrl}/clienti/${id}`);
   }
 
@@ -24,11 +24,13 @@ export class LookupService {
     return this.http.post<Cliente>(`${this.apiUrl}/clienti`, cliente);
   }
 
-  updateCliente(id: number, cliente: Cliente): Observable<Cliente> {
+  updateCliente(id: string, cliente: Cliente): Observable<Cliente> {
+    // Note: This endpoint is not in swagger
     return this.http.put<Cliente>(`${this.apiUrl}/clienti/${id}`, cliente);
   }
 
-  deleteCliente(id: number): Observable<void> {
+  deleteCliente(id: string): Observable<void> {
+    // Note: This endpoint is not in swagger
     return this.http.delete<void>(`${this.apiUrl}/clienti/${id}`);
   }
 
@@ -50,7 +52,7 @@ export class LookupService {
     return this.http.get<Citta[]>(`${this.apiUrl}/citta`);
   }
 
-  getCittaByStato(statoId: number): Observable<Citta[]> {
+  getCittaByStato(statoId: string): Observable<Citta[]> {
     return this.http.get<Citta[]>(`${this.apiUrl}/citta?statoId=${statoId}`);
   }
 

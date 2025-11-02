@@ -329,7 +329,7 @@ export class Clienti implements OnInit {
       acceptLabel: 'Elimina',
       rejectLabel: 'Annulla',
       accept: () => {
-        this.lookupService.deleteCliente(cliente.id!).subscribe({
+        this.lookupService.deleteCliente(String(cliente.id!)).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',

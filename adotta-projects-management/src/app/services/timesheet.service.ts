@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { TimesheetEntry, TimesheetOverview, TimesheetSummary } from '../models/timesheet.model';
+import { TimesheetEntry, TimesheetOverview, TimesheetOverviewResponse, TimesheetSummary } from '../models/timesheet.model';
 
 @Injectable({
   providedIn: 'root'
@@ -32,18 +32,22 @@ export class TimesheetService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // Overview by Project
-  getTimesheetOverview(): Observable<TimesheetOverview[]> {
-    return this.http.get<TimesheetOverview[]>(`${this.apiUrl}/overview`);
+  // Overview - use query params as per swagger (returns TimesheetOverviewResponse)
+  getTimesheetOverview(fromDate?: string, toDate?: string, utente?: string): Observable<TimesheetOverviewResponse> {
+    let params = new HttpParams();
+    if (fromDate) params = params.set('fromDate', fromDate);
+    if (toDate) params = params.set('toDate', toDate);
+    if (utente) params = params.set('utente', utente);
+    return this.http.get<TimesheetOverviewResponse>(`${this.apiUrl}/overview`, { params });
   }
 
-  getTimesheetOverviewByProject(numeroProgetto: string): Observable<TimesheetOverview> {
-    return this.http.get<TimesheetOverview>(`${this.apiUrl}/overview/${numeroProgetto}`);
-  }
-
-  // Summary
-  getTimesheetSummary(): Observable<TimesheetSummary> {
-    return this.http.get<TimesheetSummary>(`${this.apiUrl}/summary`);
+  // Summary - use query params as per swagger
+  getTimesheetSummary(fromDate?: string, toDate?: string, utente?: string): Observable<TimesheetSummary> {
+    let params = new HttpParams();
+    if (fromDate) params = params.set('fromDate', fromDate);
+    if (toDate) params = params.set('toDate', toDate);
+    if (utente) params = params.set('utente', utente);
+    return this.http.get<TimesheetSummary>(`${this.apiUrl}/summary`, { params });
   }
 
   // Filter by date range
@@ -56,12 +60,12 @@ export class TimesheetService {
 
   // Get entries by project
   getTimesheetByProject(numeroProgetto: string): Observable<TimesheetEntry[]> {
-    return this.http.get<TimesheetEntry[]>(`${this.apiUrl}/by-project/${numeroProgetto}`);
+    return this.http.get<TimesheetEntry[]>(`${this.apiUrl}/project/${numeroProgetto}`);
   }
 
   // Get entries by user
   getTimesheetByUser(utente: string): Observable<TimesheetEntry[]> {
-    return this.http.get<TimesheetEntry[]>(`${this.apiUrl}/by-user/${utente}`);
+    return this.http.get<TimesheetEntry[]>(`${this.apiUrl}/user/${utente}`);
   }
 
   // Statistics

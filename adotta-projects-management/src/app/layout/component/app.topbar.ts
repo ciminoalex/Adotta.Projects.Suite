@@ -134,6 +134,14 @@ export class AppTopbar implements OnInit {
     }
 
     logout() {
-        this.authService.logout();
+        this.authService.logout().subscribe({
+            next: () => {
+                // Logout successful, redirect is handled by authService.clearSession()
+            },
+            error: (error) => {
+                // Even if there's an error, session is cleared
+                console.error('Logout error:', error);
+            }
+        });
     }
 }
