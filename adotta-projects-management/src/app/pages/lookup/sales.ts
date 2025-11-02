@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
-import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 import { Sales } from '../../models/lookup.model';
 
 @Component({
@@ -229,15 +229,16 @@ export class SalesComponent implements OnInit {
   globalFilter = '';
 
   salesForm: FormGroup;
-  private lookupService: LookupService;
+  private lookupService: LookupService | any;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private serviceProvider: ServiceProviderService
   ) {
-    // Use mock service for development
-    this.lookupService = new MockLookupService() as any;
+    // Use services based on configuration (mock or real API)
+    this.lookupService = this.serviceProvider.provideLookupService();
     this.salesForm = this.fb.group({
       id: [''],
       nome: ['', Validators.required],
@@ -256,11 +257,11 @@ export class SalesComponent implements OnInit {
   loadSales() {
     this.loading = true;
     this.lookupService.getSales().subscribe({
-      next: (sales) => {
+      next: (sales: Sales[]) => {
         this.sales = sales;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Errore nel caricamento sales:', error);
         this.loading = false;
       }
@@ -298,7 +299,7 @@ export class SalesComponent implements OnInit {
           this.showDialog = false;
           this.loadSales();
         },
-        error: (error) => {
+        error: (error: any) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',
@@ -327,7 +328,7 @@ export class SalesComponent implements OnInit {
             });
             this.loadSales();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Errore',

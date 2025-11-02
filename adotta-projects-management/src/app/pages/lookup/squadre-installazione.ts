@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
-import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 import { SquadraInstallazione } from '../../models/lookup.model';
 
 @Component({
@@ -229,15 +229,16 @@ export class SquadreInstallazione implements OnInit {
   globalFilter = '';
 
   squadraForm: FormGroup;
-  private lookupService: LookupService;
+  private lookupService: LookupService | any;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private serviceProvider: ServiceProviderService
   ) {
-    // Use mock service for development
-    this.lookupService = new MockLookupService() as any;
+    // Use services based on configuration (mock or real API)
+    this.lookupService = this.serviceProvider.provideLookupService();
     this.squadraForm = this.fb.group({
       id: [''],
       nome: ['', Validators.required],
@@ -256,11 +257,11 @@ export class SquadreInstallazione implements OnInit {
   loadSquadreInstallazione() {
     this.loading = true;
     this.lookupService.getSquadreInstallazione().subscribe({
-      next: (squadreInstallazione) => {
+      next: (squadreInstallazione: SquadraInstallazione[]) => {
         this.squadreInstallazione = squadreInstallazione;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Errore nel caricamento squadre installazione:', error);
         this.loading = false;
       }
@@ -298,7 +299,7 @@ export class SquadreInstallazione implements OnInit {
           this.showDialog = false;
           this.loadSquadreInstallazione();
         },
-        error: (error) => {
+        error: (error: any) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',
@@ -327,7 +328,7 @@ export class SquadreInstallazione implements OnInit {
             });
             this.loadSquadreInstallazione();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Errore',

@@ -14,6 +14,7 @@ export class ServiceConfigurationService {
     // In a real application, this could be determined by environment variables
     // or configuration files
     this.useMockServices = this.shouldUseMockServices();
+    console.log('ServiceConfigurationService initialized - useMockServices:', this.useMockServices);
   }
 
   private shouldUseMockServices(): boolean {
@@ -31,7 +32,7 @@ export class ServiceConfigurationService {
     
     // Controlla se c'è una variabile d'ambiente (utile per build diverse)
     // In un progetto reale, usa file environment.ts
-    return ''; // Stringa vuota = usa URL relativi (necessita proxy Angular o stesso dominio)
+    return 'https://localhost:5001'; // Stringa vuota = usa URL relativi (necessita proxy Angular o stesso dominio)
     
     // Per sviluppo con server API separato, decommenta e modifica:
     // return 'http://localhost:5000';

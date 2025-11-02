@@ -88,14 +88,14 @@ export interface ChangeLog {
   dettagli?: Record<string, any>;
 }
 
-// Enums per i nuovi stati del progetto (mantenuti per compatibilità con l'interfaccia esistente)
+// Enums per i nuovi stati del progetto (formato API con underscore)
 export enum ProjectStatus {
-  ON_GOING = 'ON GOING',
+  ON_GOING = 'ON_GOING',
   CRITICAL = 'CRITICAL',
-  HOLD_ON = 'HOLD ON',
+  HOLD_ON = 'HOLD_ON',
   RUSH = 'RUSH',
-  TO_CHECK = 'TO CHECK',
+  TO_CHECK = 'TO_CHECK',
   UPCOMING = 'UPCOMING',
-  PUSHED_OUT = 'PUSHED OUT',
-  ON_BID = 'ON BID'
+  PUSHED_OUT = 'PUSHED_OUT',
+  ON_BID = 'ON_BID'
 }

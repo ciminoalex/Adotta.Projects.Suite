@@ -17,8 +17,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
-import { MockProjectService } from '../../services/mock/mock-project.service';
-import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 import { Project, LivelloProgetto, ProdottoProgetto, ProjectStatus } from '../../models/project.model';
 import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione, ProdottoMaster } from '../../models/lookup.model';
 
@@ -59,8 +58,8 @@ export class ProjectForm implements OnInit {
   loadingLookupData = false;
 
   // Services
-  private projectService: ProjectService;
-  private lookupService: LookupService;
+  private projectService: ProjectService | any;
+  private lookupService: LookupService | any;
 
   // Levels and Products management
   livelli: LivelloProgetto[] = [];
@@ -93,6 +92,36 @@ export class ProjectForm implements OnInit {
     { label: 'ON BID', value: ProjectStatus.ON_BID }
   ];
 
+  // Mapping between ProjectStatus enum string and integer (as per C# enum order)
+  private statusToInt(status: ProjectStatus): number {
+    const mapping: Record<ProjectStatus, number> = {
+      [ProjectStatus.ON_GOING]: 0,
+      [ProjectStatus.CRITICAL]: 1,
+      [ProjectStatus.HOLD_ON]: 2,
+      [ProjectStatus.RUSH]: 3,
+      [ProjectStatus.TO_CHECK]: 4,
+      [ProjectStatus.UPCOMING]: 5,
+      [ProjectStatus.PUSHED_OUT]: 6,
+      [ProjectStatus.ON_BID]: 7
+    };
+    return mapping[status] ?? 0;
+  }
+
+  // Mapping between integer and ProjectStatus enum string
+  private intToStatus(value: number): ProjectStatus {
+    const mapping: Record<number, ProjectStatus> = {
+      0: ProjectStatus.ON_GOING,
+      1: ProjectStatus.CRITICAL,
+      2: ProjectStatus.HOLD_ON,
+      3: ProjectStatus.RUSH,
+      4: ProjectStatus.TO_CHECK,
+      5: ProjectStatus.UPCOMING,
+      6: ProjectStatus.PUSHED_OUT,
+      7: ProjectStatus.ON_BID
+    };
+    return mapping[value] ?? ProjectStatus.UPCOMING;
+  }
+
   // Priority options removed - not part of simplified model
 
   constructor(
@@ -100,11 +129,12 @@ export class ProjectForm implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private serviceProvider: ServiceProviderService
   ) {
-    // Usa servizi mock in assenza di backend
-    this.projectService = new MockProjectService() as any;
-    this.lookupService = new MockLookupService() as any;
+    // Use services based on configuration (mock or real API)
+    this.projectService = this.serviceProvider.provideProjectService();
+    this.lookupService = this.serviceProvider.provideLookupService();
     this.projectForm = this.fb.group({
       numeroProgetto: ['', Validators.required],
       nomeProgetto: ['', Validators.required],
@@ -162,96 +192,96 @@ export class ProjectForm implements OnInit {
     };
 
     this.lookupService.getClienti().subscribe({
-      next: (clienti) => {
+      next: (clienti: Cliente[]) => {
         this.clienti = clienti;
         console.log('Clienti loaded:', clienti);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading clienti:', error);
         checkAllLoaded();
       }
     });
 
     this.lookupService.getStati().subscribe({
-      next: (stati) => {
+      next: (stati: Stato[]) => {
         this.stati = stati;
         console.log('Stati loaded:', stati);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading stati:', error);
         checkAllLoaded();
       }
     });
 
     this.lookupService.getTeamTecnici().subscribe({
-      next: (teams) => {
+      next: (teams: TeamTecnico[]) => {
         this.teamTecnici = teams;
         console.log('Team Tecnici loaded:', teams);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading team tecnici:', error);
         checkAllLoaded();
       }
     });
 
     this.lookupService.getTeamAPL().subscribe({
-      next: (teams) => {
+      next: (teams: TeamAPL[]) => {
         this.teamAPL = teams;
         console.log('Team APL loaded:', teams);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading team APL:', error);
         checkAllLoaded();
       }
     });
 
     this.lookupService.getSales().subscribe({
-      next: (sales) => {
+      next: (sales: Sales[]) => {
         this.sales = sales;
         console.log('Sales loaded:', sales);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading sales:', error);
         checkAllLoaded();
       }
     });
 
     this.lookupService.getProjectManagers().subscribe({
-      next: (pms) => {
+      next: (pms: ProjectManager[]) => {
         this.projectManagers = pms;
         console.log('Project Managers loaded:', pms);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading project managers:', error);
         checkAllLoaded();
       }
     });
 
     this.lookupService.getSquadreInstallazione().subscribe({
-      next: (squadre) => {
+      next: (squadre: SquadraInstallazione[]) => {
         this.squadreInstallazione = squadre;
         console.log('Squadre Installazione loaded:', squadre);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading squadre installazione:', error);
         checkAllLoaded();
       }
     });
 
     this.lookupService.getProdottiMaster().subscribe({
-      next: (prodotti) => {
+      next: (prodotti: ProdottoMaster[]) => {
         this.prodottiMaster = prodotti;
         console.log('Prodotti Master loaded:', prodotti);
         checkAllLoaded();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading prodotti master:', error);
         checkAllLoaded();
       }
@@ -261,9 +291,16 @@ export class ProjectForm implements OnInit {
   loadProject() {
     if (this.projectId) {
       this.projectService.getProject(this.projectId).subscribe({
-        next: (project) => {
+        next: (project: Project) => {
           console.log('Project loaded:', project);
-          this.projectForm.patchValue(project);
+          
+          // Convert statoProgetto from integer to enum string if needed
+          const projectData = { ...project };
+          if (typeof project.statoProgetto === 'number') {
+            projectData.statoProgetto = this.intToStatus(project.statoProgetto);
+          }
+          
+          this.projectForm.patchValue(projectData);
           
           // Load levels and products from project data
           this.livelli = project.livelli || [];
@@ -275,7 +312,7 @@ export class ProjectForm implements OnInit {
           // Hide loading skeleton
           this.loadingProject = false;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error loading project:', error);
           this.loadingProject = false;
           this.messageService.add({
@@ -306,18 +343,86 @@ export class ProjectForm implements OnInit {
   saveProject() {
     if (this.projectForm.valid) {
       this.loading = true;
-      const projectData = {
-        ...this.projectForm.value,
-        livelli: this.livelli,
-        prodotti: this.prodotti
+      const formValue = this.projectForm.value;
+      
+      // Helper function to format dates to ISO string
+      const formatDate = (date: any): string | undefined => {
+        if (!date) return undefined;
+        if (date instanceof Date) {
+          return date.toISOString().split('.')[0]; // Remove milliseconds
+        }
+        if (typeof date === 'string' && date.trim() !== '') {
+          // If it's already a string, try to parse and format it
+          const parsedDate = new Date(date);
+          if (!isNaN(parsedDate.getTime())) {
+            return parsedDate.toISOString().split('.')[0];
+          }
+          return date; // Return as-is if it's already formatted
+        }
+        return undefined;
       };
+
+      // Helper function to clean empty strings
+      const cleanValue = (value: any): any => {
+        if (value === '' || value === null) return undefined;
+        return value;
+      };
+
+      // Build the project data object with proper formatting
+      const projectData: any = {
+        numeroProgetto: formValue.numeroProgetto,
+        cliente: formValue.cliente,
+        nomeProgetto: formValue.nomeProgetto,
+        citta: cleanValue(formValue.citta),
+        stato: cleanValue(formValue.stato),
+        codiceSAP: cleanValue(formValue.codiceSAP),
+        teamTecnico: cleanValue(formValue.teamTecnico),
+        teamAPL: cleanValue(formValue.teamAPL),
+        sales: cleanValue(formValue.sales),
+        projectManager: cleanValue(formValue.projectManager),
+        teamInstallazione: cleanValue(formValue.teamInstallazione),
+        dataCreazione: formatDate(formValue.dataCreazione) || new Date().toISOString().split('.')[0],
+        dataInizioInstallazione: formatDate(formValue.dataInizioInstallazione),
+        dataFineInstallazione: formatDate(formValue.dataFineInstallazione),
+        versioneWIC: cleanValue(formValue.versioneWIC),
+        ultimaModifica: this.isEdit ? formatDate(new Date()) : undefined,
+        valoreProgetto: cleanValue(formValue.valoreProgetto),
+        marginePrevisto: cleanValue(formValue.marginePrevisto),
+        costiSostenuti: formValue.costiSostenuti || 0,
+        statoProgetto: formValue.statoProgetto ? this.statusToInt(formValue.statoProgetto) : 0,
+        note: cleanValue(formValue.note)
+      };
+
+      // Add livelli and prodotti only if they exist
+      if (this.livelli && this.livelli.length > 0) {
+        projectData.livelli = this.livelli.map(livello => ({
+          ...livello,
+          dataInizioInstallazione: formatDate(livello.dataInizioInstallazione),
+          dataFineInstallazione: formatDate(livello.dataFineInstallazione),
+          dataCaricamento: formatDate(livello.dataCaricamento)
+        }));
+      }
+
+      if (this.prodotti && this.prodotti.length > 0) {
+        projectData.prodotti = this.prodotti;
+      }
+
+      // Remove undefined fields to clean up the payload
+      Object.keys(projectData).forEach(key => {
+        if (projectData[key] === undefined) {
+          delete projectData[key];
+        }
+      });
+
+      // Log the payload being sent for debugging
+      console.log('Sending project data:', JSON.stringify(projectData, null, 2));
 
       const saveOperation = this.isEdit 
         ? this.projectService.updateProject(this.projectId!, projectData)
         : this.projectService.createProject(projectData);
 
       saveOperation.subscribe({
-        next: (project) => {
+        next: (project: Project) => {
           this.messageService.add({
             severity: 'success',
             summary: 'Successo',
@@ -325,12 +430,65 @@ export class ProjectForm implements OnInit {
           });
           this.router.navigate(['/projects', project.numeroProgetto]);
         },
-        error: (error) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore nel salvataggio del progetto'
-          });
+        error: (error: any) => {
+          console.error('Error saving project:', error);
+          console.error('Error response:', error.error);
+          
+          let errorDetail = 'Errore nel salvataggio del progetto';
+          
+          // Check for validation errors (ASP.NET Core format)
+          if (error.error && error.error.errors) {
+            const validationErrors = error.error.errors;
+            const errorMessages: string[] = [];
+            
+            // Extract validation errors for each field
+            Object.keys(validationErrors).forEach(field => {
+              const fieldErrors = validationErrors[field];
+              if (Array.isArray(fieldErrors)) {
+                fieldErrors.forEach((msg: string) => {
+                  errorMessages.push(`${field}: ${msg}`);
+                });
+              } else if (typeof fieldErrors === 'string') {
+                errorMessages.push(`${field}: ${fieldErrors}`);
+              }
+            });
+            
+            if (errorMessages.length > 0) {
+              errorDetail = 'Errori di validazione:\n' + errorMessages.join('\n');
+            } else if (error.error.title) {
+              errorDetail = error.error.title;
+            }
+          } else if (error.error && error.error.message) {
+            errorDetail = error.error.message;
+          } else if (error.error && typeof error.error === 'string') {
+            errorDetail = error.error;
+          } else if (error.error && error.error.title) {
+            errorDetail = error.error.title;
+          }
+          
+          // Show multiple messages if there are many validation errors
+          if (error.error && error.error.errors && Object.keys(error.error.errors).length > 3) {
+            // Show first error as summary
+            const firstError = Object.keys(error.error.errors)[0];
+            const firstErrorMsg = Array.isArray(error.error.errors[firstError]) 
+              ? error.error.errors[firstError][0] 
+              : error.error.errors[firstError];
+            
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errori di validazione',
+              detail: `${firstError}: ${firstErrorMsg} (e ${Object.keys(error.error.errors).length - 1} altri errori - vedi console)`,
+              life: 10000
+            });
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail: errorDetail,
+              life: 10000
+            });
+          }
+          
           this.loading = false;
         }
       });

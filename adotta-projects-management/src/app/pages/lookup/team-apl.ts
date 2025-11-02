@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
-import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 import { TeamAPL } from '../../models/lookup.model';
 
 @Component({
@@ -229,15 +229,16 @@ export class TeamAPLComponent implements OnInit {
   globalFilter = '';
 
   teamForm: FormGroup;
-  private lookupService: LookupService;
+  private lookupService: LookupService | any;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private serviceProvider: ServiceProviderService
   ) {
-    // Use mock service for development
-    this.lookupService = new MockLookupService() as any;
+    // Use services based on configuration (mock or real API)
+    this.lookupService = this.serviceProvider.provideLookupService();
     this.teamForm = this.fb.group({
       id: [''],
       nome: ['', Validators.required],
@@ -256,11 +257,11 @@ export class TeamAPLComponent implements OnInit {
   loadTeamAPL() {
     this.loading = true;
     this.lookupService.getTeamAPL().subscribe({
-      next: (teamAPL) => {
+      next: (teamAPL: TeamAPL[]) => {
         this.teamAPL = teamAPL;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Errore nel caricamento team APL:', error);
         this.loading = false;
       }
@@ -298,7 +299,7 @@ export class TeamAPLComponent implements OnInit {
           this.showDialog = false;
           this.loadTeamAPL();
         },
-        error: (error) => {
+        error: (error: any) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',
@@ -327,7 +328,7 @@ export class TeamAPLComponent implements OnInit {
             });
             this.loadTeamAPL();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Errore',

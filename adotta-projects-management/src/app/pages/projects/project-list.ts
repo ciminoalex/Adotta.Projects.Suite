@@ -19,8 +19,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
-import { MockProjectService } from '../../services/mock/mock-project.service';
-import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 import { Project, ProjectStatus } from '../../models/project.model';
 import { Cliente, ProjectManager } from '../../models/lookup.model';
 
@@ -79,17 +78,18 @@ export class ProjectList implements OnInit {
   clienti: Cliente[] = [];
   projectManagers: ProjectManager[] = [];
 
-  private projectService: ProjectService;
-  private lookupService: LookupService;
+  private projectService: ProjectService | any;
+  private lookupService: LookupService | any;
 
   constructor(
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private serviceProvider: ServiceProviderService
   ) {
-    // Use mock services for development
-    this.projectService = new MockProjectService() as any;
-    this.lookupService = new MockLookupService() as any;
+    // Use services based on configuration (mock or real API)
+    this.projectService = this.serviceProvider.provideProjectService();
+    this.lookupService = this.serviceProvider.provideLookupService();
   }
 
   ngOnInit() {
@@ -140,11 +140,11 @@ export class ProjectList implements OnInit {
   }
 
   loadLookupData() {
-    this.lookupService.getClienti().subscribe(clienti => {
+    this.lookupService.getClienti().subscribe((clienti: Cliente[]) => {
       this.clienti = clienti;
     });
 
-    this.lookupService.getProjectManagers().subscribe(pms => {
+    this.lookupService.getProjectManagers().subscribe((pms: ProjectManager[]) => {
       this.projectManagers = pms;
     });
   }
@@ -152,12 +152,12 @@ export class ProjectList implements OnInit {
   loadProjects() {
     this.loading = true;
     this.projectService.getProjects().subscribe({
-      next: (projects) => {
+      next: (projects: Project[]) => {
         this.projects = projects;
         this.filteredProjects = projects;
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Errore nel caricamento progetti:', error);
         this.loading = false;
       }
@@ -204,7 +204,7 @@ export class ProjectList implements OnInit {
             });
             this.loadProjects();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Errore',

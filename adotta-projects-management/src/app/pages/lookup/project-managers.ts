@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
-import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 import { ProjectManager } from '../../models/lookup.model';
 
 @Component({
@@ -229,15 +229,16 @@ export class ProjectManagers implements OnInit {
   globalFilter = '';
 
   pmForm: FormGroup;
-  private lookupService: LookupService;
+  private lookupService: LookupService | any;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private serviceProvider: ServiceProviderService
   ) {
-    // Use mock service for development
-    this.lookupService = new MockLookupService() as any;
+    // Use services based on configuration (mock or real API)
+    this.lookupService = this.serviceProvider.provideLookupService();
     this.pmForm = this.fb.group({
       id: [''],
       nome: ['', Validators.required],
@@ -255,12 +256,14 @@ export class ProjectManagers implements OnInit {
 
   loadProjectManagers() {
     this.loading = true;
+    console.log('ProjectManagers.loadProjectManagers() - lookupService type:', this.lookupService?.constructor?.name);
     this.lookupService.getProjectManagers().subscribe({
-      next: (projectManagers) => {
+      next: (projectManagers: ProjectManager[]) => {
         this.projectManagers = projectManagers;
         this.loading = false;
+        console.log('ProjectManagers loaded:', projectManagers.length);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Errore nel caricamento project managers:', error);
         this.loading = false;
       }
@@ -298,7 +301,7 @@ export class ProjectManagers implements OnInit {
           this.showDialog = false;
           this.loadProjectManagers();
         },
-        error: (error) => {
+        error: (error: any) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',
@@ -327,7 +330,7 @@ export class ProjectManagers implements OnInit {
             });
             this.loadProjectManagers();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Errore',

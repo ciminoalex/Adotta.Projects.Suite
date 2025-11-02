@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -11,10 +12,11 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
-import { MockProjectService } from '../../services/mock/mock-project.service';
 import { AuthService } from '../../services/auth.service';
 import { TimesheetService } from '../../services/timesheet.service';
 import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
+import { ServiceConfigurationService } from '../../services/service-configuration.service';
 import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus, MessaggioProgetto } from '../../models/project.model';
 import { TimesheetOverview } from '../../models/timesheet.model';
 
@@ -84,15 +86,23 @@ export class ProjectDetail implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private authService: AuthService
+    private authService: AuthService,
+    private serviceProvider: ServiceProviderService,
+    private serviceConfig: ServiceConfigurationService,
+    private http: HttpClient
   ) {
-    // Usa servizi mock in assenza di backend
-    this.projectService = new MockProjectService() as any;
-    this.timesheetService = new MockTimesheetService() as any;
+    // Use services based on configuration (mock or real API)
+    this.projectService = this.serviceProvider.provideProjectService();
+    // TimesheetService: use mock if configured, otherwise use real service
+    if (this.serviceConfig.getUseMockServices()) {
+      this.timesheetService = new MockTimesheetService() as any;
+    } else {
+      this.timesheetService = new TimesheetService(this.http);
+    }
   }
 
-  private projectService: ProjectService;
-  private timesheetService: TimesheetService;
+  private projectService: ProjectService | any;
+  private timesheetService: TimesheetService | any;
   
 
   ngOnInit() {
@@ -112,12 +122,12 @@ export class ProjectDetail implements OnInit {
     this.loading = true;
     
     this.projectService.getProject(numeroProgetto).subscribe({
-      next: (project) => {
+      next: (project: Project) => {
         this.project = project;
         this.loadRelatedData(numeroProgetto);
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Errore nel caricamento progetto:', error);
         this.loading = false;
         this.messageService.add({
@@ -135,20 +145,20 @@ export class ProjectDetail implements OnInit {
 
   loadRelatedData(numeroProgetto: string) {
     // Load livelli
-    this.projectService.getLivelliProgetto(numeroProgetto).subscribe(livelli => {
+    this.projectService.getLivelliProgetto(numeroProgetto).subscribe((livelli: LivelloProgetto[]) => {
       this.livelli = livelli;
     });
 
     // Load prodotti
-    this.projectService.getProdottiProgetto(numeroProgetto).subscribe(prodotti => {
+    this.projectService.getProdottiProgetto(numeroProgetto).subscribe((prodotti: ProdottoProgetto[]) => {
       this.prodotti = prodotti;
     });
 
     // Load timesheet overview - use getTimesheetByProject and calculate overview
     this.timesheetService.getTimesheetByProject(numeroProgetto).subscribe({
-      next: (entries) => {
+      next: (entries: any[]) => {
         // Calculate overview from entries
-        const totaleOre = entries.reduce((sum, entry) => sum + entry.oreLavorate, 0);
+        const totaleOre = entries.reduce((sum: number, entry: any) => sum + entry.oreLavorate, 0);
         this.totaleOreRendicontate = totaleOre;
         this.numeroRendicontazioni = entries.length;
         
@@ -173,7 +183,7 @@ export class ProjectDetail implements OnInit {
     });
 
     // Load storico modifiche
-    this.projectService.getStoricoModifiche(numeroProgetto).subscribe(storico => {
+    this.projectService.getStoricoModifiche(numeroProgetto).subscribe((storico: StoricoModifica[]) => {
       this.storicoModifiche = storico;
       // Solo se non ci sono dati reali, usa i mock per test estetico
       if (!storico || storico.length === 0) {
@@ -196,9 +206,9 @@ export class ProjectDetail implements OnInit {
   loadChatMessages(numeroProgetto: string) {
     // Load messages from service
     this.projectService.getMessaggiProgetto(numeroProgetto).subscribe({
-      next: (messaggi) => {
+      next: (messaggi: MessaggioProgetto[]) => {
         // Convert MessaggioProgetto to ChatMessage
-        this.chatMessages = messaggi.map(msg => ({
+        this.chatMessages = messaggi.map((msg: MessaggioProgetto) => ({
           id: msg.id?.toString() || '0',
           utente: msg.utente,
           messaggio: msg.messaggio,
@@ -206,7 +216,7 @@ export class ProjectDetail implements OnInit {
           avatar: this.getInitials(msg.utente)
         }));
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading chat messages:', error);
         this.chatMessages = [];
       }
@@ -232,7 +242,7 @@ export class ProjectDetail implements OnInit {
       
       // Save message via service
       this.projectService.addMessaggioProgetto(messaggio).subscribe({
-        next: (savedMessage) => {
+        next: (savedMessage: MessaggioProgetto) => {
           // Add to local array for immediate display
           const chatMsg: ChatMessage = {
             id: savedMessage.id?.toString() || Date.now().toString(),
@@ -245,7 +255,7 @@ export class ProjectDetail implements OnInit {
           this.chatMessages.unshift(chatMsg);
           this.newMessage = '';
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error saving message:', error);
         }
       });

@@ -10,7 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
-import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 import { Cliente } from '../../models/lookup.model';
 
 @Component({
@@ -239,15 +239,16 @@ export class Clienti implements OnInit {
   globalFilter = '';
 
   clienteForm: FormGroup;
-  private lookupService: LookupService;
+  private lookupService: LookupService | any;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private serviceProvider: ServiceProviderService
   ) {
-    // Use mock service for development
-    this.lookupService = new MockLookupService() as any;
+    // Use services based on configuration (mock or real API)
+    this.lookupService = this.serviceProvider.provideLookupService();
     this.clienteForm = this.fb.group({
       id: [''],
       nome: ['', Validators.required],
@@ -266,12 +267,14 @@ export class Clienti implements OnInit {
 
   loadClienti() {
     this.loading = true;
+    console.log('Clienti.loadClienti() - lookupService type:', this.lookupService?.constructor?.name);
     this.lookupService.getClienti().subscribe({
-      next: (clienti) => {
+      next: (clienti: Cliente[]) => {
         this.clienti = clienti;
         this.loading = false;
+        console.log('Clienti loaded:', clienti.length);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Errore nel caricamento clienti:', error);
         this.loading = false;
       }
@@ -309,7 +312,7 @@ export class Clienti implements OnInit {
           this.showDialog = false;
           this.loadClienti();
         },
-        error: (error) => {
+        error: (error: any) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',
@@ -338,7 +341,7 @@ export class Clienti implements OnInit {
             });
             this.loadClienti();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Errore',
