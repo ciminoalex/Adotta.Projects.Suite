@@ -28,7 +28,8 @@ export class AppMenu {
                 label: 'Gestione Progetti',
                 items: [
                     { label: 'Lista Progetti', icon: 'pi pi-fw pi-list', routerLink: ['/projects'] },
-                    { label: 'Nuovo Progetto', icon: 'pi pi-fw pi-plus', routerLink: ['/projects/new'] }
+                    { label: 'Nuovo Progetto', icon: 'pi pi-fw pi-plus', routerLink: ['/projects/new'] },
+                    { label: 'GANTT', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/projects/gantt'] }
                 ]
             },
             {
