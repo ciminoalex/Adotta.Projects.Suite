@@ -57,8 +57,8 @@ export interface ModificaRaggruppata {
 })
 export class ProjectDetail implements OnInit {
   project?: Project;
-  livelli: LivelloProgetto[] = [];
-  prodotti: ProdottoProgetto[] = [];
+  livelli: LivelloProgetto[] = []; // Ora ogni livello contiene i suoi prodotti
+  prodotti: ProdottoProgetto[] = []; // Mantenuto per retrocompatibilità
   storicoModifiche: StoricoModifica[] = [];
   loading = false;
   
@@ -144,14 +144,15 @@ export class ProjectDetail implements OnInit {
   }
 
   loadRelatedData(numeroProgetto: string) {
-    // Load livelli
+    // Load livelli (ora includono già i prodotti)
     this.projectService.getLivelliProgetto(numeroProgetto).subscribe((livelli: LivelloProgetto[]) => {
-      this.livelli = livelli;
-    });
-
-    // Load prodotti
-    this.projectService.getProdottiProgetto(numeroProgetto).subscribe((prodotti: ProdottoProgetto[]) => {
-      this.prodotti = prodotti;
+      // Aggiungi proprietà expanded a ogni livello
+      this.livelli = livelli.map(livello => ({
+        ...livello,
+        expanded: false
+      }));
+      // Calcola il totale dei prodotti per retrocompatibilità
+      this.prodotti = livelli.flatMap(livello => livello.prodotti || []);
     });
 
     // Load timesheet overview - use getTimesheetByProject and calculate overview
@@ -511,8 +512,8 @@ export class ProjectDetail implements OnInit {
         dataModifica: new Date('2024-01-16T13:10:00'),
         utenteModifica: 'Paolo Bianchi',
         campoModificato: 'Numero Progetto',
-        valorePrecedente: 'PRJ-2024-001',
-        nuovoValore: 'PRJ-2024-002'
+        valorePrecedente: '24001',
+        nuovoValore: '24002'
       },
 
       // Istanza 6: Elena Verde - 15/01/2024 11:30 - Riorganizzazione team
@@ -658,8 +659,8 @@ export class ProjectDetail implements OnInit {
         dataModifica: new Date('2024-01-10T10:30:00'),
         utenteModifica: 'Davide Verde',
         campoModificato: 'Numero Progetto',
-        valorePrecedente: 'PRJ-2024-001',
-        nuovoValore: 'PRJ-2024-002'
+        valorePrecedente: '24001',
+        nuovoValore: '24002'
       },
       {
         id: 32,
@@ -747,8 +748,8 @@ export class ProjectDetail implements OnInit {
         dataModifica: new Date('2024-01-06T11:25:00'),
         utenteModifica: 'Marco Bianchi',
         campoModificato: 'Numero Progetto',
-        valorePrecedente: 'PRJ-2024-001',
-        nuovoValore: 'PRJ-2024-002'
+        valorePrecedente: '24001',
+        nuovoValore: '24002'
       },
       {
         id: 41,

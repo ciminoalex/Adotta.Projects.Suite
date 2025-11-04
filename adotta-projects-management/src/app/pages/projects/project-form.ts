@@ -314,7 +314,19 @@ export class ProjectForm implements OnInit {
           this.projectForm.patchValue(projectData);
           
           // Load levels and products from project data
-          this.livelli = project.livelli || [];
+          // Ora i prodotti sono subordinati ai livelli
+          const livelliWithProdotti = (project.livelli || []).map(livello => {
+            // Carica i prodotti per questo livello
+            const prodottiDelLivello = (project.prodotti || []).filter(p => p.livelloId === livello.id);
+            return {
+              ...livello,
+              prodotti: prodottiDelLivello || [],
+              expanded: false
+            };
+          });
+          
+          this.livelli = livelliWithProdotti;
+          // Mantieni prodotti per retrocompatibilità
           this.prodotti = project.prodotti || [];
           
           console.log('Livelli loaded:', this.livelli);
@@ -405,17 +417,29 @@ export class ProjectForm implements OnInit {
       };
 
       // Add livelli and prodotti only if they exist
+      // Ora i prodotti sono subordinati ai livelli
       if (this.livelli && this.livelli.length > 0) {
         projectData.livelli = this.livelli.map(livello => ({
           ...livello,
           dataInizioInstallazione: formatDate(livello.dataInizioInstallazione),
           dataFineInstallazione: formatDate(livello.dataFineInstallazione),
-          dataCaricamento: formatDate(livello.dataCaricamento)
+          dataCaricamento: formatDate(livello.dataCaricamento),
+          // Rimuovi prodotti e expanded dal livello (non vanno salvati nel backend)
+          prodotti: undefined,
+          expanded: undefined
         }));
-      }
-
-      if (this.prodotti && this.prodotti.length > 0) {
-        projectData.prodotti = this.prodotti;
+        
+        // Raccogli tutti i prodotti dai livelli
+        const allProdotti = this.livelli.flatMap(livello => 
+          (livello.prodotti || []).map(prodotto => ({
+            ...prodotto,
+            livelloId: livello.id
+          }))
+        );
+        
+        if (allProdotti.length > 0) {
+          projectData.prodotti = allProdotti;
+        }
       }
 
       // Remove undefined fields to clean up the payload
@@ -518,6 +542,14 @@ export class ProjectForm implements OnInit {
     });
     this.showLevelDialog = true;
   }
+  
+  // Helper per inizializzare prodotti vuoti quando si crea un livello
+  private initializeLevelProdotti(livello: LivelloProgetto): LivelloProgetto {
+    if (!livello.prodotti) {
+      livello.prodotti = [];
+    }
+    return livello;
+  }
 
   editLevel(livello: LivelloProgetto) {
     this.editingLevel = livello;
@@ -539,7 +571,14 @@ export class ProjectForm implements OnInit {
         // Update existing level
         const index = this.livelli.findIndex(l => l === this.editingLevel);
         if (index !== -1) {
-          this.livelli[index] = { ...this.editingLevel, ...levelData };
+          // Mantieni i prodotti esistenti
+          const prodottiEsistenti = this.editingLevel.prodotti || [];
+          this.livelli[index] = { 
+            ...this.editingLevel, 
+            ...levelData,
+            prodotti: prodottiEsistenti,
+            expanded: this.editingLevel.expanded || false
+          };
         }
       } else {
         // Add new level
@@ -547,7 +586,9 @@ export class ProjectForm implements OnInit {
           ...levelData,
           id: Math.max(...this.livelli.map(l => l.id || 0), 0) + 1,
           progettoId: this.projectId ? parseInt(this.projectId) : 0,
-          dataCaricamento: new Date()
+          dataCaricamento: new Date(),
+          prodotti: [], // Inizializza array prodotti vuoto
+          expanded: false
         };
         this.livelli.push(newLevel);
       }
@@ -571,61 +612,139 @@ export class ProjectForm implements OnInit {
   }
 
   deleteLevel(livello: LivelloProgetto) {
+    const numProdotti = (livello.prodotti || []).length;
+    const message = numProdotti > 0 
+      ? `Sei sicuro di voler eliminare questo livello? Verranno eliminati anche ${numProdotti} prodotti associati.`
+      : 'Sei sicuro di voler eliminare questo livello?';
+    
     this.confirmationService.confirm({
-      message: 'Sei sicuro di voler eliminare questo livello?',
+      message: message,
       header: 'Conferma Eliminazione',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
+        // Elimina anche i prodotti associati al livello
+        if (livello.id) {
+          this.prodotti = this.prodotti.filter(p => p.livelloId !== livello.id);
+        }
         this.livelli = this.livelli.filter(l => l !== livello);
         this.messageService.add({
           severity: 'success',
           summary: 'Successo',
-          detail: 'Livello eliminato con successo'
+          detail: numProdotti > 0 
+            ? `Livello eliminato con ${numProdotti} prodotti associati`
+            : 'Livello eliminato con successo'
         });
       }
     });
   }
 
   // Products Management Methods
-  addProduct() {
+  addProduct(livello?: LivelloProgetto) {
+    // Se non viene passato un livello, cerca il primo disponibile o mostra errore
+    if (!livello && this.livelli.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Attenzione',
+        detail: 'Devi prima creare un livello per aggiungere prodotti'
+      });
+      return;
+    }
+    
+    // Se non viene passato un livello, usa il primo
+    const targetLivello = livello || this.livelli[0];
+    
     this.editingProduct = undefined;
     this.productForm = this.fb.group({
       tipoProdotto: ['', Validators.required],
       variante: ['', Validators.required],
       qMq: [0, [Validators.required, Validators.min(0)]],
-      qFt: [0, [Validators.required, Validators.min(0)]]
+      qFt: [0, [Validators.required, Validators.min(0)]],
+      livelloId: [targetLivello.id, Validators.required] // Memorizza il livelloId
     });
     this.showProductDialog = true;
+    // Memorizza il livello target per quando si salva
+    (this.productForm as any).targetLivello = targetLivello;
   }
 
   editProduct(prodotto: ProdottoProgetto) {
     this.editingProduct = prodotto;
+    // Trova il livello associato al prodotto
+    const livello = this.livelli.find(l => l.id === prodotto.livelloId);
+    
     this.productForm = this.fb.group({
       tipoProdotto: [prodotto.tipoProdotto, Validators.required],
       variante: [prodotto.variante, Validators.required],
       qMq: [prodotto.qMq, [Validators.required, Validators.min(0)]],
-      qFt: [prodotto.qFt, [Validators.required, Validators.min(0)]]
+      qFt: [prodotto.qFt, [Validators.required, Validators.min(0)]],
+      livelloId: [prodotto.livelloId, Validators.required]
     });
     this.showProductDialog = true;
+    // Memorizza il livello target
+    (this.productForm as any).targetLivello = livello;
   }
 
   saveProduct() {
     if (this.productForm?.valid) {
       const productData = this.productForm.value;
+      const targetLivello = (this.productForm as any).targetLivello;
+      
+      if (!targetLivello || !productData.livelloId) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'Livello non specificato'
+        });
+        return;
+      }
+      
+      // Assicurati che il livello abbia un array prodotti
+      if (!targetLivello.prodotti) {
+        targetLivello.prodotti = [];
+      }
       
       if (this.editingProduct) {
         // Update existing product
-        const index = this.prodotti.findIndex(p => p === this.editingProduct);
-        if (index !== -1) {
-          this.prodotti[index] = { ...this.editingProduct, ...productData };
+        const livelloIndex = this.livelli.findIndex(l => l.id === targetLivello.id);
+        if (livelloIndex !== -1) {
+          const prodottoIndex = targetLivello.prodotti.findIndex((p: ProdottoProgetto) => p === this.editingProduct);
+          if (prodottoIndex !== -1) {
+            // Aggiorna il prodotto nel livello
+            this.livelli[livelloIndex].prodotti![prodottoIndex] = { 
+              ...this.editingProduct, 
+              ...productData,
+              livelloId: productData.livelloId
+            };
+            
+            // Aggiorna anche nella lista prodotti (per retrocompatibilità)
+            const prodottiIndex = this.prodotti.findIndex(p => p === this.editingProduct);
+            if (prodottiIndex !== -1) {
+              this.prodotti[prodottiIndex] = { 
+                ...this.editingProduct, 
+                ...productData,
+                livelloId: productData.livelloId
+              };
+            }
+          }
         }
       } else {
         // Add new product
         const newProduct: ProdottoProgetto = {
           ...productData,
           id: Math.max(...this.prodotti.map(p => p.id || 0), 0) + 1,
-          progettoId: this.projectId ? parseInt(this.projectId) : 0
+          progettoId: this.projectId ? parseInt(this.projectId) : 0,
+          livelloId: productData.livelloId
         };
+        
+        // Aggiungi al livello
+        const livelloIndex = this.livelli.findIndex(l => l.id === targetLivello.id);
+        if (livelloIndex !== -1) {
+          if (!this.livelli[livelloIndex].prodotti) {
+            this.livelli[livelloIndex].prodotti = [];
+          }
+          this.livelli[livelloIndex].prodotti!.push(newProduct);
+        }
+        
+        // Aggiungi anche alla lista prodotti (per retrocompatibilità)
         this.prodotti.push(newProduct);
       }
       
@@ -653,7 +772,17 @@ export class ProjectForm implements OnInit {
       header: 'Conferma Eliminazione',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
+        // Trova il livello e rimuovi il prodotto
+        if (prodotto.livelloId) {
+          const livello = this.livelli.find(l => l.id === prodotto.livelloId);
+          if (livello && livello.prodotti) {
+            livello.prodotti = livello.prodotti.filter(p => p !== prodotto);
+          }
+        }
+        
+        // Rimuovi anche dalla lista prodotti (per retrocompatibilità)
         this.prodotti = this.prodotti.filter(p => p !== prodotto);
+        
         this.messageService.add({
           severity: 'success',
           summary: 'Successo',

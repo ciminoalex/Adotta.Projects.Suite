@@ -382,92 +382,101 @@
       <p-table *ngIf="!loadingProject" [value]="livelli" [paginator]="false" [rows]="10" styleClass="p-datatable-sm">
         <ng-template pTemplate="header">
           <tr>
+            <th style="width: 40px"></th>
             <th>Nome</th>
             <th>Ordine</th>
             <th>Descrizione</th>
             <th>Data Inizio</th>
             <th>Data Fine</th>
-            <th style="width: 120px">Azioni</th>
+            <th style="text-align: right">Prodotti</th>
+            <th style="width: 180px">Azioni</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-livello>
           <tr>
+            <td>
+              <button 
+                type="button"
+                class="p-button p-button-text p-button-sm"
+                (click)="livello.expanded = !livello.expanded; $event.preventDefault(); $event.stopPropagation()"
+                *ngIf="livello.prodotti && livello.prodotti.length > 0">
+                <i [class]="livello.expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+              </button>
+            </td>
             <td>{{ livello.nome }}</td>
             <td>{{ livello.ordine }}</td>
             <td>{{ livello.descrizione }}</td>
             <td>{{ livello.dataInizioInstallazione | date:'dd/MM/yyyy' }}</td>
             <td>{{ livello.dataFineInstallazione | date:'dd/MM/yyyy' }}</td>
+            <td style="text-align: right">
+              <span class="p-tag p-tag-info">{{ (livello.prodotti || []).length }}</span>
+            </td>
             <td>
               <div class="flex gap-1">
-                <p-button [text]="true" size="small" (click)="editLevel(livello)">
+                <p-button [text]="true" size="small" (click)="editLevel(livello)" pTooltip="Modifica Livello">
                   <i class="pi pi-pencil"></i>
                 </p-button>
-                <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteLevel(livello)">
+                <p-button [text]="true" size="small" (click)="addProduct(livello)" pTooltip="Aggiungi Prodotto">
+                  <i class="pi pi-plus"></i>
+                </p-button>
+                <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteLevel(livello)" pTooltip="Elimina Livello">
                   <i class="pi pi-trash"></i>
                 </p-button>
+              </div>
+            </td>
+          </tr>
+          <!-- Righe prodotti espandibili -->
+          <tr *ngIf="livello.expanded && livello.prodotti && livello.prodotti.length > 0">
+            <td colspan="8" class="p-0">
+              <div class="border-l-4 border-primary ml-4 p-4 bg-gray-25">
+                <div class="flex items-center justify-between mb-3">
+                  <h5 class="text-900 font-semibold m-0">Prodotti del Livello</h5>
+                  <p-button [text]="true" size="small" (click)="addProduct(livello)">
+                    <i class="pi pi-plus mr-2"></i>
+                    Aggiungi Prodotto
+                  </p-button>
+                </div>
+                <p-table [value]="livello.prodotti" [paginator]="false" styleClass="p-datatable-sm">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Tipo Prodotto</th>
+                      <th>Variante</th>
+                      <th>Quantità (m²)</th>
+                      <th>Quantità (ft)</th>
+                      <th style="width: 120px">Azioni</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-prodotto>
+                    <tr>
+                      <td>{{ prodotto.tipoProdotto }}</td>
+                      <td>{{ prodotto.variante }}</td>
+                      <td>{{ prodotto.qMq }}</td>
+                      <td>{{ prodotto.qFt }}</td>
+                      <td>
+                        <div class="flex gap-1">
+                          <p-button [text]="true" size="small" (click)="editProduct(prodotto)">
+                            <i class="pi pi-pencil"></i>
+                          </p-button>
+                          <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteProduct(prodotto)">
+                            <i class="pi pi-trash"></i>
+                          </p-button>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                    <tr>
+                      <td colspan="5" class="text-center text-500">Nessun prodotto aggiunto a questo livello</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
               </div>
             </td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="6" class="text-center text-500">Nessun livello aggiunto</td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-
-    <!-- Prodotti Progetto -->
-    <div class="card mb-4">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-900 font-bold text-xl">Prodotti Progetto</h3>
-        <p-button *ngIf="!loadingProject" [outlined]="true" (click)="addProduct()">
-          <i class="pi pi-plus mr-2"></i>
-          Aggiungi Prodotto
-        </p-button>
-      </div>
-      
-      <!-- Skeleton loader for products table -->
-      <div *ngIf="loadingProject">
-        <p-skeleton height="2rem" class="mb-2"></p-skeleton>
-        <p-skeleton height="3rem" class="mb-2"></p-skeleton>
-        <p-skeleton height="3rem" class="mb-2"></p-skeleton>
-        <p-skeleton height="3rem" class="mb-2"></p-skeleton>
-        <p-skeleton height="3rem"></p-skeleton>
-      </div>
-      
-      <!-- Actual products table -->
-      <p-table *ngIf="!loadingProject" [value]="prodotti" [paginator]="false" [rows]="10" styleClass="p-datatable-sm">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Tipo Prodotto</th>
-            <th>Variante</th>
-            <th>Quantità (m²)</th>
-            <th>Quantità (ft)</th>
-            <th style="width: 120px">Azioni</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-prodotto>
-          <tr>
-            <td>{{ prodotto.tipoProdotto }}</td>
-            <td>{{ prodotto.variante }}</td>
-            <td>{{ prodotto.qMq }}</td>
-            <td>{{ prodotto.qFt }}</td>
-            <td>
-              <div class="flex gap-1">
-                <p-button [text]="true" size="small" (click)="editProduct(prodotto)">
-                  <i class="pi pi-pencil"></i>
-                </p-button>
-                <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteProduct(prodotto)">
-                  <i class="pi pi-trash"></i>
-                </p-button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="5" class="text-center text-500">Nessun prodotto aggiunto</td>
+            <td colspan="8" class="text-center text-500">Nessun livello aggiunto</td>
           </tr>
         </ng-template>
       </p-table>
@@ -547,6 +556,15 @@
           [closable]="true">
   <form [formGroup]="productForm" *ngIf="productForm">
     <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-12">
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded mb-3">
+          <p class="text-sm text-blue-800 m-0">
+            <i class="pi pi-info-circle mr-2"></i>
+            Il prodotto verrà aggiunto al livello selezionato
+          </p>
+        </div>
+      </div>
+      
       <div class="col-span-12 md:col-span-6">
         <label class="block text-900 font-medium mb-2">Tipo Prodotto *</label>
         <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>

@@ -146,7 +146,7 @@
     </p-card>
     </div>
 
-    <!-- Livelli -->
+    <!-- Livelli e Prodotti -->
     <div class="col-span-12 mb-4">
     <p-card>
       <div class="flex justify-between items-center mb-4">
@@ -157,68 +157,76 @@
       <p-table [value]="livelli" styleClass="p-datatable-sm">
         <ng-template pTemplate="header">
           <tr>
+            <th style="width: 40px"></th>
             <th>#</th>
             <th>Nome</th>
             <th>Descrizione</th>
             <th style="text-align: right">Inizio Installazione</th>
             <th style="text-align: right">Fine Installazione</th>
-            <!--th>Caricamento</th-->
+            <th style="text-align: right">Prodotti</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-livello>
           <tr>
+            <td>
+              <button 
+                class="p-button p-button-text p-button-sm"
+                (click)="livello.expanded = !livello.expanded"
+                *ngIf="livello.prodotti && livello.prodotti.length > 0">
+                <i [class]="livello.expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+              </button>
+            </td>
             <td>{{ livello.ordine }}</td>
             <td class="font-bold">{{ livello.nome }}</td>
             <td>{{ livello.descrizione }}</td>
             <td style="text-align: right">{{ livello.dataInizioInstallazione ? (livello.dataInizioInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
             <td style="text-align: right">{{ livello.dataFineInstallazione ? (livello.dataFineInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
-            <!--td>{{ livello.dataCaricamento ? (livello.dataCaricamento | date:'dd/MM/yyyy') : '-' }}</td-->
+            <td style="text-align: right">
+              <span class="p-tag p-tag-info">{{ (livello.prodotti || []).length }} prodotti</span>
+            </td>
+          </tr>
+          <!-- Righe prodotti espandibili -->
+          <tr *ngIf="livello.expanded && livello.prodotti && livello.prodotti.length > 0">
+            <td colspan="7" class="p-0">
+              <div class="border-l-4 border-primary ml-4 p-4 bg-gray-25">
+                <h5 class="text-900 font-semibold mb-3">Prodotti del Livello</h5>
+                <p-table [value]="livello.prodotti" styleClass="p-datatable-sm">
+                  <ng-template pTemplate="header">
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Variante</th>
+                      <th style="text-align: right">Quantità (m²)</th>
+                      <th style="text-align: right">Quantità (ft)</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="body" let-prodotto>
+                    <tr>
+                      <td>
+                        <p-tag [value]="prodotto.tipoProdotto" 
+                               [severity]="getTipoProdottoSeverity(prodotto.tipoProdotto)">
+                        </p-tag>
+                      </td>
+                      <td>{{ prodotto.variante || '-' }}</td>
+                      <td class="font-bold" style="text-align: right">{{ prodotto.qMq }}</td>
+                      <td class="font-bold" style="text-align: right">{{ prodotto.qFt }}</td>
+                    </tr>
+                  </ng-template>
+                  <ng-template pTemplate="emptymessage">
+                    <tr>
+                      <td colspan="4" class="text-center p-4 text-500">
+                        Nessun prodotto definito per questo livello
+                      </td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            </td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="6" class="text-center p-4 text-500">
+            <td colspan="7" class="text-center p-4 text-500">
               Nessun livello definito
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </p-card>
-    </div>
-
-    <!-- Prodotti -->
-    <div class="col-span-12 mb-4">
-    <p-card>
-      <div class="flex justify-between items-center mb-4">
-        <h4 class="text-900 font-bold">Prodotti del Progetto</h4>
-        <span class="p-tag p-tag-info">{{ prodotti.length }} prodotti</span>
-      </div>
-
-      <p-table [value]="prodotti" styleClass="p-datatable-sm">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Tipo</th>
-            <th>Variante</th>
-            <th style="text-align: right">Quantità (m²)</th>
-            <th style="text-align: right">Quantità (ft)</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-prodotto>
-          <tr>
-            <td>
-              <p-tag [value]="prodotto.tipoProdotto" 
-                     [severity]="getTipoProdottoSeverity(prodotto.tipoProdotto)">
-              </p-tag>
-            </td>
-            <td>{{ prodotto.variante || '-' }}</td>
-            <td class="font-bold" style="text-align: right">{{ prodotto.qMq }}</td>
-            <td class="font-bold" style="text-align: right">{{ prodotto.qFt }}</td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="4" class="text-center p-4 text-500">
-              Nessun prodotto definito
             </td>
           </tr>
         </ng-template>

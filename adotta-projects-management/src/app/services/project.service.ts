@@ -64,7 +64,17 @@ export class ProjectService {
     return this.http.get<ProdottoProgetto[]>(`${this.apiUrl}/${numeroProgetto}/prodotti`);
   }
 
+  // Get prodotti by livello
+  getProdottiByLivello(numeroProgetto: string, livelloId: number): Observable<ProdottoProgetto[]> {
+    return this.http.get<ProdottoProgetto[]>(`${this.apiUrl}/${numeroProgetto}/livelli/${livelloId}/prodotti`);
+  }
+
   addProdottoProgetto(numeroProgetto: string, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
+    // Se il prodotto ha un livelloId, usa l'endpoint specifico per livello
+    if (prodotto.livelloId) {
+      return this.http.post<ProdottoProgetto>(`${this.apiUrl}/${numeroProgetto}/livelli/${prodotto.livelloId}/prodotti`, prodotto);
+    }
+    // Altrimenti usa l'endpoint generico (per retrocompatibilità)
     return this.http.post<ProdottoProgetto>(`${this.apiUrl}/${numeroProgetto}/prodotti`, prodotto);
   }
 

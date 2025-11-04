@@ -43,12 +43,17 @@ export interface LivelloProgetto {
   dataInizioInstallazione?: Date;
   dataFineInstallazione?: Date;
   dataCaricamento?: Date;
+  // Prodotti subordinati al livello
+  prodotti?: ProdottoProgetto[];
+  // Proprietà UI per espansione (non viene salvata nel backend)
+  expanded?: boolean;
 }
 
 export interface ProdottoProgetto {
   // Proprietà dell'entità Prodotto dal diagramma
   id?: number;
   progettoId: number;
+  livelloId?: number; // FK al livello - ora i prodotti sono subordinati ai livelli
   tipoProdotto: string;
   variante: string;
   qMq: number;

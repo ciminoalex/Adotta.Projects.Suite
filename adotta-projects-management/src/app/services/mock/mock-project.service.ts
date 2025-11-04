@@ -266,7 +266,15 @@ export class MockProjectService {
   getLivelliProgetto(numeroProgetto: string): Observable<LivelloProgetto[]> {
     const project = this.mockData.findProject(numeroProgetto);
     if (project && project.livelli) {
-      return of(project.livelli).pipe(delay(300));
+      // Per ogni livello, carica i prodotti associati
+      const livelliConProdotti = project.livelli.map(livello => {
+        const prodottiDelLivello = project.prodotti?.filter(p => p.livelloId === livello.id) || [];
+        return {
+          ...livello,
+          prodotti: prodottiDelLivello
+        };
+      });
+      return of(livelliConProdotti).pipe(delay(300));
     }
     return of([]).pipe(delay(300));
   }
@@ -339,6 +347,12 @@ export class MockProjectService {
       const index = project.livelli.findIndex(l => l.id === livelloId);
       if (index !== -1) {
         project.livelli.splice(index, 1);
+        
+        // Elimina anche tutti i prodotti associati al livello
+        if (project.prodotti) {
+          project.prodotti = project.prodotti.filter(p => p.livelloId !== livelloId);
+        }
+        
       this.mockData.updateProject(numeroProgetto, project);
       
       // Add change log
@@ -347,7 +361,7 @@ export class MockProjectService {
         data: new Date(),
         utente: this.getCurrentUserName(),
         azione: 'livello_deleted',
-        descrizione: `Livello eliminato`
+        descrizione: `Livello eliminato (con relativi prodotti)`
       });
       
         return of(undefined).pipe(delay(300));
@@ -355,11 +369,22 @@ export class MockProjectService {
     throw new Error(`Livello with ID ${livelloId} not found`);
   }
 
-  // Prodotti Progetto
+  // Prodotti Progetto - ora restituisce tutti i prodotti raggruppati per livello
+  // Per compatibilità, manteniamo questo metodo ma ora i prodotti sono subordinati ai livelli
   getProdottiProgetto(numeroProgetto: string): Observable<ProdottoProgetto[]> {
     const project = this.mockData.findProject(numeroProgetto);
     if (project && project.prodotti) {
       return of(project.prodotti).pipe(delay(300));
+    }
+    return of([]).pipe(delay(300));
+  }
+
+  // Get prodotti by livello
+  getProdottiByLivello(numeroProgetto: string, livelloId: number): Observable<ProdottoProgetto[]> {
+    const project = this.mockData.findProject(numeroProgetto);
+    if (project && project.prodotti) {
+      const prodottiDelLivello = project.prodotti.filter(p => p.livelloId === livelloId);
+      return of(prodottiDelLivello).pipe(delay(300));
     }
     return of([]).pipe(delay(300));
   }
@@ -370,6 +395,16 @@ export class MockProjectService {
       throw new Error(`Project ${numeroProgetto} not found`);
     }
     
+    // Verifica che il livelloId sia valido
+    if (!prodotto.livelloId) {
+      throw new Error(`LivelloId is required for prodotto`);
+    }
+    
+    // Verifica che il livello esista
+    if (!project.livelli || !project.livelli.find(l => l.id === prodotto.livelloId)) {
+      throw new Error(`Livello with ID ${prodotto.livelloId} not found`);
+    }
+    
       if (!project.prodotti) {
         project.prodotti = [];
       }
@@ -378,7 +413,8 @@ export class MockProjectService {
       const newProdotto = {
         ...prodotto,
         id: Math.max(...project.prodotti.map(p => p.id || 0), 0) + 1,
-      progettoId: numericId
+      progettoId: numericId,
+      livelloId: prodotto.livelloId
       };
     
       project.prodotti.push(newProdotto);
@@ -390,7 +426,7 @@ export class MockProjectService {
       data: new Date(),
       utente: this.getCurrentUserName(),
       azione: 'prodotto_added',
-      descrizione: `Prodotto "${newProdotto.tipoProdotto}" aggiunto`
+      descrizione: `Prodotto "${newProdotto.tipoProdotto}" aggiunto al livello`
     });
     
       return of(newProdotto).pipe(delay(400));
