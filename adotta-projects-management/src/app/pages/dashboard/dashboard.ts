@@ -88,8 +88,9 @@ export class Dashboard implements OnInit {
     }
   }
 
-  getStatusTagClass(stato: ProjectStatus): string {
-    switch (stato) {
+  getStatusTagClass(stato: ProjectStatus | string | undefined): string {
+    const value = typeof stato === 'string' ? stato as ProjectStatus : stato;
+    switch (value) {
       case ProjectStatus.CRITICAL: return 'p-tag-danger';
       case ProjectStatus.HOLD_ON: return 'p-tag-danger';
       case ProjectStatus.RUSH: return 'p-tag-warning';

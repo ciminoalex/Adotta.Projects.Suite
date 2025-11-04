@@ -270,10 +270,10 @@ export class ProjectDetail implements OnInit {
     return [...this.chatMessages].sort((a, b) => b.dataOra.getTime() - a.dataOra.getTime());
   }
 
-  getStatusSeverity(status?: ProjectStatus): string {
+  getStatusSeverity(status?: ProjectStatus | string): string {
     if (!status) return 'secondary';
-    
-    switch (status) {
+    const value = typeof status === 'string' ? status as ProjectStatus : status;
+    switch (value) {
       case ProjectStatus.CRITICAL: return 'danger';
       case ProjectStatus.HOLD_ON: return 'danger';
       case ProjectStatus.RUSH: return 'warning';

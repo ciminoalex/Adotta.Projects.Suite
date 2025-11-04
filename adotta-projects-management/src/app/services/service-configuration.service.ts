@@ -21,7 +21,7 @@ export class ServiceConfigurationService {
     // Check environment variable or configuration
     // Set to false to use real API endpoints
     // You can also check environment: return environment.production === false;
-    return false; // Change to true to enable mock services 
+    return true; // Change to true to enable mock services 
   }
 
   private initializeApiBaseUrl(): string {
