@@ -169,7 +169,7 @@ interface ChangeLog {
 **Esempio di utilizzo:**
 ```typescript
 // Ottieni il change log di un progetto
-projectService.getChangeLogProgetto('PRJ-2024-001').subscribe(
+projectService.getChangeLogProgetto('24001').subscribe(
   logs => console.log('Storico modifiche:', logs)
 );
 ```

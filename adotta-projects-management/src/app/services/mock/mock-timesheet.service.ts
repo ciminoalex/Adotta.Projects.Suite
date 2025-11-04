@@ -8,8 +8,8 @@ export class MockTimesheetService {
   private mockTimesheetEntries: TimesheetEntry[] = [
     {
       id: 1,
-      progettoId: 'PRJ-2024-001',
-      numeroProgetto: 'PRJ-2024-001',
+      progettoId: '24001',
+      numeroProgetto: '24001',
       nomeProgetto: 'Progetto Alpha',
       cliente: 'Acme Corp',
       dataRendicontazione: new Date('2024-01-15'),
@@ -21,8 +21,8 @@ export class MockTimesheetService {
     },
     {
       id: 2,
-      progettoId: 'PRJ-2024-001',
-      numeroProgetto: 'PRJ-2024-001',
+      progettoId: '24001',
+      numeroProgetto: '24001',
       nomeProgetto: 'Progetto Alpha',
       cliente: 'Acme Corp',
       dataRendicontazione: new Date('2024-01-16'),
@@ -34,8 +34,8 @@ export class MockTimesheetService {
     },
     {
       id: 3,
-      progettoId: 'PRJ-2024-002',
-      numeroProgetto: 'PRJ-2024-002',
+      progettoId: '24002',
+      numeroProgetto: '24002',
       nomeProgetto: 'Progetto Beta',
       cliente: 'Tech Solutions',
       dataRendicontazione: new Date('2024-01-17'),

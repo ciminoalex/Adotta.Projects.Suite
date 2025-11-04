@@ -354,7 +354,7 @@ export class MockDataService {
       const sampleProjects: Project[] = [
         // ON GOING (Italia e città estere)
         {
-          numeroProgetto: 'PRJ-2024-001',
+          numeroProgetto: '24001',
           cliente: 'TechCorp Italia',
           nomeProgetto: 'Installazione HVAC Uffici Milano',
           citta: 'Milano',
@@ -373,7 +373,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-002',
+          numeroProgetto: '24002',
           cliente: 'Costruzioni SRL',
           nomeProgetto: 'Energia Sostenibile Barcellona',
           citta: 'Barcelona',
@@ -392,7 +392,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-003',
+          numeroProgetto: '24003',
           cliente: 'Global Offices',
           nomeProgetto: 'Upgrade IT - New York',
           citta: 'New York',
@@ -411,7 +411,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-004',
+          numeroProgetto: '24004',
           cliente: 'Innovatech',
           nomeProgetto: 'Tec Lab Francoforte',
           citta: 'Frankfurt',
@@ -430,7 +430,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-005',
+          numeroProgetto: '24005',
           cliente: 'Metro Rail',
           nomeProgetto: 'Rifacimento Segnaletica Chicago',
           citta: 'Chicago',
@@ -451,7 +451,7 @@ export class MockDataService {
 
         // CRITICAL (almeno 5, anche città estere)
         {
-          numeroProgetto: 'PRJ-2024-006',
+          numeroProgetto: '24006',
           cliente: 'Hospital Group',
           nomeProgetto: 'Rete Elettrica Reparto A',
           citta: 'Bologna',
@@ -471,7 +471,7 @@ export class MockDataService {
           note: 'Intervento d\'urgenza, scadenza ravvicinata'
         },
         {
-          numeroProgetto: 'PRJ-2024-007',
+          numeroProgetto: '24007',
           cliente: 'MegaLogistics',
           nomeProgetto: 'Blocchi doganali Rotterdam',
           citta: 'Rotterdam',
@@ -490,7 +490,7 @@ export class MockDataService {
           isInRitardo: true
         },
         {
-          numeroProgetto: 'PRJ-2024-008',
+          numeroProgetto: '24008',
           cliente: 'Capital Hotel',
           nomeProgetto: 'Antincendio Boston',
           citta: 'Boston',
@@ -509,7 +509,7 @@ export class MockDataService {
           isInRitardo: true
         },
         {
-          numeroProgetto: 'PRJ-2024-009',
+          numeroProgetto: '24009',
           cliente: 'EdilVita',
           nomeProgetto: 'Mancanza Materiali Oslo',
           citta: 'Oslo',
@@ -529,7 +529,7 @@ export class MockDataService {
           note: 'Blocchi su forniture in Norvegia'
         },
         {
-          numeroProgetto: 'PRJ-2024-010',
+          numeroProgetto: '24010',
           cliente: 'Energía Renovable',
           nomeProgetto: 'Subentro gruppo Madrid',
           citta: 'Madrid',
@@ -550,7 +550,7 @@ export class MockDataService {
 
         // HOLD ON
         {
-          numeroProgetto: 'PRJ-2024-011',
+          numeroProgetto: '24011',
           cliente: 'ASL Milano',
           nomeProgetto: 'Blocco Amministrazione Digitale',
           citta: 'Milano',
@@ -570,7 +570,7 @@ export class MockDataService {
           note: 'In attesa di approvazione'
         },
         {
-          numeroProgetto: 'PRJ-2024-012',
+          numeroProgetto: '24012',
           cliente: 'AcquaSana',
           nomeProgetto: 'Pausa impianto Parigi',
           citta: 'Paris',
@@ -589,7 +589,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-013',
+          numeroProgetto: '24013',
           cliente: 'Azienda Agricola Sole',
           nomeProgetto: 'Blocco lavori Miami',
           citta: 'Miami',
@@ -608,7 +608,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-014',
+          numeroProgetto: '24014',
           cliente: 'Farmacia Belvedere',
           nomeProgetto: 'Attesa autorizzazione sanitaria',
           citta: 'Brescia',
@@ -627,7 +627,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-015',
+          numeroProgetto: '24015',
           cliente: 'Farmacia Neuer Markt',
           nomeProgetto: 'Blocco lavori Berlino',
           citta: 'Berlin',
@@ -648,7 +648,7 @@ export class MockDataService {
 
         // RUSH
         {
-          numeroProgetto: 'PRJ-2024-016',
+          numeroProgetto: '24016',
           cliente: 'Immobiliare Roma SRL',
           nomeProgetto: 'Sistema Climatizzazione Roma Centro',
           citta: 'Roma',
@@ -668,7 +668,7 @@ export class MockDataService {
           note: 'Progetto prioritario per cliente'
         },
         {
-          numeroProgetto: 'PRJ-2024-017',
+          numeroProgetto: '24017',
           cliente: 'Wind Solution',
           nomeProgetto: 'Turbina Replacement',
           citta: 'Trieste',
@@ -687,7 +687,7 @@ export class MockDataService {
           isInRitardo: true
         },
         {
-          numeroProgetto: 'PRJ-2024-018',
+          numeroProgetto: '24018',
           cliente: 'Università Pisa',
           nomeProgetto: 'Aula Magna Restyling',
           citta: 'Pisa',
@@ -706,7 +706,7 @@ export class MockDataService {
           isInRitardo: true
         },
         {
-          numeroProgetto: 'PRJ-2024-019',
+          numeroProgetto: '24019',
           cliente: 'Delta Stores',
           nomeProgetto: 'Ampliamento Centro Logistico Londra',
           citta: 'London',
@@ -725,7 +725,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-020',
+          numeroProgetto: '24020',
           cliente: 'Skyline Corp',
           nomeProgetto: 'Urgent Security Upgrade - Dallas',
           citta: 'Dallas',
@@ -746,7 +746,7 @@ export class MockDataService {
 
         // TO CHECK
         {
-          numeroProgetto: 'PRJ-2024-021',
+          numeroProgetto: '24021',
           cliente: 'Supermercato Verde',
           nomeProgetto: 'Controllo Impianto Frigo',
           citta: 'Parma',
@@ -766,7 +766,7 @@ export class MockDataService {
           note: 'Richiesta verifica finale'
         },
         {
-          numeroProgetto: 'PRJ-2024-022',
+          numeroProgetto: '24022',
           cliente: 'Hotel Solemar',
           nomeProgetto: 'Check clima camere - Bruxelles',
           citta: 'Brussels',
@@ -785,7 +785,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-023',
+          numeroProgetto: '24023',
           cliente: 'Parco Verde',
           nomeProgetto: 'Controllo irrigazione Barcellona',
           citta: 'Barcelona',
@@ -804,7 +804,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-024',
+          numeroProgetto: '24024',
           cliente: 'Spazio Cultura',
           nomeProgetto: 'Verifica impianti sicurezza',
           citta: 'Roma',
@@ -823,7 +823,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-025',
+          numeroProgetto: '24025',
           cliente: 'School of Dublin',
           nomeProgetto: 'Safety check gym',
           citta: 'Dublin',
@@ -844,7 +844,7 @@ export class MockDataService {
 
         // UPCOMING
         {
-          numeroProgetto: 'PRJ-2024-026',
+          numeroProgetto: '24026',
           cliente: 'Napoli Centro',
           nomeProgetto: 'Ristrutturazione Impianti',
           citta: 'Napoli',
@@ -863,7 +863,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-027',
+          numeroProgetto: '24027',
           cliente: 'ItalGas',
           nomeProgetto: 'Nuova gas line - Amsterdam',
           citta: 'Amsterdam',
@@ -882,7 +882,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-028',
+          numeroProgetto: '24028',
           cliente: 'Sun Energy',
           nomeProgetto: 'Solar Impianto Phoenix',
           citta: 'Phoenix',
@@ -901,7 +901,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-029',
+          numeroProgetto: '24029',
           cliente: 'St. Patrick School',
           nomeProgetto: 'Digital classrooms',
           citta: 'Edinburgh',
@@ -920,7 +920,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-030',
+          numeroProgetto: '24030',
           cliente: 'Scuola Media Zara',
           nomeProgetto: 'Adeguamento classi digitali',
           citta: 'Pescara',
@@ -941,7 +941,7 @@ export class MockDataService {
 
         // PUSHED OUT
         {
-          numeroProgetto: 'PRJ-2024-031',
+          numeroProgetto: '24031',
           cliente: 'Biblioteca Comunale',
           nomeProgetto: 'Espansione sala lettura',
           citta: 'Frosinone',
@@ -960,7 +960,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-032',
+          numeroProgetto: '24032',
           cliente: 'Comune di Trieste',
           nomeProgetto: 'Rinnovamento Palazzo Civico',
           citta: 'Trieste',
@@ -979,7 +979,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-033',
+          numeroProgetto: '24033',
           cliente: 'Istituto Tecnico Pisa',
           nomeProgetto: 'Laboratori Informatica Monaco',
           citta: 'Munich',
@@ -998,7 +998,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-034',
+          numeroProgetto: '24034',
           cliente: 'Residenza Stella',
           nomeProgetto: 'Garage Coperto Zurigo',
           citta: 'Zurich',
@@ -1017,7 +1017,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-035',
+          numeroProgetto: '24035',
           cliente: 'City Offices',
           nomeProgetto: 'Expansion project Toronto',
           citta: 'Toronto',
@@ -1038,7 +1038,7 @@ export class MockDataService {
 
         // ON BID
         {
-          numeroProgetto: 'PRJ-2024-036',
+          numeroProgetto: '24036',
           cliente: 'Cooperativa Ovest',
           nomeProgetto: 'Nuovo Centro Commerciale',
           citta: 'Bologna',
@@ -1058,7 +1058,7 @@ export class MockDataService {
           note: 'Fase gara - valutazione'
         },
         {
-          numeroProgetto: 'PRJ-2024-037',
+          numeroProgetto: '24037',
           cliente: 'Aeroporto Linate',
           nomeProgetto: 'Espansione Terminal',
           citta: 'Milano',
@@ -1077,7 +1077,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-038',
+          numeroProgetto: '24038',
           cliente: 'Sanità AV',
           nomeProgetto: 'Rinnovamento sale operatorie Parigi',
           citta: 'Paris',
@@ -1096,7 +1096,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-039',
+          numeroProgetto: '24039',
           cliente: 'Cinema Alcione',
           nomeProgetto: 'Allestimento Sale 3D - Los Angeles',
           citta: 'Los Angeles',
@@ -1115,7 +1115,7 @@ export class MockDataService {
           isInRitardo: false
         },
         {
-          numeroProgetto: 'PRJ-2024-040',
+          numeroProgetto: '24040',
           cliente: 'EdilFuture',
           nomeProgetto: 'Gara nuovo campus Amburgo',
           citta: 'Hamburg',
