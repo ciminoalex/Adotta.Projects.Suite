@@ -266,9 +266,17 @@ export class MockProjectService {
   getLivelliProgetto(numeroProgetto: string): Observable<LivelloProgetto[]> {
     const project = this.mockData.findProject(numeroProgetto);
     if (project && project.livelli) {
-      // Per ogni livello, carica i prodotti associati
+      // I prodotti sono già dentro ogni livello nel mock data
+      // Se non ci sono prodotti nel livello, cerca anche in project.prodotti per retrocompatibilità
       const livelliConProdotti = project.livelli.map(livello => {
-        const prodottiDelLivello = project.prodotti?.filter(p => p.livelloId === livello.id) || [];
+        // Prima prova a prendere i prodotti direttamente dal livello
+        let prodottiDelLivello = livello.prodotti || [];
+        
+        // Se non ci sono prodotti nel livello, cerca in project.prodotti per retrocompatibilità
+        if (prodottiDelLivello.length === 0 && project.prodotti) {
+          prodottiDelLivello = project.prodotti.filter(p => p.livelloId === livello.id) || [];
+        }
+        
         return {
           ...livello,
           prodotti: prodottiDelLivello

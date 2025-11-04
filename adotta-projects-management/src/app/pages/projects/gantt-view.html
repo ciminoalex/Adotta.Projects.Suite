@@ -1,7 +1,7 @@
 <div class="card">
   <!-- Header con filtri -->
   <div class="mb-4">
-    <h1 class="text-900 font-bold text-2xl m-0 mb-4">Visualizzazione GANTT</h1>
+    <h1 class="text-900 font-bold text-2xl m-0 mb-4">Visualizzazione Gantt</h1>
     
     <div class="flex flex-column md:flex-row gap-3 align-items-end">
       <div class="flex-1">
@@ -12,7 +12,7 @@
           [showButtonBar]="true"
           [style]="{width: '100%'}"
           inputStyleClass="w-full"
-          (onSelect)="onPeriodChange()"
+          (onSelect)="onStartDateChange()"
           dateFormat="dd/mm/yy">
         </p-datepicker>
       </div>
@@ -25,18 +25,9 @@
           [showButtonBar]="true"
           [style]="{width: '100%'}"
           inputStyleClass="w-full"
-          (onSelect)="onPeriodChange()"
+          (onSelect)="onEndDateChange()"
           dateFormat="dd/mm/yy">
         </p-datepicker>
-      </div>
-      
-      <div>
-        <p-button 
-          label="Reset" 
-          severity="secondary" 
-          icon="pi pi-refresh"
-          (click)="resetFilters()">
-        </p-button>
       </div>
     </div>
   </div>
@@ -54,12 +45,24 @@
       <div class="gantt-row-header" style="width: 300px;">
         <div class="font-bold text-sm p-2">Informazioni</div>
       </div>
-      <div class="gantt-timeline-scroll">
-        <div class="gantt-timeline-labels">
+      <div class="gantt-timeline-scroll" #timelineScroll (scroll)="onTimelineScroll($event)">
+        <div class="gantt-timeline-labels" [style.width.px]="getTimelineWidth()" [style.min-width.px]="getTimelineWidth()">
+          <!-- Celle giornaliere -->
+          <div *ngFor="let day of getTimelineDays(); let i = index" 
+               class="gantt-day-cell"
+               [class.weekend]="day.getDay() === 0 || day.getDay() === 6"
+               [style.left.px]="i * dayWidth"
+               [style.width.px]="dayWidth">
+            <div class="day-label">{{ day.getDate() }}</div>
+            <div class="day-month-label" *ngIf="i === 0 || day.getDate() === 1">
+              {{ day.toLocaleDateString('it-IT', { month: 'short' }) }}
+            </div>
+          </div>
+          <!-- Linee di divisione principali (ogni settimana o ogni giorno se range piccolo) -->
           <div *ngFor="let label of getTimelineLabels()" 
                class="gantt-timeline-label"
-               [style.left.%]="((label.date.getTime() - minDate.getTime()) / (maxDate.getTime() - minDate.getTime())) * 100">
-            <div class="timeline-label-text">{{ label.label }}</div>
+               [style.left.px]="getDateLeft(label.date)">
+            <div class="timeline-label-text" *ngIf="daysInRange <= 60">{{ label.label }}</div>
             <div class="timeline-label-line"></div>
           </div>
         </div>
@@ -67,7 +70,7 @@
     </div>
 
     <!-- GANTT Rows -->
-    <div class="gantt-rows-container">
+    <div class="gantt-rows-container" #rowsScroll (scroll)="onRowsScroll($event)">
       <div *ngFor="let row of filteredRows; let i = index" class="gantt-row" [class.odd-row]="i % 2 === 0">
         <!-- Row Header -->
         <div class="gantt-row-header" style="width: 300px;">
@@ -81,12 +84,14 @@
         </div>
 
         <!-- GANTT Bar Area -->
-        <div class="gantt-bar-area">
+        <div class="gantt-bar-area" [style.width.px]="getTimelineWidth()" [style.min-width.px]="getTimelineWidth()">
+          <!-- Griglia giornaliera -->
           <div class="gantt-grid">
-            <!-- Timeline grid lines -->
-            <div *ngFor="let label of getTimelineLabels()" 
+            <!-- Linee verticali per ogni giorno -->
+            <div *ngFor="let day of getTimelineDays(); let i = index" 
                  class="gantt-grid-line"
-                 [style.left.%]="((label.date.getTime() - minDate.getTime()) / (maxDate.getTime() - minDate.getTime())) * 100">
+                 [class.weekend-line]="day.getDay() === 0 || day.getDay() === 6"
+                 [style.left.px]="i * dayWidth">
             </div>
           </div>
 
@@ -95,10 +100,12 @@
                *ngIf="row.dataInizio && row.dataFine">
             <div class="gantt-bar"
                  [class.overdue]="isOverdue(row)"
-                 [style.left.%]="getBarLeft(row)"
-                 [style.width.%]="getBarWidth(row)"
+                 [style.left.px]="getBarLeft(row)"
+                 [style.width.px]="getBarWidth(row)"
+                 [style.background-color]="getTeamColor(row.teamTecnico)"
                  [pTooltip]="row.numeroProgetto + ' - ' + row.nomeLivello + ': ' + formatDate(row.dataInizio) + ' / ' + formatDate(row.dataFine)"
-                 tooltipPosition="top">
+                 tooltipPosition="top"
+                 (click)="onBarClick(row, $event)">
               <div class="gantt-bar-content">
                 <span class="gantt-bar-text">{{ formatDate(row.dataInizio) }} - {{ formatDate(row.dataFine) }}</span>
               </div>
@@ -109,10 +116,13 @@
           <div class="gantt-bar-wrapper"
                *ngIf="(row.dataInizio && !row.dataFine) || (!row.dataInizio && row.dataFine)">
             <div class="gantt-bar gantt-bar-partial"
-                 [style.left.%]="getBarLeft(row)"
-                 [style.width.%]="getBarWidth(row)"
+                 [class.overdue]="isOverdue(row)"
+                 [style.left.px]="getBarLeft(row)"
+                 [style.width.px]="getBarWidth(row)"
+                 [style.background-color]="getTeamColor(row.teamTecnico)"
                  [pTooltip]="row.numeroProgetto + ' - ' + row.nomeLivello + ': ' + formatDate(row.dataInizio || row.dataFine)"
-                 tooltipPosition="top">
+                 tooltipPosition="top"
+                 (click)="onBarClick(row, $event)">
               <div class="gantt-bar-content">
                 <span class="gantt-bar-text">{{ formatDate(row.dataInizio || row.dataFine) }}</span>
               </div>
@@ -144,4 +154,7 @@
     </div>
   </div>
 </div>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 

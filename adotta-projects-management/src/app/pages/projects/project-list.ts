@@ -15,6 +15,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ProjectService } from '../../services/project.service';
@@ -48,6 +49,7 @@ interface Column {
     ToastModule,
     DialogModule,
     TooltipModule,
+    ToggleSwitchModule,
     DragDropModule
   ],
   providers: [ConfirmationService, MessageService],
@@ -62,6 +64,7 @@ export class ProjectList implements OnInit {
   cols!: Column[];
   selectedColumns!: Column[];
   showColumnOrderDialog = false;
+  groupByStatus = true;
 
 
   // Opzioni per i dropdown
@@ -336,23 +339,49 @@ export class ProjectList implements OnInit {
   }
 
   /**
-   * Calcola la quantità totale Mq dai prodotti del progetto
+   * Calcola la quantità totale Mq dai prodotti di tutti i livelli del progetto
    */
   getTotalMq(project: Project): number {
-    if (!project.prodotti || project.prodotti.length === 0) {
-      return 0;
+    let total = 0;
+    
+    // Prima: somma i prodotti da tutti i livelli
+    if (project.livelli && project.livelli.length > 0) {
+      project.livelli.forEach(livello => {
+        if (livello.prodotti && livello.prodotti.length > 0) {
+          total += livello.prodotti.reduce((sum, prodotto) => sum + (prodotto.qMq || 0), 0);
+        }
+      });
     }
-    return project.prodotti.reduce((sum, prodotto) => sum + (prodotto.qMq || 0), 0);
+    
+    // Fallback per retrocompatibilità: se non ci sono livelli o prodotti nei livelli, cerca in project.prodotti
+    if (total === 0 && project.prodotti && project.prodotti.length > 0) {
+      total = project.prodotti.reduce((sum, prodotto) => sum + (prodotto.qMq || 0), 0);
+    }
+    
+    return total;
   }
 
   /**
-   * Calcola la quantità totale Ft dai prodotti del progetto
+   * Calcola la quantità totale Ft dai prodotti di tutti i livelli del progetto
    */
   getTotalFt(project: Project): number {
-    if (!project.prodotti || project.prodotti.length === 0) {
-      return 0;
+    let total = 0;
+    
+    // Prima: somma i prodotti da tutti i livelli
+    if (project.livelli && project.livelli.length > 0) {
+      project.livelli.forEach(livello => {
+        if (livello.prodotti && livello.prodotti.length > 0) {
+          total += livello.prodotti.reduce((sum, prodotto) => sum + (prodotto.qFt || 0), 0);
+        }
+      });
     }
-    return project.prodotti.reduce((sum, prodotto) => sum + (prodotto.qFt || 0), 0);
+    
+    // Fallback per retrocompatibilità: se non ci sono livelli o prodotti nei livelli, cerca in project.prodotti
+    if (total === 0 && project.prodotti && project.prodotti.length > 0) {
+      total = project.prodotti.reduce((sum, prodotto) => sum + (prodotto.qFt || 0), 0);
+    }
+    
+    return total;
   }
 
   /**

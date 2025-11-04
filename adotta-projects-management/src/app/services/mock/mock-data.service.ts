@@ -370,7 +370,78 @@ export class MockDataService {
           versioneWIC: 'WIC-1.0',
           ultimaModifica: new Date('2024-01-20'),
           statoProgetto: ProjectStatus.ON_GOING,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 1,
+              progettoId: 1,
+              nome: 'Piano Terra',
+              ordine: 1,
+              descrizione: 'Installazione impianti HVAC piano terra',
+              dataInizioInstallazione: new Date('2024-02-01'),
+              dataFineInstallazione: new Date('2024-02-20'),
+              dataCaricamento: new Date('2024-01-15'),
+              prodotti: [
+                {
+                  id: 1,
+                  progettoId: 1,
+                  livelloId: 1,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Bianco',
+                  qMq: 250.5,
+                  qFt: 2696.38
+                },
+                {
+                  id: 2,
+                  progettoId: 1,
+                  livelloId: 1,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Metallo',
+                  qMq: 180.3,
+                  qFt: 1940.92
+                }
+              ]
+            },
+            {
+              id: 2,
+              progettoId: 1,
+              nome: 'Primo Piano',
+              ordine: 2,
+              descrizione: 'Installazione impianti HVAC primo piano',
+              dataInizioInstallazione: new Date('2024-02-21'),
+              dataFineInstallazione: new Date('2024-03-10'),
+              dataCaricamento: new Date('2024-01-15'),
+              prodotti: [
+                {
+                  id: 3,
+                  progettoId: 1,
+                  livelloId: 2,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Grigio',
+                  qMq: 320.0,
+                  qFt: 3444.45
+                },
+                {
+                  id: 4,
+                  progettoId: 1,
+                  livelloId: 2,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 150mm',
+                  qMq: 0,
+                  qFt: 0
+                },
+                {
+                  id: 5,
+                  progettoId: 1,
+                  livelloId: 2,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Standard',
+                  qMq: 150.2,
+                  qFt: 1616.74
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24002',
@@ -389,7 +460,60 @@ export class MockDataService {
           versioneWIC: 'WIC-1.3',
           ultimaModifica: new Date('2024-03-12'),
           statoProgetto: ProjectStatus.ON_GOING,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 3,
+              progettoId: 2,
+              nome: 'Fase 1 - Installazione Base',
+              ordine: 1,
+              descrizione: 'Installazione sistema base fotovoltaico',
+              dataInizioInstallazione: new Date('2024-03-10'),
+              dataFineInstallazione: new Date('2024-03-25'),
+              dataCaricamento: new Date('2024-03-05'),
+              prodotti: [
+                {
+                  id: 6,
+                  progettoId: 2,
+                  livelloId: 3,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Legno',
+                  qMq: 420.8,
+                  qFt: 4529.45
+                }
+              ]
+            },
+            {
+              id: 4,
+              progettoId: 2,
+              nome: 'Fase 2 - Completamento',
+              ordine: 2,
+              descrizione: 'Completamento installazione e test',
+              dataInizioInstallazione: new Date('2024-03-26'),
+              dataFineInstallazione: new Date('2024-04-15'),
+              dataCaricamento: new Date('2024-03-05'),
+              prodotti: [
+                {
+                  id: 7,
+                  progettoId: 2,
+                  livelloId: 4,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Nero',
+                  qMq: 280.5,
+                  qFt: 3019.29
+                },
+                {
+                  id: 8,
+                  progettoId: 2,
+                  livelloId: 4,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 200mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24003',
@@ -408,7 +532,60 @@ export class MockDataService {
           versioneWIC: 'WIC-2.0',
           ultimaModifica: new Date('2024-02-26'),
           statoProgetto: ProjectStatus.ON_GOING,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 8,
+              progettoId: 3,
+              nome: 'Fase 1 - Infrastruttura',
+              ordine: 1,
+              descrizione: 'Installazione infrastruttura IT base',
+              dataInizioInstallazione: new Date('2024-02-15'),
+              dataFineInstallazione: new Date('2024-03-20'),
+              dataCaricamento: new Date('2024-02-11'),
+              prodotti: [
+                {
+                  id: 15,
+                  progettoId: 3,
+                  livelloId: 8,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Nero',
+                  qMq: 450.0,
+                  qFt: 4843.76
+                },
+                {
+                  id: 16,
+                  progettoId: 3,
+                  livelloId: 8,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 150mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            },
+            {
+              id: 9,
+              progettoId: 3,
+              nome: 'Fase 2 - Completamento',
+              ordine: 2,
+              descrizione: 'Completamento installazione e configurazione',
+              dataInizioInstallazione: new Date('2024-03-21'),
+              dataFineInstallazione: new Date('2024-05-01'),
+              dataCaricamento: new Date('2024-02-11'),
+              prodotti: [
+                {
+                  id: 17,
+                  progettoId: 3,
+                  livelloId: 9,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Metallo',
+                  qMq: 320.5,
+                  qFt: 3450.35
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24004',
@@ -427,7 +604,48 @@ export class MockDataService {
           versioneWIC: 'WIC-1.6',
           ultimaModifica: new Date('2024-02-10'),
           statoProgetto: ProjectStatus.ON_GOING,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 10,
+              progettoId: 4,
+              nome: 'Lab Principale',
+              ordine: 1,
+              descrizione: 'Installazione laboratorio principale',
+              dataInizioInstallazione: new Date('2024-02-09'),
+              dataFineInstallazione: new Date('2024-03-19'),
+              dataCaricamento: new Date('2024-01-27'),
+              prodotti: [
+                {
+                  id: 18,
+                  progettoId: 4,
+                  livelloId: 10,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Premium',
+                  qMq: 280.0,
+                  qFt: 3013.89
+                },
+                {
+                  id: 19,
+                  progettoId: 4,
+                  livelloId: 10,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Bianco',
+                  qMq: 190.5,
+                  qFt: 2050.52
+                },
+                {
+                  id: 20,
+                  progettoId: 4,
+                  livelloId: 10,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 200mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24005',
@@ -446,7 +664,39 @@ export class MockDataService {
           versioneWIC: 'WIC-1.1',
           ultimaModifica: new Date('2024-02-20'),
           statoProgetto: ProjectStatus.ON_GOING,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 11,
+              progettoId: 5,
+              nome: 'Installazione Segnaletica',
+              ordine: 1,
+              descrizione: 'Installazione sistema segnaletica',
+              dataInizioInstallazione: new Date('2024-03-01'),
+              dataFineInstallazione: new Date('2024-03-25'),
+              dataCaricamento: new Date('2024-02-03'),
+              prodotti: [
+                {
+                  id: 21,
+                  progettoId: 5,
+                  livelloId: 11,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Vetro',
+                  qMq: 380.0,
+                  qFt: 4090.28
+                },
+                {
+                  id: 22,
+                  progettoId: 5,
+                  livelloId: 11,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Grigio',
+                  qMq: 220.5,
+                  qFt: 2373.96
+                }
+              ]
+            }
+          ]
         },
 
         // CRITICAL (almeno 5, anche città estere)
@@ -468,7 +718,69 @@ export class MockDataService {
           ultimaModifica: new Date('2024-01-15'),
           statoProgetto: ProjectStatus.CRITICAL,
           isInRitardo: true,
-          note: 'Intervento d\'urgenza, scadenza ravvicinata'
+          note: 'Intervento d\'urgenza, scadenza ravvicinata',
+          livelli: [
+            {
+              id: 6,
+              progettoId: 6,
+              nome: 'Sala Operazioni',
+              ordine: 1,
+              descrizione: 'Installazione rete elettrica sala operazioni',
+              dataInizioInstallazione: new Date('2024-01-10'),
+              dataFineInstallazione: new Date('2024-01-20'),
+              dataCaricamento: new Date('2024-01-02'),
+              prodotti: [
+                {
+                  id: 11,
+                  progettoId: 6,
+                  livelloId: 6,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Bianco',
+                  qMq: 150.0,
+                  qFt: 1614.58
+                },
+                {
+                  id: 12,
+                  progettoId: 6,
+                  livelloId: 6,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Vetro',
+                  qMq: 95.5,
+                  qFt: 1027.95
+                },
+                {
+                  id: 13,
+                  progettoId: 6,
+                  livelloId: 6,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Luxury',
+                  qMq: 120.3,
+                  qFt: 1294.95
+                }
+              ]
+            },
+            {
+              id: 7,
+              progettoId: 6,
+              nome: 'Reparto Degenze',
+              ordine: 2,
+              descrizione: 'Installazione rete elettrica reparto degenze',
+              dataInizioInstallazione: new Date('2024-01-21'),
+              dataFineInstallazione: new Date('2024-01-30'),
+              dataCaricamento: new Date('2024-01-02'),
+              prodotti: [
+                {
+                  id: 14,
+                  progettoId: 6,
+                  livelloId: 7,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Grigio',
+                  qMq: 200.0,
+                  qFt: 2152.78
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24007',
@@ -487,7 +799,39 @@ export class MockDataService {
           versioneWIC: 'WIC-1.5',
           ultimaModifica: new Date('2024-02-20'),
           statoProgetto: ProjectStatus.CRITICAL,
-          isInRitardo: true
+          isInRitardo: true,
+          livelli: [
+            {
+              id: 12,
+              progettoId: 7,
+              nome: 'Area Doganale Principale',
+              ordine: 1,
+              descrizione: 'Installazione blocchi doganali area principale',
+              dataInizioInstallazione: new Date('2024-02-03'),
+              dataFineInstallazione: new Date('2024-03-19'),
+              dataCaricamento: new Date('2024-01-15'),
+              prodotti: [
+                {
+                  id: 23,
+                  progettoId: 7,
+                  livelloId: 12,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Metallo',
+                  qMq: 500.0,
+                  qFt: 5381.96
+                },
+                {
+                  id: 24,
+                  progettoId: 7,
+                  livelloId: 12,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 150mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24008',
@@ -506,7 +850,48 @@ export class MockDataService {
           versioneWIC: 'WIC-2.2',
           ultimaModifica: new Date('2024-01-29'),
           statoProgetto: ProjectStatus.CRITICAL,
-          isInRitardo: true
+          isInRitardo: true,
+          livelli: [
+            {
+              id: 13,
+              progettoId: 8,
+              nome: 'Sistema Antincendio',
+              ordine: 1,
+              descrizione: 'Installazione sistema antincendio completo',
+              dataInizioInstallazione: new Date('2024-01-29'),
+              dataFineInstallazione: new Date('2024-02-12'),
+              dataCaricamento: new Date('2024-01-22'),
+              prodotti: [
+                {
+                  id: 25,
+                  progettoId: 8,
+                  livelloId: 13,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Bianco',
+                  qMq: 320.0,
+                  qFt: 3444.45
+                },
+                {
+                  id: 26,
+                  progettoId: 8,
+                  livelloId: 13,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Standard',
+                  qMq: 180.5,
+                  qFt: 1942.88
+                },
+                {
+                  id: 27,
+                  progettoId: 8,
+                  livelloId: 13,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 100mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24009',
@@ -526,7 +911,60 @@ export class MockDataService {
           ultimaModifica: new Date('2024-02-18'),
           statoProgetto: ProjectStatus.CRITICAL,
           isInRitardo: true,
-          note: 'Blocchi su forniture in Norvegia'
+          note: 'Blocchi su forniture in Norvegia',
+          livelli: [
+            {
+              id: 14,
+              progettoId: 9,
+              nome: 'Fase 1 - Preparazione',
+              ordine: 1,
+              descrizione: 'Preparazione area per installazione',
+              dataInizioInstallazione: new Date('2024-02-19'),
+              dataFineInstallazione: new Date('2024-03-05'),
+              dataCaricamento: new Date('2024-02-07'),
+              prodotti: [
+                {
+                  id: 28,
+                  progettoId: 9,
+                  livelloId: 14,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Legno',
+                  qMq: 280.0,
+                  qFt: 3013.89
+                }
+              ]
+            },
+            {
+              id: 15,
+              progettoId: 9,
+              nome: 'Fase 2 - Installazione',
+              ordine: 2,
+              descrizione: 'Installazione materiali disponibili',
+              dataInizioInstallazione: new Date('2024-03-06'),
+              dataFineInstallazione: new Date('2024-03-14'),
+              dataCaricamento: new Date('2024-02-07'),
+              prodotti: [
+                {
+                  id: 29,
+                  progettoId: 9,
+                  livelloId: 15,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Grigio',
+                  qMq: 200.5,
+                  qFt: 2158.16
+                },
+                {
+                  id: 30,
+                  progettoId: 9,
+                  livelloId: 15,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 200mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24010',
@@ -545,7 +983,39 @@ export class MockDataService {
           versioneWIC: 'WIC-3.0',
           ultimaModifica: new Date('2024-03-20'),
           statoProgetto: ProjectStatus.CRITICAL,
-          isInRitardo: true
+          isInRitardo: true,
+          livelli: [
+            {
+              id: 16,
+              progettoId: 10,
+              nome: 'Subentro Urgente',
+              ordine: 1,
+              descrizione: 'Subentro urgente gruppo elettrico',
+              dataInizioInstallazione: new Date('2024-03-20'),
+              dataFineInstallazione: new Date('2024-04-02'),
+              dataCaricamento: new Date('2024-03-13'),
+              prodotti: [
+                {
+                  id: 31,
+                  progettoId: 10,
+                  livelloId: 16,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Luxury',
+                  qMq: 350.0,
+                  qFt: 3767.37
+                },
+                {
+                  id: 32,
+                  progettoId: 10,
+                  livelloId: 16,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Nero',
+                  qMq: 250.5,
+                  qFt: 2696.38
+                }
+              ]
+            }
+          ]
         },
 
         // HOLD ON
@@ -567,7 +1037,39 @@ export class MockDataService {
           ultimaModifica: new Date('2024-01-22'),
           statoProgetto: ProjectStatus.HOLD_ON,
           isInRitardo: false,
-          note: 'In attesa di approvazione'
+          note: 'In attesa di approvazione',
+          livelli: [
+            {
+              id: 17,
+              progettoId: 11,
+              nome: 'Sistema Digitale',
+              ordine: 1,
+              descrizione: 'Installazione sistema amministrazione digitale',
+              dataInizioInstallazione: new Date('2024-02-14'),
+              dataFineInstallazione: new Date('2024-02-28'),
+              dataCaricamento: new Date('2024-01-19'),
+              prodotti: [
+                {
+                  id: 33,
+                  progettoId: 11,
+                  livelloId: 17,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Bianco',
+                  qMq: 200.0,
+                  qFt: 2152.78
+                },
+                {
+                  id: 34,
+                  progettoId: 11,
+                  livelloId: 17,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Metallo',
+                  qMq: 150.5,
+                  qFt: 1620.14
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24012',
@@ -586,7 +1088,30 @@ export class MockDataService {
           versioneWIC: 'WIC-1.7',
           ultimaModifica: new Date('2024-02-18'),
           statoProgetto: ProjectStatus.HOLD_ON,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 18,
+              progettoId: 12,
+              nome: 'Impianto Acque',
+              ordine: 1,
+              descrizione: 'Installazione impianto trattamento acque',
+              dataInizioInstallazione: new Date('2024-03-04'),
+              dataFineInstallazione: new Date('2024-03-18'),
+              dataCaricamento: new Date('2024-02-10'),
+              prodotti: [
+                {
+                  id: 35,
+                  progettoId: 12,
+                  livelloId: 18,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Standard',
+                  qMq: 280.0,
+                  qFt: 3013.89
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24013',
@@ -605,7 +1130,39 @@ export class MockDataService {
           versioneWIC: 'WIC-2.0',
           ultimaModifica: new Date('2024-03-10'),
           statoProgetto: ProjectStatus.HOLD_ON,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 19,
+              progettoId: 13,
+              nome: 'Area Agricola',
+              ordine: 1,
+              descrizione: 'Installazione impianti area agricola',
+              dataInizioInstallazione: new Date('2024-03-14'),
+              dataFineInstallazione: new Date('2024-04-10'),
+              dataCaricamento: new Date('2024-03-01'),
+              prodotti: [
+                {
+                  id: 36,
+                  progettoId: 13,
+                  livelloId: 19,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Legno',
+                  qMq: 420.5,
+                  qFt: 4526.22
+                },
+                {
+                  id: 37,
+                  progettoId: 13,
+                  livelloId: 19,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 150mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24014',
@@ -624,7 +1181,39 @@ export class MockDataService {
           versioneWIC: 'WIC-2.2',
           ultimaModifica: new Date('2024-03-22'),
           statoProgetto: ProjectStatus.HOLD_ON,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 20,
+              progettoId: 14,
+              nome: 'Sistema Sanitario',
+              ordine: 1,
+              descrizione: 'Installazione sistema sanitario',
+              dataInizioInstallazione: new Date('2024-04-01'),
+              dataFineInstallazione: new Date('2024-04-24'),
+              dataCaricamento: new Date('2024-03-16'),
+              prodotti: [
+                {
+                  id: 38,
+                  progettoId: 14,
+                  livelloId: 20,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Bianco',
+                  qMq: 180.0,
+                  qFt: 1937.50
+                },
+                {
+                  id: 39,
+                  progettoId: 14,
+                  livelloId: 20,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Premium',
+                  qMq: 120.5,
+                  qFt: 1297.05
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24015',
@@ -643,7 +1232,48 @@ export class MockDataService {
           versioneWIC: 'WIC-2.4',
           ultimaModifica: new Date('2024-03-19'),
           statoProgetto: ProjectStatus.HOLD_ON,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 21,
+              progettoId: 15,
+              nome: 'Impianto Farmacia',
+              ordine: 1,
+              descrizione: 'Installazione impianti farmacia',
+              dataInizioInstallazione: new Date('2024-04-05'),
+              dataFineInstallazione: new Date('2024-04-25'),
+              dataCaricamento: new Date('2024-03-06'),
+              prodotti: [
+                {
+                  id: 40,
+                  progettoId: 15,
+                  livelloId: 21,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Vetro',
+                  qMq: 250.0,
+                  qFt: 2690.98
+                },
+                {
+                  id: 41,
+                  progettoId: 15,
+                  livelloId: 21,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Grigio',
+                  qMq: 190.5,
+                  qFt: 2050.52
+                },
+                {
+                  id: 42,
+                  progettoId: 15,
+                  livelloId: 21,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 100mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
 
         // RUSH
@@ -665,7 +1295,39 @@ export class MockDataService {
           ultimaModifica: new Date('2024-04-15'),
           statoProgetto: ProjectStatus.RUSH,
           isInRitardo: false,
-          note: 'Progetto prioritario per cliente'
+          note: 'Progetto prioritario per cliente',
+          livelli: [
+            {
+              id: 5,
+              progettoId: 16,
+              nome: 'Livello Sottotetto',
+              ordine: 1,
+              descrizione: 'Installazione impianti climatizzazione sottotetto',
+              dataInizioInstallazione: new Date('2024-04-20'),
+              dataFineInstallazione: new Date('2024-05-15'),
+              dataCaricamento: new Date('2024-04-10'),
+              prodotti: [
+                {
+                  id: 9,
+                  progettoId: 16,
+                  livelloId: 5,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Premium',
+                  qMq: 380.5,
+                  qFt: 4095.49
+                },
+                {
+                  id: 10,
+                  progettoId: 16,
+                  livelloId: 5,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 100mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24017',
@@ -684,7 +1346,39 @@ export class MockDataService {
           versioneWIC: 'WIC-2.0',
           ultimaModifica: new Date('2024-03-17'),
           statoProgetto: ProjectStatus.RUSH,
-          isInRitardo: true
+          isInRitardo: true,
+          livelli: [
+            {
+              id: 22,
+              progettoId: 17,
+              nome: 'Sostituzione Turbina',
+              ordine: 1,
+              descrizione: 'Sostituzione turbina eolica',
+              dataInizioInstallazione: new Date('2024-03-22'),
+              dataFineInstallazione: new Date('2024-04-04'),
+              dataCaricamento: new Date('2024-03-11'),
+              prodotti: [
+                {
+                  id: 43,
+                  progettoId: 17,
+                  livelloId: 22,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Standard',
+                  qMq: 320.0,
+                  qFt: 3444.45
+                },
+                {
+                  id: 44,
+                  progettoId: 17,
+                  livelloId: 22,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 200mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24018',
@@ -703,7 +1397,48 @@ export class MockDataService {
           versioneWIC: 'WIC-1.8',
           ultimaModifica: new Date('2024-03-11'),
           statoProgetto: ProjectStatus.RUSH,
-          isInRitardo: true
+          isInRitardo: true,
+          livelli: [
+            {
+              id: 23,
+              progettoId: 18,
+              nome: 'Aula Magna',
+              ordine: 1,
+              descrizione: 'Restyling completo aula magna',
+              dataInizioInstallazione: new Date('2024-03-13'),
+              dataFineInstallazione: new Date('2024-03-21'),
+              dataCaricamento: new Date('2024-03-07'),
+              prodotti: [
+                {
+                  id: 45,
+                  progettoId: 18,
+                  livelloId: 23,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Legno',
+                  qMq: 450.5,
+                  qFt: 4849.14
+                },
+                {
+                  id: 46,
+                  progettoId: 18,
+                  livelloId: 23,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Bianco',
+                  qMq: 280.0,
+                  qFt: 3013.89
+                },
+                {
+                  id: 47,
+                  progettoId: 18,
+                  livelloId: 23,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Luxury',
+                  qMq: 150.5,
+                  qFt: 1620.14
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24019',
@@ -722,7 +1457,60 @@ export class MockDataService {
           versioneWIC: 'WIC-2.2',
           ultimaModifica: new Date('2024-04-10'),
           statoProgetto: ProjectStatus.RUSH,
-          isInRitardo: false
+          isInRitardo: false,
+          livelli: [
+            {
+              id: 24,
+              progettoId: 19,
+              nome: 'Fase 1 - Area Magazzino',
+              ordine: 1,
+              descrizione: 'Ampliamento area magazzino',
+              dataInizioInstallazione: new Date('2024-04-18'),
+              dataFineInstallazione: new Date('2024-05-10'),
+              dataCaricamento: new Date('2024-04-01'),
+              prodotti: [
+                {
+                  id: 48,
+                  progettoId: 19,
+                  livelloId: 24,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Grigio',
+                  qMq: 500.0,
+                  qFt: 5381.96
+                },
+                {
+                  id: 49,
+                  progettoId: 19,
+                  livelloId: 24,
+                  tipoProdotto: 'Condotto Ventilazione',
+                  variante: 'Diametro 150mm',
+                  qMq: 0,
+                  qFt: 0
+                }
+              ]
+            },
+            {
+              id: 25,
+              progettoId: 19,
+              nome: 'Fase 2 - Completamento',
+              ordine: 2,
+              descrizione: 'Completamento ampliamento',
+              dataInizioInstallazione: new Date('2024-05-11'),
+              dataFineInstallazione: new Date('2024-05-31'),
+              dataCaricamento: new Date('2024-04-01'),
+              prodotti: [
+                {
+                  id: 50,
+                  progettoId: 19,
+                  livelloId: 25,
+                  tipoProdotto: 'Wallen Premium',
+                  variante: 'Metallo',
+                  qMq: 380.5,
+                  qFt: 4095.49
+                }
+              ]
+            }
+          ]
         },
         {
           numeroProgetto: '24020',
@@ -741,7 +1529,39 @@ export class MockDataService {
           versioneWIC: 'WIC-2.6',
           ultimaModifica: new Date('2024-03-29'),
           statoProgetto: ProjectStatus.RUSH,
-          isInRitardo: true
+          isInRitardo: true,
+          livelli: [
+            {
+              id: 26,
+              progettoId: 20,
+              nome: 'Upgrade Sicurezza',
+              ordine: 1,
+              descrizione: 'Upgrade urgente sistema sicurezza',
+              dataInizioInstallazione: new Date('2024-03-31'),
+              dataFineInstallazione: new Date('2024-04-10'),
+              dataCaricamento: new Date('2024-03-28'),
+              prodotti: [
+                {
+                  id: 51,
+                  progettoId: 20,
+                  livelloId: 26,
+                  tipoProdotto: 'Metafora Standard',
+                  variante: 'Nero',
+                  qMq: 280.0,
+                  qFt: 3013.89
+                },
+                {
+                  id: 52,
+                  progettoId: 20,
+                  livelloId: 26,
+                  tipoProdotto: 'Armonica Comfort',
+                  variante: 'Premium',
+                  qMq: 200.5,
+                  qFt: 2158.16
+                }
+              ]
+            }
+          ]
         },
 
         // TO CHECK

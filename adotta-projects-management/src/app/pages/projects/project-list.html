@@ -20,7 +20,8 @@
     [showCurrentPageReport]="true"
     currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} progetti"
     [loading]="loading"
-    rowGroupMode="subheader" groupRowsBy="statoProgetto"
+    [rowGroupMode]="groupByStatus ? 'subheader' : undefined"
+    [groupRowsBy]="groupByStatus ? 'statoProgetto' : undefined"
     [scrollable]="true" [scrollHeight]="tableHeight"
     [rowHover]="true"
     [showGridlines]="false"
@@ -32,6 +33,10 @@
       <div class="flex items-center justify-between">
         <h5 class="m-0 flex-1 text-left">Project list</h5>
         <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2">
+            <label for="groupByStatus" class="text-sm font-medium">Raggruppa per Status</label>
+            <p-toggleswitch [(ngModel)]="groupByStatus" inputId="groupByStatus" />
+          </div>
           <p-iconfield iconPosition="left">
             <input pInputText type="text" placeholder="Cerca progetti..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
             <p-inputicon class="pi pi-search" />
@@ -46,9 +51,11 @@
       <tr>
         <th pSortableColumn="numeroProgetto" style="width: 60px">
           #
+          <p-sortIcon field="numeroProgetto" />
         </th>
-        <th *ngFor="let col of selectedColumns">
+        <th *ngFor="let col of selectedColumns" [pSortableColumn]="col.field">
           {{ col.header }}
+          <p-sortIcon [field]="col.field" />
         </th>
         <th style="width: 80px"></th>
       </tr>
