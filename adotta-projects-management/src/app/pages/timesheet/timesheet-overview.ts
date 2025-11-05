@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -52,11 +52,17 @@ export class TimesheetOverviewComponent implements OnInit {
   // Date range filter
   dateRange: Date[] | null = null;
 
+  // Detail mode state
+  selectedProjectId: string | null = null;
+  selectedProject: TimesheetProjectDto | null = null;
+
   private timesheetService: TimesheetService;
 
   constructor(
     private messageService: MessageService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     // Use mock service for development
     this.timesheetService = new MockTimesheetService() as any;
@@ -64,7 +70,11 @@ export class TimesheetOverviewComponent implements OnInit {
 
   ngOnInit() {
     this.calculateTableHeight();
-    this.loadData();
+    // react to route param for detail view
+    this.route.params.subscribe(params => {
+      this.selectedProjectId = params['numeroProgetto'] || null;
+      this.loadData();
+    });
   }
 
   @HostListener('window:resize', ['$event'])
@@ -94,6 +104,15 @@ export class TimesheetOverviewComponent implements OnInit {
         this.filteredTimesheets = data.timesheets || [];
         this.summary = data.summary || null;
         this.loading = false;
+
+        // Apply selection if in detail mode
+        if (this.selectedProjectId) {
+          const found = this.timesheets.find(t => t.numeroProgetto === this.selectedProjectId) || null;
+          this.selectedProject = found;
+          this.filteredTimesheets = found ? [found] : [];
+        } else {
+          this.selectedProject = null;
+        }
       },
       error: (error) => {
         console.error('Errore nel caricamento timesheet:', error);
@@ -114,6 +133,14 @@ export class TimesheetOverviewComponent implements OnInit {
         console.error('Errore nel caricamento summary:', error);
       }
     });
+  }
+
+  isDetailMode(): boolean {
+    return !!this.selectedProjectId && !!this.selectedProject;
+  }
+
+  backToOverview() {
+    this.router.navigate(['/timesheet']);
   }
 
   filterGlobal(event: any) {

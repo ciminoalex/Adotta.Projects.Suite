@@ -114,7 +114,11 @@
       
       <ng-template #caption>
         <div class="flex align-items-center justify-content-between">
-          <h5 class="m-0">Timesheet Overview</h5>
+          <h5 class="m-0" style="margin-bottom: 0px;">Timesheet Overview</h5>
+          <div *ngIf="isDetailMode()" class="flex align-items-center gap-2 ml-auto">
+            <p-tag value="Dettaglio" severity="info"></p-tag>
+            <p-button [text]="true" icon="pi pi-arrow-left" label="Torna all'overview" (click)="backToOverview()"></p-button>
+          </div>
         </div>
       </ng-template>
 
@@ -132,7 +136,11 @@
 
     <ng-template pTemplate="body" let-item>
       <tr>
-        <td class="font-bold text-blue-500">{{ item.numeroProgetto }}</td>
+        <td class="font-bold">
+          <a [routerLink]="['/projects', item.numeroProgetto]" class="text-blue-500 hover:underline">
+            {{ item.numeroProgetto }}
+          </a>
+        </td>
         <td>{{ item.nomeProgetto }}</td>
         <td class="hidden md:table-cell">{{ item.cliente }}</td>
         <td>
@@ -164,6 +172,37 @@
         </td>
       </tr>
     </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Detail section -->
+  <div class="card mt-4" *ngIf="isDetailMode() && selectedProject">
+    <div class="flex align-items-center justify-content-between mb-3">
+      <h5 class="m-0">Dettaglio rendicontazioni - {{ selectedProject.numeroProgetto }} | {{ selectedProject.nomeProgetto }}</h5>
+    </div>
+
+    <p-table [value]="selectedProject.rendicontazioni || []" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 140px">Data</th>
+          <th style="width: 120px">Ore</th>
+          <th class="hidden md:table-cell">Utente</th>
+          <th>Note</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-r>
+        <tr>
+          <td>{{ r.dataRendicontazione | date:'dd/MM/yyyy' }}</td>
+          <td><p-tag [value]="r.oreLavorate + 'h'" severity="info"></p-tag></td>
+          <td class="hidden md:table-cell">{{ r.utente }}</td>
+          <td>{{ r.note }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center p-4 text-500">Nessuna rendicontazione presente</td>
+        </tr>
+      </ng-template>
     </p-table>
   </div>
 

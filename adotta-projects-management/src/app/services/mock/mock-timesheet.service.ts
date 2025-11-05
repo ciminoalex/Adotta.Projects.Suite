@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { TimesheetEntry, TimesheetOverview, TimesheetSummary } from '../../models/timesheet.model';
+import { TimesheetEntry, TimesheetOverview, TimesheetSummary, TimesheetOverviewResponse, TimesheetProjectDto } from '../../models/timesheet.model';
 
 @Injectable()
 export class MockTimesheetService {
@@ -10,8 +10,8 @@ export class MockTimesheetService {
       id: 1,
       progettoId: '24001',
       numeroProgetto: '24001',
-      nomeProgetto: 'Progetto Alpha',
-      cliente: 'Acme Corp',
+      nomeProgetto: 'Installazione HVAC Uffici Milano',
+      cliente: 'TechCorp Italia',
       dataRendicontazione: new Date('2024-01-15'),
       oreLavorate: 8,
       note: 'Installazione componenti HVAC',
@@ -23,8 +23,8 @@ export class MockTimesheetService {
       id: 2,
       progettoId: '24001',
       numeroProgetto: '24001',
-      nomeProgetto: 'Progetto Alpha',
-      cliente: 'Acme Corp',
+      nomeProgetto: 'Installazione HVAC Uffici Milano',
+      cliente: 'TechCorp Italia',
       dataRendicontazione: new Date('2024-01-16'),
       oreLavorate: 6,
       note: 'Configurazione sistema di ventilazione',
@@ -36,8 +36,8 @@ export class MockTimesheetService {
       id: 3,
       progettoId: '24002',
       numeroProgetto: '24002',
-      nomeProgetto: 'Progetto Beta',
-      cliente: 'Tech Solutions',
+      nomeProgetto: 'Energia Sostenibile Barcellona',
+      cliente: 'Costruzioni SRL',
       dataRendicontazione: new Date('2024-01-17'),
       oreLavorate: 7,
       note: 'Verifica e test sistema',
@@ -92,23 +92,25 @@ export class MockTimesheetService {
     throw new Error(`Timesheet entry with id ${id} not found`);
   }
 
-  getTimesheetOverview(): Observable<TimesheetOverview[]> {
+  getTimesheetOverview(): Observable<TimesheetOverviewResponse> {
     const overview = this.groupByProject(this.mockTimesheetEntries);
-    return of(overview).pipe(delay(400));
+    const timesheets: TimesheetProjectDto[] = overview.map(o => ({
+      numeroProgetto: o.numeroProgetto,
+      nomeProgetto: o.nomeProgetto,
+      cliente: o.cliente,
+      totaleOre: o.totaleOre,
+      numeroRendicontazioni: o.numeroRendicontazioni,
+      ultimaRendicontazione: o.ultimaRendicontazione,
+      rendicontazioni: o.rendicontazioni
+    }));
+
+    const summary = this.calculateSummary(this.mockTimesheetEntries);
+
+    return of({ timesheets, summary }).pipe(delay(400));
   }
 
   getTimesheetSummary(): Observable<TimesheetSummary> {
-    const totaleOre = this.mockTimesheetEntries.reduce((sum, entry) => sum + entry.oreLavorate, 0);
-    const progettiSet = new Set(this.mockTimesheetEntries.map(e => e.numeroProgetto));
-    const progettiRendicontati = progettiSet.size;
-    const mediaOrePerProgetto = progettiRendicontati > 0 ? totaleOre / progettiRendicontati : 0;
-
-    return of({
-      totaleOre,
-      totaleRendicontazioni: this.mockTimesheetEntries.length,
-      progettiRendicontati,
-      mediaOrePerProgetto: Math.round(mediaOrePerProgetto * 100) / 100
-    }).pipe(delay(300));
+    return of(this.calculateSummary(this.mockTimesheetEntries)).pipe(delay(300));
   }
 
   getTimesheetOverviewByProject(numeroProgetto: string): Observable<TimesheetOverview> {
@@ -175,6 +177,20 @@ export class MockTimesheetService {
     });
 
     return overviews;
+  }
+
+  private calculateSummary(entries: TimesheetEntry[]): TimesheetSummary {
+    const totaleOre = entries.reduce((sum, entry) => sum + entry.oreLavorate, 0);
+    const progettiSet = new Set(entries.map(e => e.numeroProgetto));
+    const progettiRendicontati = progettiSet.size;
+    const mediaOrePerProgetto = progettiRendicontati > 0 ? totaleOre / progettiRendicontati : 0;
+
+    return {
+      totaleOre,
+      totaleRendicontazioni: entries.length,
+      progettiRendicontati,
+      mediaOrePerProgetto: Math.round(mediaOrePerProgetto * 100) / 100
+    };
   }
 }
 
