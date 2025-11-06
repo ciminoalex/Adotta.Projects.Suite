@@ -4,6 +4,7 @@ export interface TimesheetEntry {
   numeroProgetto: string;
   nomeProgetto: string;
   cliente: string;
+  livelloId?: number;
   dataRendicontazione: Date;
   oreLavorate: number;
   note: string;

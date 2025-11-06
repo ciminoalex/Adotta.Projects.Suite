@@ -17,7 +17,7 @@ import { MockTimesheetService } from '../../services/mock/mock-timesheet.service
 import { ProjectService } from '../../services/project.service';
 import { MockProjectService } from '../../services/mock/mock-project.service';
 import { TimesheetEntry } from '../../models/timesheet.model';
-import { Project } from '../../models/project.model';
+import { Project, LivelloProgetto } from '../../models/project.model';
 
 @Component({
   selector: 'app-timesheet-form',
@@ -46,6 +46,7 @@ export class TimesheetFormComponent implements OnInit {
   filteredProjects: Project[] = [];
   selectedProject: Project | null = null;
   selectedProjectSearch: string = '';
+  livelli: LivelloProgetto[] = [];
   submitted = false;
   isEditMode = false;
   timesheetId: number | null = null;
@@ -72,10 +73,10 @@ export class TimesheetFormComponent implements OnInit {
       if (params['id']) {
         this.isEditMode = true;
         this.timesheetId = +params['id'];
-        this.loadTimesheet();
       }
     });
 
+    // Carica i progetti e poi, se siamo in modalità edit, carica il timesheet
     this.loadProjects();
   }
 
@@ -83,6 +84,7 @@ export class TimesheetFormComponent implements OnInit {
     this.timesheetForm = this.fb.group({
       dataRendicontazione: [new Date(), Validators.required],
       progettoId: [null, Validators.required],
+      livelloId: [null], // Inizialmente non obbligatorio, diventerà obbligatorio quando viene selezionato un progetto
       oreLavorate: [8, [Validators.required, Validators.min(0.5), Validators.max(24)]],
       note: ['', Validators.required]
     });
@@ -91,8 +93,20 @@ export class TimesheetFormComponent implements OnInit {
     this.timesheetForm.get('progettoId')?.valueChanges.subscribe(value => {
       if (value) {
         this.selectedProject = this.projects.find(p => p.numeroProgetto === value) || null;
+        // Carica i livelli quando viene selezionato un progetto
+        if (this.selectedProject) {
+          this.loadLivelli(this.selectedProject.numeroProgetto);
+          // Rendi livelloId obbligatorio quando viene selezionato un progetto
+          this.timesheetForm.get('livelloId')?.setValidators([Validators.required]);
+          this.timesheetForm.get('livelloId')?.updateValueAndValidity();
+        }
       } else {
         this.selectedProject = null;
+        this.livelli = [];
+        // Rimuovi validazione obbligatoria quando non c'è progetto selezionato
+        this.timesheetForm.get('livelloId')?.clearValidators();
+        this.timesheetForm.get('livelloId')?.setValue(null);
+        this.timesheetForm.get('livelloId')?.updateValueAndValidity();
       }
     });
   }
@@ -102,6 +116,10 @@ export class TimesheetFormComponent implements OnInit {
       next: (projects) => {
         this.projects = projects;
         this.filteredProjects = projects;
+        // Se siamo in modalità edit, carica il timesheet dopo che i progetti sono stati caricati
+        if (this.isEditMode && this.timesheetId) {
+          this.loadTimesheet();
+        }
       },
       error: (error) => {
         console.error('Errore nel caricamento progetti:', error);
@@ -112,6 +130,42 @@ export class TimesheetFormComponent implements OnInit {
   onProjectChange(event: any) {
     const progettoNumero = event.value;
     this.selectedProject = this.projects.find(p => p.numeroProgetto === progettoNumero) || null;
+    if (this.selectedProject) {
+      this.loadLivelli(this.selectedProject.numeroProgetto);
+    } else {
+      this.livelli = [];
+      this.timesheetForm.get('livelloId')?.setValue(null);
+    }
+  }
+
+  loadLivelli(numeroProgetto: string, livelloIdToSet?: number) {
+    this.projectService.getLivelliProgetto(numeroProgetto).subscribe({
+      next: (livelli) => {
+        this.livelli = livelli;
+        
+        // Se è stato passato un livelloId da impostare (ad esempio durante il caricamento di un timesheet esistente)
+        if (livelloIdToSet !== undefined) {
+          const livelloExists = livelli.find(l => l.id === livelloIdToSet);
+          if (livelloExists) {
+            this.timesheetForm.patchValue({ livelloId: livelloIdToSet }, { emitEvent: false });
+          } else {
+            // Se il livello salvato non è più disponibile, resetta il valore
+            this.timesheetForm.patchValue({ livelloId: null }, { emitEvent: false });
+          }
+        } else {
+          // Altrimenti, controlla se c'è già un livelloId nel form e verifica che sia ancora valido
+          const currentLivelloId = this.timesheetForm.get('livelloId')?.value;
+          if (currentLivelloId && !livelli.find(l => l.id === currentLivelloId)) {
+            // Se il livello salvato non è più disponibile, resetta il valore
+            this.timesheetForm.patchValue({ livelloId: null }, { emitEvent: false });
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Errore nel caricamento livelli:', error);
+        this.livelli = [];
+      }
+    });
   }
 
   loadTimesheet() {
@@ -119,14 +173,19 @@ export class TimesheetFormComponent implements OnInit {
 
     this.timesheetService.getTimesheetEntry(this.timesheetId).subscribe({
       next: (entry) => {
-        this.selectedProject = this.projects.find(p => p.numeroProgetto === entry.numeroProgetto) || null;
-        
-        this.timesheetForm.patchValue({
-          dataRendicontazione: new Date(entry.dataRendicontazione),
-          progettoId: entry.progettoId,
-          oreLavorate: entry.oreLavorate,
-          note: entry.note
-        });
+        // Assicurati che i progetti siano già caricati
+        if (this.projects.length === 0) {
+          // Se i progetti non sono ancora caricati, attendi
+          this.projectService.getProjects().subscribe({
+            next: (projects) => {
+              this.projects = projects;
+              this.filteredProjects = projects;
+              this.setupTimesheetData(entry);
+            }
+          });
+        } else {
+          this.setupTimesheetData(entry);
+        }
       },
       error: (error) => {
         console.error('Errore nel caricamento timesheet:', error);
@@ -137,6 +196,30 @@ export class TimesheetFormComponent implements OnInit {
         });
       }
     });
+  }
+
+  private setupTimesheetData(entry: TimesheetEntry) {
+    this.selectedProject = this.projects.find(p => p.numeroProgetto === entry.numeroProgetto) || null;
+    
+    if (!this.selectedProject) {
+      console.error('Progetto non trovato:', entry.numeroProgetto);
+      return;
+    }
+    
+    // Rendi livelloId obbligatorio quando c'è un progetto selezionato
+    this.timesheetForm.get('livelloId')?.setValidators([Validators.required]);
+    this.timesheetForm.get('livelloId')?.updateValueAndValidity();
+    
+    // Imposta i valori del form (eccetto livelloId che verrà impostato dopo il caricamento dei livelli)
+    this.timesheetForm.patchValue({
+      dataRendicontazione: new Date(entry.dataRendicontazione),
+      progettoId: entry.progettoId,
+      oreLavorate: entry.oreLavorate,
+      note: entry.note
+    }, { emitEvent: false });
+    
+    // Carica i livelli del progetto selezionato e imposta il livelloId se presente
+    this.loadLivelli(this.selectedProject.numeroProgetto, entry.livelloId);
   }
 
 
@@ -186,6 +269,7 @@ export class TimesheetFormComponent implements OnInit {
       numeroProgetto: project.numeroProgetto,
       nomeProgetto: project.nomeProgetto,
       cliente: project.cliente,
+      livelloId: formValue.livelloId || undefined,
       dataRendicontazione: formValue.dataRendicontazione,
       oreLavorate: formValue.oreLavorate,
       note: formValue.note,

@@ -57,6 +57,38 @@
             </small>
           </div>
 
+          <!-- Level Selection -->
+          <div class="field mb-4" *ngIf="selectedProject">
+            <label for="livello" class="block text-900 font-medium mb-2">
+              Livello *
+            </label>
+            <p-select
+              id="livello"
+              [options]="livelli"
+              optionLabel="nome"
+              optionValue="id"
+              formControlName="livelloId"
+              placeholder="Seleziona un livello"
+              [filter]="true"
+              filterBy="nome,descrizione"
+              [showClear]="true"
+              styleClass="w-full text-sm"
+              [disabled]="isEditMode">
+              <ng-template let-livello pTemplate="item">
+                <div>
+                  <div class="font-bold">{{ livello.nome }}</div>
+                  <div class="text-sm text-500" *ngIf="livello.descrizione">{{ livello.descrizione }}</div>
+                </div>
+              </ng-template>
+            </p-select>
+            <small *ngIf="f['livelloId'].invalid && submitted" class="text-red-500">
+              Il livello è obbligatorio
+            </small>
+            <small *ngIf="livelli.length === 0 && selectedProject" class="text-500">
+              Nessun livello disponibile per questo progetto
+            </small>
+          </div>
+
           <!-- Selected Project Info -->
           <div *ngIf="selectedProject" class="surface-100 border-round p-3 mb-4">
             <div class="text-900 font-medium mb-2">Progetto Selezionato:</div>
