@@ -40,6 +40,12 @@ export class AppMenu {
                 ]
             },
             {
+                label: 'Sistema',
+                items: [
+                    { label: 'Utenti', icon: 'pi pi-fw pi-user', routerLink: ['/system/users'] }
+                ]
+            },
+            {
                 label: 'Anagrafiche',
                 items: [
                     { label: 'Clienti', icon: 'pi pi-fw pi-users', routerLink: ['/lookup/clienti'] },

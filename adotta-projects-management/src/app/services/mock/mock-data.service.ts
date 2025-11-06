@@ -8,9 +8,9 @@ interface UserWithPassword {
   username: string;
   password: string;
   email: string;
-  nome: string;
-  cognome: string;
+  userName: string;
   ruolo?: string;
+  teamTecnico?: string;
   isActive?: boolean;
 }
 
@@ -320,9 +320,9 @@ export class MockDataService {
         username: 'admin',
         password: 'admin123',
         email: 'admin@adotta.it',
-        nome: 'Mario',
-        cognome: 'Rossi',
-        ruolo: 'Administrator',
+        userName: 'Mario Rossi',
+        ruolo: 'Admin',
+        teamTecnico: 'Team Elettrico Milano',
         isActive: true
       },
       {
@@ -330,9 +330,9 @@ export class MockDataService {
         username: 'manager',
         password: 'manager123',
         email: 'manager@adotta.it',
-        nome: 'Giulia',
-        cognome: 'Bianchi',
-        ruolo: 'Project Manager',
+        userName: 'Giulia Bianchi',
+        ruolo: 'PM',
+        teamTecnico: 'Team HVAC Roma',
         isActive: true
       },
       {
@@ -340,9 +340,9 @@ export class MockDataService {
         username: 'user',
         password: 'user123',
         email: 'user@adotta.it',
-        nome: 'Antonio',
-        cognome: 'Verdi',
-        ruolo: 'User',
+        userName: 'Antonio Verdi',
+        ruolo: 'Timesheet',
+        teamTecnico: 'Team Idraulico Napoli',
         isActive: true
       }
     ];

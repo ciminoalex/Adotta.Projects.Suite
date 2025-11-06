@@ -195,9 +195,11 @@ export class AuthService {
       return '';
     }
 
-    const firstInitial = user.nome ? user.nome.charAt(0).toUpperCase() : '';
-    const lastInitial = user.cognome ? user.cognome.charAt(0).toUpperCase() : '';
-    const initials = `${firstInitial}${lastInitial}`;
+    const full = user.userName || '';
+    const parts = full.trim().split(/\s+/);
+    const firstInitial = parts[0]?.charAt(0).toUpperCase() || '';
+    const lastInitial = parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
+    const initials = `${firstInitial}${lastInitial}` || (full.charAt(0).toUpperCase() || '');
     
     return initials;
   }
@@ -207,7 +209,7 @@ export class AuthService {
     if (!user) {
       return '';
     }
-    return `${user.nome || ''} ${user.cognome || ''}`.trim() || 'Utente';
+    return (user.userName || '').trim() || 'Utente';
   }
 
   private clearSession(): void {
