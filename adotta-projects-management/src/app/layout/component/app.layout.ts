@@ -1,4 +1,4 @@
-import { Component, Renderer2, ViewChild } from '@angular/core';
+import { Component, Renderer2, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
@@ -6,6 +6,8 @@ import { AppTopbar } from './app.topbar';
 import { AppSidebar } from './app.sidebar';
 import { AppFooter } from './app.footer';
 import { LayoutService } from '../service/layout.service';
+import { DbInitStateService } from '../../services/db-init-state.service';
+import { ServiceConfigurationService } from '../../services/service-configuration.service';
 
 @Component({
     selector: 'app-layout',
@@ -23,8 +25,9 @@ import { LayoutService } from '../service/layout.service';
         <div class="layout-mask animate-fadein"></div>
     </div> `
 })
-export class AppLayout {
+export class AppLayout implements OnInit, OnDestroy {
     overlayMenuOpenSubscription: Subscription;
+    dbInitSubscription?: Subscription;
 
     menuOutsideClickListener: any;
 
@@ -35,7 +38,9 @@ export class AppLayout {
     constructor(
         public layoutService: LayoutService,
         public renderer: Renderer2,
-        public router: Router
+        public router: Router,
+        private dbInitState: DbInitStateService,
+        private serviceConfig: ServiceConfigurationService
     ) {
         this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
             if (!this.menuOutsideClickListener) {
@@ -53,7 +58,49 @@ export class AppLayout {
 
         this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
             this.hideMenu();
+            this.checkDbInitialization();
         });
+    }
+
+    ngOnInit() {
+        // Verifica lo stato di inizializzazione all'avvio
+        this.checkDbInitialization();
+
+        // Sottoscrivi ai cambiamenti dello stato di inizializzazione
+        this.dbInitSubscription = this.dbInitState.initialized$.subscribe(initialized => {
+            // Solo se è stata eseguita una verifica e il DB non è inizializzato
+            if (!initialized && !this.serviceConfig.getUseMockServices() && this.dbInitState.hasInitCheckBeenPerformed()) {
+                // Se il DB non è inizializzato e non siamo già sulla pagina di inizializzazione, reindirizza
+                const currentUrl = this.router.url;
+                if (!currentUrl.includes('/system/init')) {
+                    this.router.navigate(['/system/init']);
+                }
+            }
+        });
+    }
+
+    /**
+     * Verifica se il DB è inizializzato e reindirizza se necessario
+     */
+    private checkDbInitialization(): void {
+        // Se stiamo usando mock services, il DB è sempre inizializzato
+        if (this.serviceConfig.getUseMockServices()) {
+            return;
+        }
+
+        // Se non è stata ancora eseguita una verifica dello stato, non reindirizzare
+        // Aspettiamo che una chiamata API fallisca per rilevare il problema
+        if (!this.dbInitState.hasInitCheckBeenPerformed()) {
+            return;
+        }
+
+        // Se il DB non è inizializzato e non siamo già sulla pagina di inizializzazione, reindirizza
+        if (!this.dbInitState.isInitialized()) {
+            const currentUrl = this.router.url;
+            if (!currentUrl.includes('/system/init')) {
+                this.router.navigate(['/system/init']);
+            }
+        }
     }
 
     isOutsideClicked(event: MouseEvent) {
@@ -106,6 +153,10 @@ export class AppLayout {
 
         if (this.menuOutsideClickListener) {
             this.menuOutsideClickListener();
+        }
+
+        if (this.dbInitSubscription) {
+            this.dbInitSubscription.unsubscribe();
         }
     }
 }

@@ -23,3 +23,34 @@
         top: 100px;
     }
 }
+
+// Fix for PrimeNG menu icons visibility
+.p-menu {
+    .p-menuitem-link {
+        .p-menuitem-icon {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+    }
+    
+    .p-menuitem {
+        .p-menuitem-link {
+            .p-menuitem-icon {
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+        }
+        
+        &.p-disabled {
+            .p-menuitem-link {
+                .p-menuitem-icon {
+                    display: inline-block !important;
+                    visibility: visible !important;
+                    opacity: 0.6 !important;
+                }
+            }
+        }
+    }
+}

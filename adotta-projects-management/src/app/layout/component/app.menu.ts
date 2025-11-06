@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { DbInitStateService } from '../../services/db-init-state.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-menu',
@@ -15,11 +17,32 @@ import { AppMenuitem } from './app.menuitem';
         </ng-container>
     </ul> `
 })
-export class AppMenu {
+export class AppMenu implements OnInit, OnDestroy {
     model: MenuItem[] = [];
+    private dbInitSubscription?: Subscription;
+    private isDbInitialized = true; // Default: assume inizializzato
+
+    constructor(private dbInitState: DbInitStateService) {}
 
     ngOnInit() {
-        this.model = [
+        // Sottoscrivi ai cambiamenti dello stato di inizializzazione
+        this.dbInitSubscription = this.dbInitState.initialized$.subscribe(initialized => {
+            this.isDbInitialized = initialized;
+            this.updateMenuModel();
+        });
+
+        // Inizializza il menu
+        this.updateMenuModel();
+    }
+
+    ngOnDestroy() {
+        if (this.dbInitSubscription) {
+            this.dbInitSubscription.unsubscribe();
+        }
+    }
+
+    private updateMenuModel() {
+        const baseModel: MenuItem[] = [
             {
                 label: 'Dashboard',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
@@ -40,12 +63,6 @@ export class AppMenu {
                 ]
             },
             {
-                label: 'Sistema',
-                items: [
-                    { label: 'Utenti', icon: 'pi pi-fw pi-user', routerLink: ['/system/users'] }
-                ]
-            },
-            {
                 label: 'Anagrafiche',
                 items: [
                     { label: 'Clienti', icon: 'pi pi-fw pi-users', routerLink: ['/lookup/clienti'] },
@@ -56,33 +73,42 @@ export class AppMenu {
                     { label: 'Squadre Installazione', icon: 'pi pi-fw pi-truck', routerLink: ['/lookup/squadre-installazione'] },
                     { label: 'Prodotti Master', icon: 'pi pi-fw pi-box', routerLink: ['/lookup/prodotti-master'] }
                 ]
-            }/*,
-            {
-                label: 'Reportistica',
-                items: [
-                    { label: 'Report Progetti', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/reports/projects'] },
-                    { label: 'Analisi Finanziaria', icon: 'pi pi-fw pi-dollar', routerLink: ['/reports/financial'] },
-                    { label: 'Performance Team', icon: 'pi pi-fw pi-chart-line', routerLink: ['/reports/team-performance'] },
-                    { label: 'Export Dati', icon: 'pi pi-fw pi-download', routerLink: ['/reports/export'] }
-                ]
             },
             {
                 label: 'Sistema',
                 items: [
-                    { label: 'Storico Modifiche WIC', icon: 'pi pi-fw pi-history', routerLink: ['/system/wic-history'] },
-                    { label: 'Integrazione SAP', icon: 'pi pi-fw pi-link', routerLink: ['/system/sap-integration'] },
-                    { label: 'Backup e Restore', icon: 'pi pi-fw pi-database', routerLink: ['/system/backup'] },
-                    { label: 'Configurazione', icon: 'pi pi-fw pi-cog', routerLink: ['/system/config'] }
+                    { label: 'Utenti', icon: 'pi pi-fw pi-user', routerLink: ['/system/users'] },
+                    { label: 'Inizializzazione DB', icon: 'pi pi-fw pi-database', routerLink: ['/system/init'] }
                 ]
-            },
-            {
-                label: 'Documentazione',
-                items: [
-                    { label: 'Guida Utente', icon: 'pi pi-fw pi-book', routerLink: ['/documentation'] },
-                    { label: 'API Reference', icon: 'pi pi-fw pi-code', routerLink: ['/documentation/api'] },
-                    { label: 'Changelog', icon: 'pi pi-fw pi-file', routerLink: ['/documentation/changelog'] }
-                ]
-            }*/
+            }
         ];
+
+        // Se il DB non è inizializzato, disabilita tutti i menu tranne "Inizializzazione DB"
+        if (!this.isDbInitialized) {
+            this.model = baseModel.map(section => {
+                if (section.label === 'Sistema') {
+                    // Mantieni solo "Inizializzazione DB" abilitato
+                    return {
+                        ...section,
+                        items: section.items?.map(item => {
+                            if (item.label === 'Inizializzazione DB') {
+                                return item; // Mantieni abilitato
+                            }
+                            return { ...item, disabled: true };
+                        })
+                    };
+                } else {
+                    // Disabilita tutti gli altri menu
+                    return {
+                        ...section,
+                        disabled: true,
+                        items: section.items?.map(item => ({ ...item, disabled: true }))
+                    };
+                }
+            });
+        } else {
+            // Se il DB è inizializzato, mostra tutti i menu normalmente
+            this.model = baseModel;
+        }
     }
 }

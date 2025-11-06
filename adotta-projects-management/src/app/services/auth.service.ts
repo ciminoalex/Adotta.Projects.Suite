@@ -72,7 +72,12 @@ export class AuthService {
           sessionId: response.sessionId,
           version: response.version,
           sessionTimeout: response.sessionTimeout,
-          expiresAt: new Date(Date.now() + (response.sessionTimeout || 30) * 60 * 1000) // Convert minutes to milliseconds
+          expiresAt: new Date(Date.now() + (response.sessionTimeout || 30) * 60 * 1000), // Convert minutes to milliseconds
+          user: {
+            userName: username, // Save username in session
+            username: username,
+            email: username // Use username as email fallback
+          }
         };
 
         // Store session
@@ -191,25 +196,33 @@ export class AuthService {
 
   getUserInitials(): string {
     const user = this.getCurrentUser();
-    if (!user) {
+    if (!user || !user.userName) {
       return '';
     }
 
-    const full = user.userName || '';
-    const parts = full.trim().split(/\s+/);
-    const firstInitial = parts[0]?.charAt(0).toUpperCase() || '';
+    const full = user.userName.trim();
+    if (!full) {
+      return '';
+    }
+
+    const parts = full.split(/\s+/).filter((p: string) => p.length > 0);
+    if (parts.length === 0) {
+      return '';
+    }
+
+    const firstInitial = parts[0].charAt(0).toUpperCase();
     const lastInitial = parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
-    const initials = `${firstInitial}${lastInitial}` || (full.charAt(0).toUpperCase() || '');
     
-    return initials;
+    return lastInitial ? `${firstInitial}${lastInitial}` : firstInitial;
   }
 
   getFullName(): string {
     const user = this.getCurrentUser();
-    if (!user) {
-      return '';
+    if (!user || !user.userName) {
+      return 'Utente';
     }
-    return (user.userName || '').trim() || 'Utente';
+    const name = user.userName.trim();
+    return name || 'Utente';
   }
 
   private clearSession(): void {
