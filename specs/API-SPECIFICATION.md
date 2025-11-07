@@ -29,15 +29,14 @@ L'applicazione utilizza l'autenticazione nativa del Service Layer di SAP Busines
 
 #### Login Endpoint
 
-**Endpoint:** `POST /Login`
+**Endpoint:** `POST /api/Auth/login`
 
 **Request Body:**
 ```json
 {
-  "CompanyDB": "SBODEMOUS",
-  "UserName": "manager",
-  "Password": "Password1",
-  "Language": "en"
+  "companyDB": "SBODEMOUS",
+  "userName": "manager",
+  "password": "Password1"
 }
 ```
 
@@ -45,25 +44,24 @@ L'applicazione utilizza l'autenticazione nativa del Service Layer di SAP Busines
 
 ```json
 {
-  "odata.metadata": "https://{server}:50000/b1s/v1/$metadata#B1Sessions/@Element",
-  "SessionId": "CA4B81FF-5DD9-4916-9FBF-DD0F4CFC9A72",
-  "Version": "10.00.140",
-  "SessionTimeout": 30
+  "sessionId": "CA4B81FF-5DD9-4916-9FBF-DD0F4CFC9A72",
+  "version": "10.00.140",
+  "sessionTimeout": 30
 }
 ```
 
 **Headers per le richieste successive:**
 ```
-Cookie: B1SESSION={SessionId}
+X-SAP-Session-Id: {SessionId}
 ```
 
 #### Logout Endpoint
 
-**Endpoint:** `POST /Logout`
+**Endpoint:** `POST /api/Auth/logout`
 
 **Headers:**
 ```
-Cookie: B1SESSION={SessionId}
+X-SAP-Session-Id: {SessionId}
 ```
 
 **Response:** `204 No Content`
@@ -484,19 +482,23 @@ Recupera l'elenco completo dei progetti.
         "descrizione": "string",
         "dataInizioInstallazione": "2024-01-01T00:00:00",
         "dataFineInstallazione": "2024-01-15T00:00:00",
-        "dataCaricamento": "2024-01-01T00:00:00"
+        "dataCaricamento": "2024-01-01T00:00:00",
+        "prodotti": []
       }
     ],
     "prodotti": [
       {
         "id": 0,
         "progettoId": 0,
+        "livelloId": 0,
         "tipoProdotto": "string",
         "variante": "string",
         "qMq": 0.0,
         "qFt": 0.0
       }
-    ]
+    ],
+    "quantitaTotaleMq": 0.0,
+    "quantitaTotaleFt": 0.0
   }
 ]
 ```
@@ -673,10 +675,10 @@ Recupera tutti i livelli di un progetto.
 
 Aggiunge un nuovo livello al progetto.
 
-**Endpoint:** `POST /api/projects/{projectId}/livelli`
+**Endpoint:** `POST /api/projects/{numeroProgetto}/livelli`
 
 **Parameters:**
-- `projectId` (int, required): ID del progetto
+- `numeroProgetto` (string, required): Numero identificativo del progetto
 
 **Request Body:**
 
@@ -705,10 +707,10 @@ Aggiunge un nuovo livello al progetto.
 
 Aggiorna un livello esistente.
 
-**Endpoint:** `PUT /api/projects/{projectId}/livelli/{livelloId}`
+**Endpoint:** `PUT /api/projects/{numeroProgetto}/livelli/{livelloId}`
 
 **Parameters:**
-- `projectId` (int, required)
+- `numeroProgetto` (string, required)
 - `livelloId` (int, required)
 
 **Request Body:** Same as Create Livello
@@ -721,10 +723,10 @@ Aggiorna un livello esistente.
 
 Elimina un livello dal progetto.
 
-**Endpoint:** `DELETE /api/projects/{projectId}/livelli/{livelloId}`
+**Endpoint:** `DELETE /api/projects/{numeroProgetto}/livelli/{livelloId}`
 
 **Parameters:**
-- `projectId` (int, required)
+- `numeroProgetto` (string, required)
 - `livelloId` (int, required)
 
 **Response:** `204 No Content`
@@ -746,6 +748,7 @@ Recupera tutti i prodotti di un progetto.
   {
     "id": 1,
     "progettoId": 1,
+    "livelloId": 1,
     "tipoProdotto": "Metafora",
     "variante": "Standard",
     "qMq": 150.5,
@@ -756,20 +759,38 @@ Recupera tutti i prodotti di un progetto.
 
 ---
 
+### 3.1.1 Get Prodotti by Livello
+
+Recupera tutti i prodotti di un livello specifico.
+
+**Endpoint:** `GET /api/projects/{numeroProgetto}/livelli/{livelloId}/prodotti`
+
+**Response:** `200 OK`
+
+Array di prodotti associati al livello specificato.
+
+---
+
 ### 3.2 Create Prodotto
 
-Aggiunge un nuovo prodotto al progetto.
+Aggiunge un nuovo prodotto al progetto. Se il prodotto ha un `livelloId`, può essere creato direttamente associato a un livello.
 
-**Endpoint:** `POST /api/projects/{projectId}/prodotti`
+**Endpoint:** `POST /api/projects/{numeroProgetto}/prodotti`
+
+**Oppure, se associato a un livello:**
+
+**Endpoint:** `POST /api/projects/{numeroProgetto}/livelli/{livelloId}/prodotti`
 
 **Parameters:**
-- `projectId` (int, required): ID del progetto
+- `numeroProgetto` (string, required): Numero identificativo del progetto
+- `livelloId` (int, optional): ID del livello (se il prodotto è associato a un livello)
 
 **Request Body:**
 
 ```json
 {
   "progettoId": 1,
+  "livelloId": 1,
   "tipoProdotto": "Metafora",
   "variante": "Standard",
   "qMq": 150.5,
@@ -779,6 +800,7 @@ Aggiunge un nuovo prodotto al progetto.
 
 **Validation Rules:**
 - `progettoId`: Required
+- `livelloId`: Optional, se presente deve essere un livello valido del progetto
 - `tipoProdotto`: Required, max 100 chars (Metafora/Wallen/Armonica)
 - `variante`: Required, max 100 chars
 - `qMq`: Required, >= 0
@@ -792,10 +814,10 @@ Aggiunge un nuovo prodotto al progetto.
 
 Aggiorna un prodotto esistente.
 
-**Endpoint:** `PUT /api/projects/{projectId}/prodotti/{prodottoId}`
+**Endpoint:** `PUT /api/projects/{numeroProgetto}/prodotti/{prodottoId}`
 
 **Parameters:**
-- `projectId` (int, required)
+- `numeroProgetto` (string, required)
 - `prodottoId` (int, required)
 
 **Request Body:** Same as Create Prodotto
@@ -808,10 +830,10 @@ Aggiorna un prodotto esistente.
 
 Elimina un prodotto dal progetto.
 
-**Endpoint:** `DELETE /api/projects/{projectId}/prodotti/{prodottoId}`
+**Endpoint:** `DELETE /api/projects/{numeroProgetto}/prodotti/{prodottoId}`
 
 **Parameters:**
-- `projectId` (int, required)
+- `numeroProgetto` (string, required)
 - `prodottoId` (int, required)
 
 **Response:** `204 No Content`
@@ -848,10 +870,10 @@ Recupera lo storico delle modifiche di un progetto.
 
 Crea uno snapshot WIC del progetto (registra tutte le modifiche correnti).
 
-**Endpoint:** `POST /api/projects/{projectId}/wic-snapshot`
+**Endpoint:** `POST /api/projects/{numeroProgetto}/wic-snapshot`
 
 **Parameters:**
-- `projectId` (int, required)
+- `numeroProgetto` (string, required)
 
 **Request Body:** `{}`
 
@@ -909,10 +931,10 @@ Recupera tutti i messaggi associati a un progetto.
 
 Aggiunge un nuovo messaggio al progetto.
 
-**Endpoint:** `POST /api/projects/{projectId}/messaggi`
+**Endpoint:** `POST /api/projects/{numeroProgetto}/messaggi`
 
 **Parameters:**
-- `projectId` (int, required)
+- `numeroProgetto` (string, required): Numero identificativo del progetto
 
 **Request Body:**
 ```json
@@ -926,17 +948,19 @@ Aggiunge un nuovo messaggio al progetto.
 }
 ```
 
+**Note:** Il campo `progettoId` nel body deve corrispondere al `numeroProgetto` nell'URL.
+
 **Response:** `201 Created`
 
 #### 5.1.3 Update Messaggio Progetto
 
 Aggiorna un messaggio esistente.
 
-**Endpoint:** `PUT /api/projects/{projectId}/messaggi/{messaggioId}`
+**Endpoint:** `PUT /api/projects/{numeroProgetto}/messaggi/{messaggioId}`
 
 **Parameters:**
-- `projectId` (int, required)
-- `messaggioId` (int, required)
+- `numeroProgetto` (string, required): Numero identificativo del progetto
+- `messaggioId` (int, required): ID del messaggio
 
 **Response:** `200 OK`
 
@@ -944,11 +968,11 @@ Aggiorna un messaggio esistente.
 
 Elimina un messaggio dal progetto.
 
-**Endpoint:** `DELETE /api/projects/{projectId}/messaggi/{messaggioId}`
+**Endpoint:** `DELETE /api/projects/{numeroProgetto}/messaggi/{messaggioId}`
 
 **Parameters:**
-- `projectId` (int, required)
-- `messaggioId` (int, required)
+- `numeroProgetto` (string, required): Numero identificativo del progetto
+- `messaggioId` (int, required): ID del messaggio
 
 **Response:** `204 No Content`
 
@@ -995,7 +1019,10 @@ Recupera il log completo delle modifiche di un progetto.
 
 Crea una nuova voce nel change log (normalmente gestito automaticamente).
 
-**Endpoint:** `POST /api/projects/{projectId}/changelog`
+**Endpoint:** `POST /api/projects/{numeroProgetto}/changelog`
+
+**Parameters:**
+- `numeroProgetto` (string, required): Numero identificativo del progetto
 
 **Request Body:**
 ```json
@@ -1013,9 +1040,11 @@ Crea una nuova voce nel change log (normalmente gestito automaticamente).
 }
 ```
 
-**Response:** `201 Created`
+**Note:** 
+- Il campo `progettoId` nel body deve corrispondere al `numeroProgetto` nell'URL.
+- Il change log viene generalmente popolato automaticamente dal sistema quando si verificano modifiche ai progetti.
 
-**Note:** Il change log viene generalmente popolato automaticamente dal sistema quando si verificano modifiche ai progetti.
+**Response:** `201 Created`
 
 ---
 
@@ -1039,6 +1068,7 @@ Recupera tutte le rendicontazioni di ore lavorate.
     "numeroProgetto": "PRJ-2024-001",
     "nomeProgetto": "Installazione HVAC Uffici Milano",
     "cliente": "TechCorp Italia",
+    "livelloId": 1,
     "dataRendicontazione": "2024-01-20T00:00:00",
     "oreLavorate": 8.0,
     "note": "Installazione impianti primo piano",
@@ -1074,6 +1104,7 @@ Crea una nuova rendicontazione di ore lavorate.
 ```json
 {
   "progettoId": "PRJ-2024-001",
+  "livelloId": 1,
   "dataRendicontazione": "2024-01-20T00:00:00",
   "oreLavorate": 8.0,
   "note": "Installazione impianti primo piano",
@@ -1083,6 +1114,7 @@ Crea una nuova rendicontazione di ore lavorate.
 
 **Validation Rules:**
 - `progettoId`: Required
+- `livelloId`: Optional, se presente deve essere un livello valido del progetto
 - `dataRendicontazione`: Required, date format
 - `oreLavorate`: Required, >= 0
 - `utente`: Required
@@ -1134,7 +1166,23 @@ Array di rendicontazioni filtrate per progetto.
 
 ---
 
-### 6.7 Get Timesheet Overview
+### 6.7 Get Timesheet by Date Range
+
+Recupera tutte le rendicontazioni in un intervallo di date.
+
+**Endpoint:** `GET /api/timesheet/by-date-range`
+
+**Query Parameters:**
+- `startDate` (date, required): Data inizio intervallo
+- `endDate` (date, required): Data fine intervallo
+
+**Response:** `200 OK`
+
+Array di rendicontazioni filtrate per intervallo di date.
+
+---
+
+### 6.8 Get Timesheet Overview
 
 Recupera una panoramica delle rendicontazioni con statistiche.
 
@@ -1171,7 +1219,7 @@ Recupera una panoramica delle rendicontazioni con statistiche.
 
 ---
 
-### 6.8 Get Timesheet Summary
+### 6.9 Get Timesheet Summary
 
 Recupera statistiche riassuntive delle rendicontazioni.
 
@@ -1195,7 +1243,7 @@ Recupera statistiche riassuntive delle rendicontazioni.
 
 ---
 
-### 6.9 Get Timesheet by User
+### 6.10 Get Timesheet by User
 
 Recupera tutte le rendicontazioni di un utente specifico.
 
@@ -1207,6 +1255,45 @@ Recupera tutte le rendicontazioni di un utente specifico.
 **Response:** `200 OK`
 
 Array di rendicontazioni filtrate per utente.
+
+---
+
+### 6.11 Get Timesheet Statistics by Project
+
+Recupera statistiche delle rendicontazioni raggruppate per progetto.
+
+**Endpoint:** `GET /api/timesheet/stats/by-project`
+
+**Response:** `200 OK`
+
+Statistiche aggregate per progetto.
+
+---
+
+### 6.12 Get Timesheet Statistics by User
+
+Recupera statistiche delle rendicontazioni raggruppate per utente.
+
+**Endpoint:** `GET /api/timesheet/stats/by-user`
+
+**Response:** `200 OK`
+
+Statistiche aggregate per utente.
+
+---
+
+### 6.13 Get Daily Timesheet Statistics
+
+Recupera statistiche delle rendicontazioni per una data specifica.
+
+**Endpoint:** `GET /api/timesheet/stats/daily`
+
+**Query Parameters:**
+- `date` (date, required): Data per cui recuperare le statistiche
+
+**Response:** `200 OK`
+
+Statistiche aggregate per la data specificata.
 
 ---
 
@@ -1785,6 +1872,10 @@ public class Project
     public decimal? MarginePrevisto { get; set; }
     public decimal CostiSostenuti { get; set; }
     
+    // Proprietà calcolate
+    public decimal? QuantitaTotaleMq { get; set; }
+    public decimal? QuantitaTotaleFt { get; set; }
+    
     // Navigation properties
     public List<LivelloProgetto> Livelli { get; set; }
     public List<ProdottoProgetto> Prodotti { get; set; }
@@ -1818,8 +1909,9 @@ public class LivelloProgetto
     public DateTime? DataFineInstallazione { get; set; }
     public DateTime? DataCaricamento { get; set; }
     
-    // Navigation property
+    // Navigation properties
     public Project? Progetto { get; set; }
+    public List<ProdottoProgetto>? Prodotti { get; set; }
 }
 ```
 
@@ -1830,13 +1922,15 @@ public class ProdottoProgetto
 {
     public int Id { get; set; }
     public int ProgettoId { get; set; }
+    public int? LivelloId { get; set; }  // FK a Livello (opzionale)
     public string TipoProdotto { get; set; }  // Metafora / Wallen / Armonica
     public string Variante { get; set; }
     public decimal QMq { get; set; }  // Quantità in metri quadri
     public decimal QFt { get; set; }  // Quantità in piedi quadri
     
-    // Navigation property
+    // Navigation properties
     public Project? Progetto { get; set; }
+    public LivelloProgetto? Livello { get; set; }
 }
 ```
 
@@ -1904,12 +1998,38 @@ public class TimesheetEntry
     public string NumeroProgetto { get; set; }
     public string NomeProgetto { get; set; }
     public string Cliente { get; set; }
+    public int? LivelloId { get; set; }  // FK a Livello (opzionale)
     public DateTime DataRendicontazione { get; set; }
     public double OreLavorate { get; set; }
     public string Note { get; set; }
     public string Utente { get; set; }
     public DateTime? DataCreazione { get; set; }
     public DateTime? UltimaModifica { get; set; }
+}
+
+public class TimesheetOverviewResponse
+{
+    public List<TimesheetProjectDto> Timesheets { get; set; }
+    public TimesheetSummary Summary { get; set; }
+}
+
+public class TimesheetProjectDto
+{
+    public string NumeroProgetto { get; set; }
+    public string NomeProgetto { get; set; }
+    public string Cliente { get; set; }
+    public double TotaleOre { get; set; }
+    public int NumeroRendicontazioni { get; set; }
+    public DateTime? UltimaRendicontazione { get; set; }
+    public List<TimesheetEntry>? Rendicontazioni { get; set; }
+}
+
+public class TimesheetSummary
+{
+    public double TotaleOre { get; set; }
+    public int TotaleRendicontazioni { get; set; }
+    public int ProgettiRendicontati { get; set; }
+    public double MediaOrePerProgetto { get; set; }
 }
 ```
 
@@ -2405,7 +2525,42 @@ Tutti i modelli sono stati implementati in TypeScript:
 
 ---
 
-## 18. Changelog
+## 18. INIT API
+
+### 18.1 Initialize Database
+
+Endpoint per inizializzare il database (utile per setup iniziale o reset).
+
+**Endpoint:** `POST /api/init`
+
+**Request Body:** `{}`
+
+**Response:** `200 OK`
+
+```json
+{
+  "log": "Database initialized successfully",
+  "success": true,
+  "timestamp": "2024-01-20T14:30:00Z"
+}
+```
+
+**Note:** Questo endpoint è principalmente utilizzato per operazioni di setup e testing. In produzione potrebbe non essere disponibile o richiedere permessi speciali.
+
+---
+
+## 19. Changelog
+
+- **v1.3** (2024-12): Aggiornamento struttura modelli e endpoint
+  - Aggiornato endpoint autenticazione a `/api/Auth/login` e `/api/Auth/logout`
+  - Aggiunto campo `livelloId` a TimesheetEntry e ProdottoProgetto
+  - Aggiunto endpoint per prodotti per livello: `GET /api/projects/{numeroProgetto}/livelli/{livelloId}/prodotti`
+  - Aggiunto endpoint timesheet by date range: `GET /api/timesheet/by-date-range`
+  - Aggiunti endpoint statistiche timesheet: `/stats/by-project`, `/stats/by-user`, `/stats/daily`
+  - Aggiunte proprietà calcolate a Project: `quantitaTotaleMq`, `quantitaTotaleFt`
+  - Corretti parametri endpoint messaggi e changelog per usare `numeroProgetto` (string) invece di `projectId` (int)
+  - Aggiunto endpoint `/api/init` per inizializzazione database
+  - Aggiornati modelli C# .NET per allineamento con TypeScript
 
 - **v1.2** (2024-12): Implementate funzionalità Messaggi, Change Log e Timesheet
   - Aggiunto sistema messaggistica progetti
