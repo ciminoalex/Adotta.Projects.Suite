@@ -319,8 +319,8 @@ export class MockDataService {
         id: 1,
         username: 'admin',
         password: 'admin123',
-        email: 'admin@adotta.it',
-        userName: 'Mario Rossi',
+        email: 'alessandro.cimino@mtf-srl.com',
+        userName: 'Alessandro Cimino',
         ruolo: 'Admin',
         teamTecnico: 'Team Elettrico Milano',
         isActive: true

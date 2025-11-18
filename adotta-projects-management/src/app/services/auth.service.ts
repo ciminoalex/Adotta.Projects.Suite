@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, throwError, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, throwError, of, from } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Session, LoginRequest, LoginResponse } from '../models/user.model';
 import { ServiceConfigurationService } from './service-configuration.service';
 import { MockDataService } from './mock/mock-data.service';
+import { MsalService } from '@azure/msal-angular';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,8 @@ export class AuthService {
   private readonly SESSION_KEY = 'auth_session';
   private readonly API_URL = '/api/Auth';
   private mockData: MockDataService | null = null;
+
+  private msalService = inject(MsalService);
 
   constructor(
     private http: HttpClient,
@@ -109,6 +112,11 @@ export class AuthService {
   }
 
   logout(): Observable<void> {
+    // Se è un login Office365, fai logout da MSAL
+    if (this.isOffice365Authenticated()) {
+      return this.logoutOffice365();
+    }
+
     // Use mock if configured
     if (this.serviceConfig.getUseMockServices()) {
       this.clearSession();
@@ -237,6 +245,232 @@ export class AuthService {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Login con Office365 usando MSAL popup
+   * Restituisce l'email dell'utente autenticato
+   * Verifica che l'utente sia abilitato nell'applicazione
+   */
+  loginWithOffice365(): Observable<{ email: string; name?: string; userPrincipalName?: string }> {
+    return from(
+      this.msalService.loginPopup({
+        scopes: ['User.Read']
+      })
+    ).pipe(
+      switchMap(() => {
+        // Ottieni l'account attivo
+        const accounts = this.msalService.instance.getAllAccounts();
+        if (accounts.length === 0) {
+          return throwError(() => new Error('Nessun account trovato dopo il login'));
+        }
+
+        const account = accounts[0];
+        
+        // Ottieni le informazioni utente da Microsoft Graph
+        return this.getUserInfoFromGraph().pipe(
+          switchMap((userInfo) => {
+            // Estrai l'email
+            const email = userInfo.mail || userInfo.userPrincipalName || account.username;
+            const name = userInfo.displayName || account.name || email;
+
+            // Verifica che l'utente sia abilitato nell'applicazione
+            return this.verifyUserEnabled(email).pipe(
+              map((appUser) => {
+                // Crea una sessione compatibile con il sistema esistente
+                const session: Session = {
+                  sessionId: `O365-${account.localAccountId}-${Date.now()}`,
+                  version: '1.0.0',
+                  sessionTimeout: 480, // 8 ore (Office365 token durata tipica)
+                  user: {
+                    username: appUser.username || email,
+                    email: email,
+                    userName: appUser.userName || name,
+                    ruolo: appUser.ruolo,
+                    isActive: appUser.isActive
+                  },
+                  expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000) // 8 ore
+                };
+
+                // Salva la sessione
+                localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+
+                return {
+                  email: email,
+                  name: appUser.userName || name,
+                  userPrincipalName: userInfo.userPrincipalName || email
+                };
+              })
+            );
+          }),
+          catchError((error) => {
+            console.error('Errore nel recupero informazioni utente:', error);
+            // Se fallisce il recupero da Graph, usa i dati dell'account MSAL
+            const email = account.username || '';
+            const name = account.name || email;
+
+            // Verifica comunque che l'utente sia abilitato
+            return this.verifyUserEnabled(email).pipe(
+              map((appUser) => {
+                const session: Session = {
+                  sessionId: `O365-${account.localAccountId}-${Date.now()}`,
+                  version: '1.0.0',
+                  sessionTimeout: 480,
+                  user: {
+                    username: appUser.username || email,
+                    email: email,
+                    userName: appUser.userName || name,
+                    ruolo: appUser.ruolo,
+                    isActive: appUser.isActive
+                  },
+                  expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000)
+                };
+
+                localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+
+                return {
+                  email: email,
+                  name: appUser.userName || name,
+                  userPrincipalName: email
+                };
+              })
+            );
+          })
+        );
+      }),
+      catchError((error) => {
+        console.error('Errore durante il login Office365:', error);
+        let errorMessage = 'Errore durante l\'autenticazione Office365';
+        
+        if (error.errorCode === 'user_cancelled') {
+          errorMessage = 'Login annullato dall\'utente';
+        } else if (error.errorCode === 'consent_required') {
+          errorMessage = 'Consenso richiesto per accedere alle informazioni utente';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
+  /**
+   * Recupera le informazioni utente da Microsoft Graph
+   */
+  private getUserInfoFromGraph(): Observable<any> {
+    // Ottieni il token di accesso
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length === 0) {
+      return throwError(() => new Error('Nessun account disponibile'));
+    }
+
+    return from(
+      this.msalService.acquireTokenSilent({
+        scopes: ['User.Read'],
+        account: accounts[0]
+      })
+    ).pipe(
+      switchMap((response) => {
+        // Chiama Microsoft Graph API per ottenere le informazioni utente
+        return this.http.get('https://graph.microsoft.com/v1.0/me', {
+          headers: {
+            'Authorization': `Bearer ${response.accessToken}`
+          }
+        });
+      }),
+      catchError((error) => {
+        // Se il token silenzioso fallisce, prova con popup
+        return from(
+          this.msalService.acquireTokenPopup({
+            scopes: ['User.Read']
+          })
+        ).pipe(
+          switchMap((response) => {
+            return this.http.get('https://graph.microsoft.com/v1.0/me', {
+              headers: {
+                'Authorization': `Bearer ${response.accessToken}`
+              }
+            });
+          })
+        );
+      })
+    );
+  }
+
+  /**
+   * Verifica se l'utente è abilitato nell'applicazione tramite email
+   * Se l'utente non esiste o non è attivo, lancia un errore
+   */
+  private verifyUserEnabled(email: string): Observable<any> {
+    // Normalizza l'email (lowercase per il confronto)
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Se si usano i mock services, verifica nel mock data
+    if (this.serviceConfig.getUseMockServices() && this.mockData) {
+      const users = this.mockData.getUsers();
+      const user = users.find(u => u.email?.toLowerCase().trim() === normalizedEmail);
+
+      if (!user) {
+        return throwError(() => new Error('Il tuo utente non è abilitato ad accedere. Contattare il supporto tecnico.'));
+      }
+
+      if (user.isActive === false) {
+        return throwError(() => new Error('Il tuo utente non è abilitato ad accedere. Contattare il supporto tecnico.'));
+      }
+
+      // Restituisci i dati dell'utente trovato
+      return of({
+        username: user.username,
+        email: user.email,
+        userName: user.userName,
+        ruolo: user.ruolo,
+        isActive: user.isActive
+      });
+    }
+
+    // Se si usano le API reali, chiama l'endpoint per verificare l'utente
+    return this.http.get<any>(`${this.API_URL}/users/by-email/${encodeURIComponent(email)}`).pipe(
+      map((user) => {
+        if (!user || user.isActive === false) {
+          throw new Error('Il tuo utente non è abilitato ad accedere. Contattare il supporto tecnico.');
+        }
+        return user;
+      }),
+      catchError((error) => {
+        // Se l'utente non esiste (404) o non è abilitato, mostra il messaggio
+        if (error.status === 404 || error.status === 403) {
+          return throwError(() => new Error('Il tuo utente non è abilitato ad accedere. Contattare il supporto tecnico.'));
+        }
+        // Per altri errori, propaga l'errore originale
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Verifica se l'utente è autenticato con Office365
+   */
+  isOffice365Authenticated(): boolean {
+    const accounts = this.msalService.instance.getAllAccounts();
+    return accounts.length > 0;
+  }
+
+  /**
+   * Logout da Office365
+   */
+  logoutOffice365(): Observable<void> {
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length > 0) {
+      // Logout da MSAL
+      this.msalService.logoutPopup({
+        account: accounts[0]
+      });
+    }
+    
+    // Pulisci anche la sessione locale
+    this.clearSession();
+    return of(undefined);
   }
 }
 

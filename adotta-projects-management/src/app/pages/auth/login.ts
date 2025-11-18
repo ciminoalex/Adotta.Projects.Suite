@@ -42,7 +42,22 @@ import { AuthService } from '../../services/auth.service';
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
                             </div>
-                            <p-button label="Sign In" styleClass="w-full" (click)="onLogin()" [loading]="loading"></p-button>
+                            <p-button label="Sign In" styleClass="w-full mb-3" (click)="onLogin()" [loading]="loading"></p-button>
+                            
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="flex-1 border-t border-surface-300"></div>
+                                <span class="text-muted-color text-sm">oppure</span>
+                                <div class="flex-1 border-t border-surface-300"></div>
+                            </div>
+                            
+                            <p-button 
+                                label="Accedi con Office365" 
+                                icon="pi pi-microsoft" 
+                                styleClass="w-full" 
+                                severity="secondary"
+                                (click)="onLoginOffice365()" 
+                                [loading]="loadingOffice365">
+                            </p-button>
                         </div>
                     </div>
                 </div>
@@ -58,6 +73,8 @@ export class Login implements OnInit {
     checked: boolean = false;
 
     loading: boolean = false;
+
+    loadingOffice365: boolean = false;
 
     constructor(
         private authService: AuthService,
@@ -102,6 +119,37 @@ export class Login implements OnInit {
                 this.loading = false;
                 // Estrai il messaggio di errore in modo più affidabile
                 const errorMessage = error?.message || error?.error?.message || 'Errore durante il login. Riprovare.';
+                
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Errore di autenticazione',
+                    detail: errorMessage,
+                    life: 5000
+                });
+            }
+        });
+    }
+
+    onLoginOffice365() {
+        this.loadingOffice365 = true;
+        
+        this.authService.loginWithOffice365().subscribe({
+            next: (response) => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Login effettuato',
+                    detail: `Autenticato come ${response.email}`
+                });
+                
+                // Navigate to dashboard after short delay
+                setTimeout(() => {
+                    this.loadingOffice365 = false;
+                    this.router.navigate(['/']);
+                }, 1000);
+            },
+            error: (error) => {
+                this.loadingOffice365 = false;
+                const errorMessage = error?.message || 'Errore durante il login Office365. Riprovare.';
                 
                 this.messageService.add({
                     severity: 'error',
