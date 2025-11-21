@@ -19,46 +19,85 @@ import { AuthService } from '../../services/auth.service';
     template: `
         <p-toast></p-toast>
         <app-floating-configurator />
-        <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
-            <div class="flex flex-col items-center justify-center">
-                <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
-                    <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
-                        <div class="text-center mb-8">
-                            <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">ADOTTA ITALIA</div>
-                            <span class="text-muted-color font-medium">Sign in to continue</span>
+        
+        <div class="flex min-h-screen min-w-screen overflow-hidden bg-surface-0 dark:bg-surface-900">
+            <!-- Left Side: Branding & Background (Visible on Large Screens) -->
+            <div class="hidden lg:flex w-6/12 flex-col items-center justify-center relative z-10 bg-primary-600 overflow-hidden">
+                <!-- Abstract Background Shapes -->
+                <div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+                    <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full border border-white/20"></div>
+                    <div class="absolute bottom-0 right-0 w-full h-full bg-gradient-to-tl from-black/20 to-transparent"></div>
+                </div>
+
+                <div class="z-20 text-white text-center px-12">
+                    <h1 class="text-5xl font-bold mb-4 tracking-tight" style="color: #ffffff !important;">ADOTTA ITALIA</h1>
+                    <p class="text-xl text-primary-100 max-w-md mx-auto leading-relaxed" style="color: rgba(255,255,255,0.9);">
+                        Gestione progetti e risorse aziendali in un'unica suite integrata.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Side: Login Form -->
+            <div class="w-full lg:w-6/12 flex items-center justify-center p-8 sm:p-12 md:p-24">
+                <div class="w-full max-w-md">
+                    <!-- Mobile Logo -->
+                    <div class="lg:hidden text-center mb-12">
+                        <div class="text-primary-600 text-3xl font-bold">ADOTTA ITALIA</div>
+                    </div>
+
+                    <div class="mb-10">
+                        <h2 class="text-3xl font-bold text-surface-900 dark:text-surface-0 mb-3">Bentornato</h2>
+                        <p class="text-muted-color text-lg">Accedi al tuo account per continuare</p>
+                    </div>
+
+                    <div class="flex flex-col gap-6">
+                        <div>
+                            <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Email</label>
+                            <input pInputText id="email" type="text" placeholder="nome@esempio.com" class="w-full p-3" [(ngModel)]="email" />
                         </div>
 
                         <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Email address" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
-
-                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                            <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
-
-                            <div class="flex items-center justify-between mt-2 mb-8 gap-8">
-                                <div class="flex items-center">
-                                    <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
-                                    <label for="rememberme1">Remember me</label>
-                                </div>
-                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
-                            </div>
-                            <p-button label="Sign In" styleClass="w-full mb-3" (click)="onLogin()" [loading]="loading"></p-button>
-                            
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="flex-1 border-t border-surface-300"></div>
-                                <span class="text-muted-color text-sm">oppure</span>
-                                <div class="flex-1 border-t border-surface-300"></div>
-                            </div>
-                            
-                            <p-button 
-                                label="Accedi con Office365" 
-                                icon="pi pi-microsoft" 
-                                styleClass="w-full" 
-                                severity="secondary"
-                                (click)="onLoginOffice365()" 
-                                [loading]="loadingOffice365">
-                            </p-button>
+                            <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Password</label>
+                            <p-password id="password" [(ngModel)]="password" placeholder="••••••••" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%', 'padding':'0.75rem'}" [feedback]="false"></p-password>
                         </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <p-checkbox [(ngModel)]="checked" id="rememberme" binary="true"></p-checkbox>
+                                <label for="rememberme" class="text-surface-900 dark:text-surface-0">Ricordami</label>
+                            </div>
+                            <a class="text-primary font-medium cursor-pointer hover:underline">Password dimenticata?</a>
+                        </div>
+
+                        <p-button label="Accedi" styleClass="w-full p-3 text-lg" (click)="onLogin()" [loading]="loading"></p-button>
+
+                        <div class="flex items-center gap-4 my-2">
+                            <div class="flex-1 border-t border-surface-300 dark:border-surface-700"></div>
+                            <span class="text-muted-color text-sm">oppure</span>
+                            <div class="flex-1 border-t border-surface-300 dark:border-surface-700"></div>
+                        </div>
+
+                        <p-button 
+                            styleClass="w-full p-3 flex items-center justify-center gap-3" 
+                            severity="secondary" 
+                            outlined="true"
+                            (click)="onLoginOffice365()" 
+                            [loading]="loadingOffice365">
+                            <ng-template pTemplate="content">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 21 21" class="mr-2">
+                                    <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                                    <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                                    <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                                    <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                                </svg>
+                                <span class="font-bold">Accedi con Office365</span>
+                            </ng-template>
+                        </p-button>
+                    </div>
+                    
+                    <div class="mt-12 text-center text-sm text-muted-color">
+                        &copy; 2025 Adotta Italia. Tutti i diritti riservati.
                     </div>
                 </div>
             </div>
@@ -80,7 +119,7 @@ export class Login implements OnInit {
         private authService: AuthService,
         private router: Router,
         private messageService: MessageService
-    ) {}
+    ) { }
 
     ngOnInit() {
         // If already authenticated, redirect to dashboard
@@ -100,7 +139,7 @@ export class Login implements OnInit {
         }
 
         this.loading = true;
-        
+
         this.authService.login(this.email, this.password).subscribe({
             next: (response) => {
                 this.messageService.add({
@@ -108,7 +147,7 @@ export class Login implements OnInit {
                     summary: 'Login effettuato',
                     detail: 'Autenticazione riuscita'
                 });
-                
+
                 // Navigate to dashboard after short delay
                 setTimeout(() => {
                     this.loading = false;
@@ -119,7 +158,7 @@ export class Login implements OnInit {
                 this.loading = false;
                 // Estrai il messaggio di errore in modo più affidabile
                 const errorMessage = error?.message || error?.error?.message || 'Errore durante il login. Riprovare.';
-                
+
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Errore di autenticazione',
@@ -132,7 +171,7 @@ export class Login implements OnInit {
 
     onLoginOffice365() {
         this.loadingOffice365 = true;
-        
+
         this.authService.loginWithOffice365().subscribe({
             next: (response) => {
                 this.messageService.add({
@@ -140,7 +179,7 @@ export class Login implements OnInit {
                     summary: 'Login effettuato',
                     detail: `Autenticato come ${response.email}`
                 });
-                
+
                 // Navigate to dashboard after short delay
                 setTimeout(() => {
                     this.loadingOffice365 = false;
@@ -150,7 +189,7 @@ export class Login implements OnInit {
             error: (error) => {
                 this.loadingOffice365 = false;
                 const errorMessage = error?.message || 'Errore durante il login Office365. Riprovare.';
-                
+
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Errore di autenticazione',

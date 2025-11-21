@@ -12,7 +12,7 @@ export const appRoutes: Routes = [
         component: AppLayout,
         canActivate: [authGuard],
         children: [
-            { path: '', component: Dashboard },
+            { path: '', redirectTo: 'projects', pathMatch: 'full' },
             { path: 'projects', loadChildren: () => import('./app/pages/projects/projects.routes') },
             { path: 'lookup', loadChildren: () => import('./app/pages/lookup/lookup.routes') },
             { path: 'timesheet', loadChildren: () => import('./app/pages/timesheet/timesheet.routes') },

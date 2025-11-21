@@ -43,10 +43,7 @@ export class AppMenu implements OnInit, OnDestroy {
 
     private updateMenuModel() {
         const baseModel: MenuItem[] = [
-            {
-                label: 'Dashboard',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
-            },
+
             {
                 label: 'Gestione Progetti',
                 items: [
