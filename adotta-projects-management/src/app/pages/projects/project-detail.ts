@@ -184,21 +184,18 @@ export class ProjectDetail implements OnInit {
     });
 
     // Load storico modifiche
-    this.projectService.getStoricoModifiche(numeroProgetto).subscribe((storico: StoricoModifica[]) => {
-      this.storicoModifiche = storico;
-      // Solo se non ci sono dati reali, usa i mock per test estetico
-      if (!storico || storico.length === 0) {
-        this.loadMockRegistroModifiche();
-      } else {
-        this.registroModifiche = storico; // Copia per il filtro
+    this.projectService.getStoricoModifiche(numeroProgetto).subscribe({
+      next: (storico: StoricoModifica[]) => {
+        this.storicoModifiche = storico;
+        this.registroModifiche = storico || [];
         this.modificheRaggruppate = this.raggruppaModifiche(this.registroModifiche);
+      },
+      error: (error: any) => {
+        console.error('Error loading storico modifiche:', error);
+        this.registroModifiche = [];
+        this.modificheRaggruppate = [];
       }
     });
-
-    // Mock data per il registro modifiche (per test estetico) - fallback
-    if (!this.registroModifiche || this.registroModifiche.length === 0) {
-      this.loadMockRegistroModifiche();
-    }
 
     // Load chat messages
     this.loadChatMessages(numeroProgetto);
@@ -230,11 +227,8 @@ export class ProjectDetail implements OnInit {
     }
     
     if (this.newMessage.trim() && this.project?.numeroProgetto) {
-      // Get project ID (simple implementation for mock)
-      const projectId = 1; // This will be mapped correctly by the service
-      
       const messaggio: MessaggioProgetto = {
-        progettoId: projectId,
+        numeroProgetto: this.project.numeroProgetto,
         data: new Date(),
         utente: this.currentUser,
         messaggio: this.newMessage.trim(),
@@ -242,7 +236,7 @@ export class ProjectDetail implements OnInit {
       };
       
       // Save message via service
-      this.projectService.addMessaggioProgetto(messaggio).subscribe({
+      this.projectService.addMessaggioProgetto(this.project.numeroProgetto, messaggio).subscribe({
         next: (savedMessage: MessaggioProgetto) => {
           // Add to local array for immediate display
           const chatMsg: ChatMessage = {
@@ -365,7 +359,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 1: Mario Rossi - 20/01/2024 14:30 - Aggiornamento stato progetto
       {
         id: 1,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-20T14:30:00'),
         utenteModifica: 'Mario Rossi',
         campoModificato: 'Stato Progetto',
@@ -374,7 +368,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 2,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-20T14:30:00'),
         utenteModifica: 'Mario Rossi',
         campoModificato: 'Data Fine Installazione',
@@ -383,7 +377,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 3,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-20T14:30:00'),
         utenteModifica: 'Mario Rossi',
         campoModificato: 'Versione WIC',
@@ -394,7 +388,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 2: Giulia Bianchi - 19/01/2024 10:15 - Modifica pianificazione
       {
         id: 4,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-19T10:15:00'),
         utenteModifica: 'Giulia Bianchi',
         campoModificato: 'Data Inizio Installazione',
@@ -403,7 +397,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 5,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-19T10:15:00'),
         utenteModifica: 'Giulia Bianchi',
         campoModificato: 'Data Fine Installazione',
@@ -412,7 +406,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 6,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-19T10:15:00'),
         utenteModifica: 'Giulia Bianchi',
         campoModificato: 'Team Installazione',
@@ -423,7 +417,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 3: Luca Verdi - 18/01/2024 16:45 - Cambio team
       {
         id: 7,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-18T16:45:00'),
         utenteModifica: 'Luca Verdi',
         campoModificato: 'Project Manager',
@@ -432,7 +426,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 8,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-18T16:45:00'),
         utenteModifica: 'Luca Verdi',
         campoModificato: 'Team Tecnico',
@@ -441,7 +435,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 9,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-18T16:45:00'),
         utenteModifica: 'Luca Verdi',
         campoModificato: 'Team APL',
@@ -450,7 +444,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 10,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-18T16:45:00'),
         utenteModifica: 'Luca Verdi',
         campoModificato: 'Sales',
@@ -461,7 +455,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 4: Sofia Rossi - 17/01/2024 09:20 - Aggiornamento cliente
       {
         id: 11,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-17T09:20:00'),
         utenteModifica: 'Sofia Rossi',
         campoModificato: 'Cliente',
@@ -470,7 +464,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 12,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-17T09:20:00'),
         utenteModifica: 'Sofia Rossi',
         campoModificato: 'Città',
@@ -479,7 +473,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 13,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-17T09:20:00'),
         utenteModifica: 'Sofia Rossi',
         campoModificato: 'Stato',
@@ -490,7 +484,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 5: Paolo Bianchi - 16/01/2024 13:10 - Aggiornamento tecnico
       {
         id: 14,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-16T13:10:00'),
         utenteModifica: 'Paolo Bianchi',
         campoModificato: 'Versione WIC',
@@ -499,7 +493,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 15,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-16T13:10:00'),
         utenteModifica: 'Paolo Bianchi',
         campoModificato: 'Nome Progetto',
@@ -508,7 +502,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 16,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-16T13:10:00'),
         utenteModifica: 'Paolo Bianchi',
         campoModificato: 'Numero Progetto',
@@ -519,7 +513,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 6: Elena Verde - 15/01/2024 11:30 - Riorganizzazione team
       {
         id: 17,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-15T11:30:00'),
         utenteModifica: 'Elena Verde',
         campoModificato: 'Team Tecnico',
@@ -528,7 +522,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 18,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-15T11:30:00'),
         utenteModifica: 'Elena Verde',
         campoModificato: 'Team APL',
@@ -537,7 +531,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 19,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-15T11:30:00'),
         utenteModifica: 'Elena Verde',
         campoModificato: 'Team Installazione',
@@ -546,7 +540,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 20,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-15T11:30:00'),
         utenteModifica: 'Elena Verde',
         campoModificato: 'Sales',
@@ -557,7 +551,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 7: Roberto Nero - 14/01/2024 15:25 - Modifica localizzazione
       {
         id: 21,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-14T15:25:00'),
         utenteModifica: 'Roberto Nero',
         campoModificato: 'Città',
@@ -566,7 +560,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 22,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-14T15:25:00'),
         utenteModifica: 'Roberto Nero',
         campoModificato: 'Stato',
@@ -577,7 +571,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 8: Francesca Gialli - 13/01/2024 08:45 - Aggiornamento date
       {
         id: 23,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-13T08:45:00'),
         utenteModifica: 'Francesca Gialli',
         campoModificato: 'Data Inizio Installazione',
@@ -586,7 +580,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 24,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-13T08:45:00'),
         utenteModifica: 'Francesca Gialli',
         campoModificato: 'Data Fine Installazione',
@@ -595,7 +589,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 25,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-13T08:45:00'),
         utenteModifica: 'Francesca Gialli',
         campoModificato: 'Data Creazione',
@@ -606,7 +600,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 9: Antonio Rossi - 12/01/2024 12:15 - Cambio responsabili
       {
         id: 26,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-12T12:15:00'),
         utenteModifica: 'Antonio Rossi',
         campoModificato: 'Sales',
@@ -615,7 +609,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 27,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-12T12:15:00'),
         utenteModifica: 'Antonio Rossi',
         campoModificato: 'Project Manager',
@@ -626,7 +620,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 10: Chiara Blu - 11/01/2024 14:50 - Aggiornamento team APL
       {
         id: 28,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-11T14:50:00'),
         utenteModifica: 'Chiara Blu',
         campoModificato: 'Team APL',
@@ -635,7 +629,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 29,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-11T14:50:00'),
         utenteModifica: 'Chiara Blu',
         campoModificato: 'Versione WIC',
@@ -646,7 +640,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 11: Davide Verde - 10/01/2024 10:30 - Rinomina progetto
       {
         id: 30,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-10T10:30:00'),
         utenteModifica: 'Davide Verde',
         campoModificato: 'Nome Progetto',
@@ -655,7 +649,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 31,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-10T10:30:00'),
         utenteModifica: 'Davide Verde',
         campoModificato: 'Numero Progetto',
@@ -664,7 +658,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 32,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-10T10:30:00'),
         utenteModifica: 'Davide Verde',
         campoModificato: 'Stato Progetto',
@@ -675,7 +669,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 12: Valentina Neri - 09/01/2024 16:20 - Modifica squadre
       {
         id: 33,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-09T16:20:00'),
         utenteModifica: 'Valentina Neri',
         campoModificato: 'Team Installazione',
@@ -684,7 +678,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 34,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-09T16:20:00'),
         utenteModifica: 'Valentina Neri',
         campoModificato: 'Team Tecnico',
@@ -695,7 +689,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 13: Simone Gialli - 08/01/2024 09:10 - Cambio stato
       {
         id: 35,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-08T09:10:00'),
         utenteModifica: 'Simone Gialli',
         campoModificato: 'Stato',
@@ -704,7 +698,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 36,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-08T09:10:00'),
         utenteModifica: 'Simone Gialli',
         campoModificato: 'Città',
@@ -715,7 +709,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 14: Laura Rossi - 07/01/2024 13:40 - Aggiornamento date progetto
       {
         id: 37,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-07T13:40:00'),
         utenteModifica: 'Laura Rossi',
         campoModificato: 'Data Creazione',
@@ -724,7 +718,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 38,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-07T13:40:00'),
         utenteModifica: 'Laura Rossi',
         campoModificato: 'Data Inizio Installazione',
@@ -733,7 +727,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 39,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-07T13:40:00'),
         utenteModifica: 'Laura Rossi',
         campoModificato: 'Data Fine Installazione',
@@ -744,7 +738,7 @@ export class ProjectDetail implements OnInit {
       // Istanza 15: Marco Bianchi - 06/01/2024 11:25 - Cambio numerazione
       {
         id: 40,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-06T11:25:00'),
         utenteModifica: 'Marco Bianchi',
         campoModificato: 'Numero Progetto',
@@ -753,7 +747,7 @@ export class ProjectDetail implements OnInit {
       },
       {
         id: 41,
-        progettoId: 1,
+        numeroProgetto: this.project?.numeroProgetto || '',
         dataModifica: new Date('2024-01-06T11:25:00'),
         utenteModifica: 'Marco Bianchi',
         campoModificato: 'Nome Progetto',

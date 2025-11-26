@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { Cliente, Stato, TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione, ProdottoMaster } from '../../models/lookup.model';
 import { Project, MessaggioProgetto, ChangeLog, LivelloProgetto, ProdottoProgetto, ProjectStatus } from '../../models/project.model';
 
-// Extended User interface with password for mock data
+// Extended User interface with password for mock data - allineato con UserDto
 interface UserWithPassword {
   id?: number;
-  username: string;
+  userCode?: string;
   password: string;
   email: string;
   userName: string;
@@ -56,65 +56,80 @@ export class MockDataService {
     // Initialize sample projects
     this.initializeSampleProjects();
     
-    // Initialize Stati (Stati europei e principali)
+    // Initialize Stati (Stati europei e principali) - id come string per allineamento API
     this.stati = [
-      { id: 1, nome: 'Italia', codiceISO: 'IT', continente: 'Europa' },
-      { id: 2, nome: 'USA', codiceISO: 'US', continente: 'Nord America' },
-      { id: 3, nome: 'Germania', codiceISO: 'DE', continente: 'Europa' },
-      { id: 4, nome: 'Francia', codiceISO: 'FR', continente: 'Europa' },
-      { id: 5, nome: 'Spagna', codiceISO: 'ES', continente: 'Europa' },
-      { id: 6, nome: 'Regno Unito', codiceISO: 'GB', continente: 'Europa' },
-      { id: 7, nome: 'Austria', codiceISO: 'AT', continente: 'Europa' },
-      { id: 8, nome: 'Svizzera', codiceISO: 'CH', continente: 'Europa' },
-      { id: 9, nome: 'Belgio', codiceISO: 'BE', continente: 'Europa' },
-      { id: 10, nome: 'Paesi Bassi', codiceISO: 'NL', continente: 'Europa' },
-      { id: 11, nome: 'Polonia', codiceISO: 'PL', continente: 'Europa' },
-      { id: 12, nome: 'Portogallo', codiceISO: 'PT', continente: 'Europa' },
-      { id: 13, nome: 'Grecia', codiceISO: 'GR', continente: 'Europa' },
-      { id: 14, nome: 'Svezia', codiceISO: 'SE', continente: 'Europa' },
-      { id: 15, nome: 'Norvegia', codiceISO: 'NO', continente: 'Europa' },
-      { id: 16, nome: 'Danimarca', codiceISO: 'DK', continente: 'Europa' },
-      { id: 17, nome: 'Finlandia', codiceISO: 'FI', continente: 'Europa' }
+      { id: '1', nome: 'Italia', codiceISO: 'IT', continente: 'Europa' },
+      { id: '2', nome: 'USA', codiceISO: 'US', continente: 'Nord America' },
+      { id: '3', nome: 'Germania', codiceISO: 'DE', continente: 'Europa' },
+      { id: '4', nome: 'Francia', codiceISO: 'FR', continente: 'Europa' },
+      { id: '5', nome: 'Spagna', codiceISO: 'ES', continente: 'Europa' },
+      { id: '6', nome: 'Regno Unito', codiceISO: 'GB', continente: 'Europa' },
+      { id: '7', nome: 'Austria', codiceISO: 'AT', continente: 'Europa' },
+      { id: '8', nome: 'Svizzera', codiceISO: 'CH', continente: 'Europa' },
+      { id: '9', nome: 'Belgio', codiceISO: 'BE', continente: 'Europa' },
+      { id: '10', nome: 'Paesi Bassi', codiceISO: 'NL', continente: 'Europa' },
+      { id: '11', nome: 'Polonia', codiceISO: 'PL', continente: 'Europa' },
+      { id: '12', nome: 'Portogallo', codiceISO: 'PT', continente: 'Europa' },
+      { id: '13', nome: 'Grecia', codiceISO: 'GR', continente: 'Europa' },
+      { id: '14', nome: 'Svezia', codiceISO: 'SE', continente: 'Europa' },
+      { id: '15', nome: 'Norvegia', codiceISO: 'NO', continente: 'Europa' },
+      { id: '16', nome: 'Danimarca', codiceISO: 'DK', continente: 'Europa' },
+      { id: '17', nome: 'Finlandia', codiceISO: 'FI', continente: 'Europa' }
     ];
     
-    // Initialize Clienti
+    // Initialize Clienti - id come string per allineamento API
     this.clienti = [
       {
-        id: 1,
+        id: '1',
+        cardCode: 'C001',
         nome: 'TechCorp Italia',
         email: 'info@techcorp.it',
         telefono: '+39 02 1234567',
         partitaIVA: 'IT12345678901',
         contatto: 'Mario Rossi',
         indirizzoCompleto: 'Via Roma 123, 20100 Milano',
+        citta: 'Milano',
+        provincia: 'MI',
+        cap: '20100',
+        stato: 'IT',
         note: 'Cliente principale per progetti HVAC'
       },
       {
-        id: 2,
+        id: '2',
+        cardCode: 'C002',
         nome: 'Immobiliare Roma SRL',
         email: 'contatti@immobiliare-roma.it',
         telefono: '+39 06 7654321',
         partitaIVA: 'IT98765432109',
         contatto: 'Giulia Bianchi',
         indirizzoCompleto: 'Piazza Navona 45, 00186 Roma',
+        citta: 'Roma',
+        provincia: 'RM',
+        cap: '00186',
+        stato: 'IT',
         note: 'Specializzati in ristrutturazioni'
       },
       {
-        id: 3,
+        id: '3',
+        cardCode: 'C003',
         nome: 'Napoli Centro',
         email: 'info@napolicentro.it',
         telefono: '+39 081 5555555',
         partitaIVA: 'IT55555555555',
         contatto: 'Antonio Verdi',
         indirizzoCompleto: 'Via Chiaia 78, 80132 Napoli',
+        citta: 'Napoli',
+        provincia: 'NA',
+        cap: '80132',
+        stato: 'IT',
         note: 'Cliente storico del sud Italia'
       }
     ];
 
-    // Initialize Team Tecnici
+    // Initialize Team Tecnici - id come string per allineamento API
     this.teamTecnici = [
       {
-        id: 1,
+        id: '1',
         nome: 'Team Elettrico Milano',
         specializzazione: 'Impianti Elettrici',
         email: 'elettrico.milano@adotta.it',
@@ -123,7 +138,7 @@ export class MockDataService {
         membri: ['Marco Rossi', 'Paolo Bianchi', 'Luca Verdi']
       },
       {
-        id: 2,
+        id: '2',
         nome: 'Team HVAC Roma',
         specializzazione: 'Climatizzazione',
         email: 'hvac.roma@adotta.it',
@@ -132,7 +147,7 @@ export class MockDataService {
         membri: ['Francesco Neri', 'Giuseppe Blu', 'Roberto Gialli']
       },
       {
-        id: 3,
+        id: '3',
         nome: 'Team Idraulico Napoli',
         specializzazione: 'Impianti Idraulici',
         email: 'idraulico.napoli@adotta.it',
@@ -142,10 +157,10 @@ export class MockDataService {
       }
     ];
 
-    // Initialize Team APL
+    // Initialize Team APL - id come string per allineamento API
     this.teamAPL = [
       {
-        id: 1,
+        id: '1',
         nome: 'Team APL Nord',
         email: 'apl.nord@adotta.it',
         telefono: '+39 02 4444444',
@@ -153,7 +168,7 @@ export class MockDataService {
         competenze: ['Progettazione HVAC', 'Calcoli Termici', 'Dimensionamento Impianti']
       },
       {
-        id: 2,
+        id: '2',
         nome: 'Team APL Centro',
         email: 'apl.centro@adotta.it',
         telefono: '+39 06 5555555',
@@ -161,7 +176,7 @@ export class MockDataService {
         competenze: ['Progettazione Elettrica', 'Sicurezza Impianti', 'Normative']
       },
       {
-        id: 3,
+        id: '3',
         nome: 'Team APL Sud',
         email: 'apl.sud@adotta.it',
         telefono: '+39 081 6666666',
@@ -170,10 +185,10 @@ export class MockDataService {
       }
     ];
 
-    // Initialize Sales
+    // Initialize Sales - id come string per allineamento API
     this.sales = [
       {
-        id: 1,
+        id: '1',
         nome: 'Marco Vendite',
         email: 'marco.vendite@adotta.it',
         telefono: '+39 02 7777777',
@@ -182,7 +197,7 @@ export class MockDataService {
         progettiGestiti: 15
       },
       {
-        id: 2,
+        id: '2',
         nome: 'Laura Commerciale',
         email: 'laura.commerciale@adotta.it',
         telefono: '+39 06 8888888',
@@ -191,7 +206,7 @@ export class MockDataService {
         progettiGestiti: 12
       },
       {
-        id: 3,
+        id: '3',
         nome: 'Giuseppe Sud',
         email: 'giuseppe.sud@adotta.it',
         telefono: '+39 081 9999999',
@@ -201,10 +216,10 @@ export class MockDataService {
       }
     ];
 
-    // Initialize Project Managers
+    // Initialize Project Managers - id come string per allineamento API
     this.projectManagers = [
       {
-        id: 1,
+        id: '1',
         nome: 'Mario Rossi',
         email: 'mario.rossi@adotta.it',
         telefono: '+39 02 1010101',
@@ -213,7 +228,7 @@ export class MockDataService {
         certificazioni: ['PMP', 'PRINCE2', 'Agile']
       },
       {
-        id: 2,
+        id: '2',
         nome: 'Giulia Bianchi',
         email: 'giulia.bianchi@adotta.it',
         telefono: '+39 06 2020202',
@@ -222,7 +237,7 @@ export class MockDataService {
         certificazioni: ['PMP', 'Scrum Master']
       },
       {
-        id: 3,
+        id: '3',
         nome: 'Antonio Verdi',
         email: 'antonio.verdi@adotta.it',
         telefono: '+39 081 3030303',
@@ -231,7 +246,7 @@ export class MockDataService {
         certificazioni: ['PMP', 'ITIL']
       },
       {
-        id: 4,
+        id: '4',
         nome: 'Francesca Neri',
         email: 'francesca.neri@adotta.it',
         telefono: '+39 011 4040404',
@@ -241,10 +256,10 @@ export class MockDataService {
       }
     ];
 
-    // Initialize Squadre Installazione
+    // Initialize Squadre Installazione - id come string per allineamento API
     this.squadreInstallazione = [
       {
-        id: 1,
+        id: '1',
         nome: 'Squadra Installazione Milano',
         tipo: 'HVAC',
         contatto: 'Marco Installatore',
@@ -253,7 +268,7 @@ export class MockDataService {
         numeroMembri: 4
       },
       {
-        id: 2,
+        id: '2',
         nome: 'Squadra Elettrica Roma',
         tipo: 'Elettrico',
         contatto: 'Paolo Elettricista',
@@ -262,7 +277,7 @@ export class MockDataService {
         numeroMembri: 3
       },
       {
-        id: 3,
+        id: '3',
         nome: 'Squadra Idraulica Napoli',
         tipo: 'Idraulico',
         contatto: 'Salvatore Idraulico',
@@ -272,10 +287,10 @@ export class MockDataService {
       }
     ];
 
-    // Initialize Prodotti Master
+    // Initialize Prodotti Master - id come string per allineamento API
     this.prodottiMaster = [
       {
-        id: 1,
+        id: '1',
         nome: 'Metafora Standard',
         categoria: 'Metafora',
         unitaMisura: 'pz',
@@ -284,7 +299,7 @@ export class MockDataService {
         variantiDisponibili: ['Bianco', 'Grigio', 'Nero']
       },
       {
-        id: 2,
+        id: '2',
         nome: 'Wallen Premium',
         categoria: 'Wallen',
         unitaMisura: 'mq',
@@ -293,7 +308,7 @@ export class MockDataService {
         variantiDisponibili: ['Legno', 'Metallo', 'Vetro']
       },
       {
-        id: 3,
+        id: '3',
         nome: 'Armonica Comfort',
         categoria: 'Armonica',
         unitaMisura: 'pz',
@@ -302,7 +317,7 @@ export class MockDataService {
         variantiDisponibili: ['Standard', 'Premium', 'Luxury']
       },
       {
-        id: 4,
+        id: '4',
         nome: 'Condotto Ventilazione',
         categoria: 'Accessori',
         unitaMisura: 'ml',
@@ -317,7 +332,7 @@ export class MockDataService {
     this.users = [
       {
         id: 1,
-        username: 'admin',
+        userCode: 'admin',
         password: 'admin123',
         email: 'alessandro.cimino@mtf-srl.com',
         userName: 'Alessandro Cimino',
@@ -327,7 +342,7 @@ export class MockDataService {
       },
       {
         id: 2,
-        username: 'manager',
+        userCode: 'manager',
         password: 'manager123',
         email: 'manager@adotta.it',
         userName: 'Giulia Bianchi',
@@ -337,7 +352,7 @@ export class MockDataService {
       },
       {
         id: 3,
-        username: 'user',
+        userCode: 'user',
         password: 'user123',
         email: 'user@adotta.it',
         userName: 'Antonio Verdi',
@@ -374,7 +389,7 @@ export class MockDataService {
           livelli: [
             {
               id: 1,
-              progettoId: 1,
+              numeroProgetto: '24001',
               nome: 'Piano Terra',
               ordine: 1,
               descrizione: 'Installazione impianti HVAC piano terra',
@@ -384,7 +399,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 1,
-                  progettoId: 1,
+                  numeroProgetto: '24001',
                   livelloId: 1,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Bianco',
@@ -393,7 +408,7 @@ export class MockDataService {
                 },
                 {
                   id: 2,
-                  progettoId: 1,
+                  numeroProgetto: '24001',
                   livelloId: 1,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Metallo',
@@ -404,7 +419,7 @@ export class MockDataService {
             },
             {
               id: 2,
-              progettoId: 1,
+              numeroProgetto: '24001',
               nome: 'Primo Piano',
               ordine: 2,
               descrizione: 'Installazione impianti HVAC primo piano',
@@ -414,7 +429,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 3,
-                  progettoId: 1,
+                  numeroProgetto: '24001',
                   livelloId: 2,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Grigio',
@@ -423,7 +438,7 @@ export class MockDataService {
                 },
                 {
                   id: 4,
-                  progettoId: 1,
+                  numeroProgetto: '24001',
                   livelloId: 2,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 150mm',
@@ -432,7 +447,7 @@ export class MockDataService {
                 },
                 {
                   id: 5,
-                  progettoId: 1,
+                  numeroProgetto: '24001',
                   livelloId: 2,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Standard',
@@ -464,7 +479,7 @@ export class MockDataService {
           livelli: [
             {
               id: 3,
-              progettoId: 2,
+              numeroProgetto: '24002',
               nome: 'Fase 1 - Installazione Base',
               ordine: 1,
               descrizione: 'Installazione sistema base fotovoltaico',
@@ -474,7 +489,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 6,
-                  progettoId: 2,
+                  numeroProgetto: '24002',
                   livelloId: 3,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Legno',
@@ -485,7 +500,7 @@ export class MockDataService {
             },
             {
               id: 4,
-              progettoId: 2,
+              numeroProgetto: '24002',
               nome: 'Fase 2 - Completamento',
               ordine: 2,
               descrizione: 'Completamento installazione e test',
@@ -495,7 +510,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 7,
-                  progettoId: 2,
+                  numeroProgetto: '24002',
                   livelloId: 4,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Nero',
@@ -504,7 +519,7 @@ export class MockDataService {
                 },
                 {
                   id: 8,
-                  progettoId: 2,
+                  numeroProgetto: '24002',
                   livelloId: 4,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 200mm',
@@ -536,7 +551,7 @@ export class MockDataService {
           livelli: [
             {
               id: 8,
-              progettoId: 3,
+              numeroProgetto: '24003',
               nome: 'Fase 1 - Infrastruttura',
               ordine: 1,
               descrizione: 'Installazione infrastruttura IT base',
@@ -546,7 +561,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 15,
-                  progettoId: 3,
+                  numeroProgetto: '24003',
                   livelloId: 8,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Nero',
@@ -555,7 +570,7 @@ export class MockDataService {
                 },
                 {
                   id: 16,
-                  progettoId: 3,
+                  numeroProgetto: '24003',
                   livelloId: 8,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 150mm',
@@ -566,7 +581,7 @@ export class MockDataService {
             },
             {
               id: 9,
-              progettoId: 3,
+              numeroProgetto: '24003',
               nome: 'Fase 2 - Completamento',
               ordine: 2,
               descrizione: 'Completamento installazione e configurazione',
@@ -576,7 +591,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 17,
-                  progettoId: 3,
+                  numeroProgetto: '24003',
                   livelloId: 9,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Metallo',
@@ -608,7 +623,7 @@ export class MockDataService {
           livelli: [
             {
               id: 10,
-              progettoId: 4,
+              numeroProgetto: '24004',
               nome: 'Lab Principale',
               ordine: 1,
               descrizione: 'Installazione laboratorio principale',
@@ -618,7 +633,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 18,
-                  progettoId: 4,
+                  numeroProgetto: '24004',
                   livelloId: 10,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Premium',
@@ -627,7 +642,7 @@ export class MockDataService {
                 },
                 {
                   id: 19,
-                  progettoId: 4,
+                  numeroProgetto: '24004',
                   livelloId: 10,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Bianco',
@@ -636,7 +651,7 @@ export class MockDataService {
                 },
                 {
                   id: 20,
-                  progettoId: 4,
+                  numeroProgetto: '24004',
                   livelloId: 10,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 200mm',
@@ -668,7 +683,7 @@ export class MockDataService {
           livelli: [
             {
               id: 11,
-              progettoId: 5,
+              numeroProgetto: '24005',
               nome: 'Installazione Segnaletica',
               ordine: 1,
               descrizione: 'Installazione sistema segnaletica',
@@ -678,7 +693,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 21,
-                  progettoId: 5,
+                  numeroProgetto: '24005',
                   livelloId: 11,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Vetro',
@@ -687,7 +702,7 @@ export class MockDataService {
                 },
                 {
                   id: 22,
-                  progettoId: 5,
+                  numeroProgetto: '24005',
                   livelloId: 11,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Grigio',
@@ -722,7 +737,7 @@ export class MockDataService {
           livelli: [
             {
               id: 6,
-              progettoId: 6,
+              numeroProgetto: '24006',
               nome: 'Sala Operazioni',
               ordine: 1,
               descrizione: 'Installazione rete elettrica sala operazioni',
@@ -732,7 +747,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 11,
-                  progettoId: 6,
+                  numeroProgetto: '24006',
                   livelloId: 6,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Bianco',
@@ -741,7 +756,7 @@ export class MockDataService {
                 },
                 {
                   id: 12,
-                  progettoId: 6,
+                  numeroProgetto: '24006',
                   livelloId: 6,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Vetro',
@@ -750,7 +765,7 @@ export class MockDataService {
                 },
                 {
                   id: 13,
-                  progettoId: 6,
+                  numeroProgetto: '24006',
                   livelloId: 6,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Luxury',
@@ -761,7 +776,7 @@ export class MockDataService {
             },
             {
               id: 7,
-              progettoId: 6,
+              numeroProgetto: '24006',
               nome: 'Reparto Degenze',
               ordine: 2,
               descrizione: 'Installazione rete elettrica reparto degenze',
@@ -771,7 +786,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 14,
-                  progettoId: 6,
+                  numeroProgetto: '24006',
                   livelloId: 7,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Grigio',
@@ -803,7 +818,7 @@ export class MockDataService {
           livelli: [
             {
               id: 12,
-              progettoId: 7,
+              numeroProgetto: '24007',
               nome: 'Area Doganale Principale',
               ordine: 1,
               descrizione: 'Installazione blocchi doganali area principale',
@@ -813,7 +828,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 23,
-                  progettoId: 7,
+                  numeroProgetto: '24007',
                   livelloId: 12,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Metallo',
@@ -822,7 +837,7 @@ export class MockDataService {
                 },
                 {
                   id: 24,
-                  progettoId: 7,
+                  numeroProgetto: '24007',
                   livelloId: 12,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 150mm',
@@ -854,7 +869,7 @@ export class MockDataService {
           livelli: [
             {
               id: 13,
-              progettoId: 8,
+              numeroProgetto: '24008',
               nome: 'Sistema Antincendio',
               ordine: 1,
               descrizione: 'Installazione sistema antincendio completo',
@@ -864,7 +879,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 25,
-                  progettoId: 8,
+                  numeroProgetto: '24008',
                   livelloId: 13,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Bianco',
@@ -873,7 +888,7 @@ export class MockDataService {
                 },
                 {
                   id: 26,
-                  progettoId: 8,
+                  numeroProgetto: '24008',
                   livelloId: 13,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Standard',
@@ -882,7 +897,7 @@ export class MockDataService {
                 },
                 {
                   id: 27,
-                  progettoId: 8,
+                  numeroProgetto: '24008',
                   livelloId: 13,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 100mm',
@@ -915,7 +930,7 @@ export class MockDataService {
           livelli: [
             {
               id: 14,
-              progettoId: 9,
+              numeroProgetto: '24009',
               nome: 'Fase 1 - Preparazione',
               ordine: 1,
               descrizione: 'Preparazione area per installazione',
@@ -925,7 +940,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 28,
-                  progettoId: 9,
+                  numeroProgetto: '24009',
                   livelloId: 14,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Legno',
@@ -936,7 +951,7 @@ export class MockDataService {
             },
             {
               id: 15,
-              progettoId: 9,
+              numeroProgetto: '24009',
               nome: 'Fase 2 - Installazione',
               ordine: 2,
               descrizione: 'Installazione materiali disponibili',
@@ -946,7 +961,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 29,
-                  progettoId: 9,
+                  numeroProgetto: '24009',
                   livelloId: 15,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Grigio',
@@ -955,7 +970,7 @@ export class MockDataService {
                 },
                 {
                   id: 30,
-                  progettoId: 9,
+                  numeroProgetto: '24009',
                   livelloId: 15,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 200mm',
@@ -987,7 +1002,7 @@ export class MockDataService {
           livelli: [
             {
               id: 16,
-              progettoId: 10,
+              numeroProgetto: '24010',
               nome: 'Subentro Urgente',
               ordine: 1,
               descrizione: 'Subentro urgente gruppo elettrico',
@@ -997,7 +1012,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 31,
-                  progettoId: 10,
+                  numeroProgetto: '24010',
                   livelloId: 16,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Luxury',
@@ -1006,7 +1021,7 @@ export class MockDataService {
                 },
                 {
                   id: 32,
-                  progettoId: 10,
+                  numeroProgetto: '24010',
                   livelloId: 16,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Nero',
@@ -1041,7 +1056,7 @@ export class MockDataService {
           livelli: [
             {
               id: 17,
-              progettoId: 11,
+              numeroProgetto: '24011',
               nome: 'Sistema Digitale',
               ordine: 1,
               descrizione: 'Installazione sistema amministrazione digitale',
@@ -1051,7 +1066,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 33,
-                  progettoId: 11,
+                  numeroProgetto: '24011',
                   livelloId: 17,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Bianco',
@@ -1060,7 +1075,7 @@ export class MockDataService {
                 },
                 {
                   id: 34,
-                  progettoId: 11,
+                  numeroProgetto: '24011',
                   livelloId: 17,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Metallo',
@@ -1092,7 +1107,7 @@ export class MockDataService {
           livelli: [
             {
               id: 18,
-              progettoId: 12,
+              numeroProgetto: '24012',
               nome: 'Impianto Acque',
               ordine: 1,
               descrizione: 'Installazione impianto trattamento acque',
@@ -1102,7 +1117,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 35,
-                  progettoId: 12,
+                  numeroProgetto: '24012',
                   livelloId: 18,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Standard',
@@ -1134,7 +1149,7 @@ export class MockDataService {
           livelli: [
             {
               id: 19,
-              progettoId: 13,
+              numeroProgetto: '24013',
               nome: 'Area Agricola',
               ordine: 1,
               descrizione: 'Installazione impianti area agricola',
@@ -1144,7 +1159,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 36,
-                  progettoId: 13,
+                  numeroProgetto: '24013',
                   livelloId: 19,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Legno',
@@ -1153,7 +1168,7 @@ export class MockDataService {
                 },
                 {
                   id: 37,
-                  progettoId: 13,
+                  numeroProgetto: '24013',
                   livelloId: 19,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 150mm',
@@ -1185,7 +1200,7 @@ export class MockDataService {
           livelli: [
             {
               id: 20,
-              progettoId: 14,
+              numeroProgetto: '24014',
               nome: 'Sistema Sanitario',
               ordine: 1,
               descrizione: 'Installazione sistema sanitario',
@@ -1195,7 +1210,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 38,
-                  progettoId: 14,
+                  numeroProgetto: '24014',
                   livelloId: 20,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Bianco',
@@ -1204,7 +1219,7 @@ export class MockDataService {
                 },
                 {
                   id: 39,
-                  progettoId: 14,
+                  numeroProgetto: '24014',
                   livelloId: 20,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Premium',
@@ -1236,7 +1251,7 @@ export class MockDataService {
           livelli: [
             {
               id: 21,
-              progettoId: 15,
+              numeroProgetto: '24015',
               nome: 'Impianto Farmacia',
               ordine: 1,
               descrizione: 'Installazione impianti farmacia',
@@ -1246,7 +1261,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 40,
-                  progettoId: 15,
+                  numeroProgetto: '24015',
                   livelloId: 21,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Vetro',
@@ -1255,7 +1270,7 @@ export class MockDataService {
                 },
                 {
                   id: 41,
-                  progettoId: 15,
+                  numeroProgetto: '24015',
                   livelloId: 21,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Grigio',
@@ -1264,7 +1279,7 @@ export class MockDataService {
                 },
                 {
                   id: 42,
-                  progettoId: 15,
+                  numeroProgetto: '24015',
                   livelloId: 21,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 100mm',
@@ -1299,7 +1314,7 @@ export class MockDataService {
           livelli: [
             {
               id: 5,
-              progettoId: 16,
+              numeroProgetto: '24016',
               nome: 'Livello Sottotetto',
               ordine: 1,
               descrizione: 'Installazione impianti climatizzazione sottotetto',
@@ -1309,7 +1324,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 9,
-                  progettoId: 16,
+                  numeroProgetto: '24016',
                   livelloId: 5,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Premium',
@@ -1318,7 +1333,7 @@ export class MockDataService {
                 },
                 {
                   id: 10,
-                  progettoId: 16,
+                  numeroProgetto: '24016',
                   livelloId: 5,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 100mm',
@@ -1350,7 +1365,7 @@ export class MockDataService {
           livelli: [
             {
               id: 22,
-              progettoId: 17,
+              numeroProgetto: '24017',
               nome: 'Sostituzione Turbina',
               ordine: 1,
               descrizione: 'Sostituzione turbina eolica',
@@ -1360,7 +1375,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 43,
-                  progettoId: 17,
+                  numeroProgetto: '24017',
                   livelloId: 22,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Standard',
@@ -1369,7 +1384,7 @@ export class MockDataService {
                 },
                 {
                   id: 44,
-                  progettoId: 17,
+                  numeroProgetto: '24017',
                   livelloId: 22,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 200mm',
@@ -1401,7 +1416,7 @@ export class MockDataService {
           livelli: [
             {
               id: 23,
-              progettoId: 18,
+              numeroProgetto: '24018',
               nome: 'Aula Magna',
               ordine: 1,
               descrizione: 'Restyling completo aula magna',
@@ -1411,7 +1426,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 45,
-                  progettoId: 18,
+                  numeroProgetto: '24018',
                   livelloId: 23,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Legno',
@@ -1420,7 +1435,7 @@ export class MockDataService {
                 },
                 {
                   id: 46,
-                  progettoId: 18,
+                  numeroProgetto: '24018',
                   livelloId: 23,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Bianco',
@@ -1429,7 +1444,7 @@ export class MockDataService {
                 },
                 {
                   id: 47,
-                  progettoId: 18,
+                  numeroProgetto: '24018',
                   livelloId: 23,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Luxury',
@@ -1461,7 +1476,7 @@ export class MockDataService {
           livelli: [
             {
               id: 24,
-              progettoId: 19,
+              numeroProgetto: '24019',
               nome: 'Fase 1 - Area Magazzino',
               ordine: 1,
               descrizione: 'Ampliamento area magazzino',
@@ -1471,7 +1486,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 48,
-                  progettoId: 19,
+                  numeroProgetto: '24019',
                   livelloId: 24,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Grigio',
@@ -1480,7 +1495,7 @@ export class MockDataService {
                 },
                 {
                   id: 49,
-                  progettoId: 19,
+                  numeroProgetto: '24019',
                   livelloId: 24,
                   tipoProdotto: 'Condotto Ventilazione',
                   variante: 'Diametro 150mm',
@@ -1491,7 +1506,7 @@ export class MockDataService {
             },
             {
               id: 25,
-              progettoId: 19,
+              numeroProgetto: '24019',
               nome: 'Fase 2 - Completamento',
               ordine: 2,
               descrizione: 'Completamento ampliamento',
@@ -1501,7 +1516,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 50,
-                  progettoId: 19,
+                  numeroProgetto: '24019',
                   livelloId: 25,
                   tipoProdotto: 'Wallen Premium',
                   variante: 'Metallo',
@@ -1533,7 +1548,7 @@ export class MockDataService {
           livelli: [
             {
               id: 26,
-              progettoId: 20,
+              numeroProgetto: '24020',
               nome: 'Upgrade Sicurezza',
               ordine: 1,
               descrizione: 'Upgrade urgente sistema sicurezza',
@@ -1543,7 +1558,7 @@ export class MockDataService {
               prodotti: [
                 {
                   id: 51,
-                  progettoId: 20,
+                  numeroProgetto: '24020',
                   livelloId: 26,
                   tipoProdotto: 'Metafora Standard',
                   variante: 'Nero',
@@ -1552,7 +1567,7 @@ export class MockDataService {
                 },
                 {
                   id: 52,
-                  progettoId: 20,
+                  numeroProgetto: '24020',
                   livelloId: 26,
                   tipoProdotto: 'Armonica Comfort',
                   variante: 'Premium',
@@ -1963,7 +1978,7 @@ export class MockDataService {
     return [...this.stati];
   }
 
-  findStato(id: number): Stato | undefined {
+  findStato(id: string): Stato | undefined {
     return this.stati.find(s => s.id === id);
   }
 
@@ -1973,13 +1988,13 @@ export class MockDataService {
   }
 
   addCliente(cliente: Cliente): Cliente {
-    const newId = Math.max(...this.clienti.map(c => c.id || 0), 0) + 1;
-    const newCliente = { ...cliente, id: newId };
+    const maxId = Math.max(...this.clienti.map(c => parseInt(c.id || '0', 10)), 0);
+    const newCliente = { ...cliente, id: String(maxId + 1) };
     this.clienti.push(newCliente);
     return newCliente;
   }
 
-  updateCliente(id: number, cliente: Cliente): Cliente {
+  updateCliente(id: string, cliente: Cliente): Cliente {
     const index = this.clienti.findIndex(c => c.id === id);
     if (index !== -1) {
       this.clienti[index] = { ...cliente, id };
@@ -1988,7 +2003,7 @@ export class MockDataService {
     throw new Error(`Cliente with id ${id} not found`);
   }
 
-  deleteCliente(id: number): void {
+  deleteCliente(id: string): void {
     const index = this.clienti.findIndex(c => c.id === id);
     if (index !== -1) {
       this.clienti.splice(index, 1);
@@ -1997,19 +2012,19 @@ export class MockDataService {
     }
   }
 
-  findCliente(id: number): Cliente | undefined {
+  findCliente(id: string): Cliente | undefined {
     return this.clienti.find(c => c.id === id);
   }
 
-  // Similar methods for other entities...
+  // Similar methods for other entities... (using string IDs for API alignment)
   getTeamTecnici(): TeamTecnico[] { return [...this.teamTecnici]; }
   addTeamTecnico(team: TeamTecnico): TeamTecnico {
-    const newId = Math.max(...this.teamTecnici.map(t => t.id || 0), 0) + 1;
-    const newTeam = { ...team, id: newId };
+    const maxId = Math.max(...this.teamTecnici.map(t => parseInt(t.id || '0', 10)), 0);
+    const newTeam = { ...team, id: String(maxId + 1) };
     this.teamTecnici.push(newTeam);
     return newTeam;
   }
-  updateTeamTecnico(id: number, team: TeamTecnico): TeamTecnico {
+  updateTeamTecnico(id: string, team: TeamTecnico): TeamTecnico {
     const index = this.teamTecnici.findIndex(t => t.id === id);
     if (index !== -1) {
       this.teamTecnici[index] = { ...team, id };
@@ -2017,7 +2032,7 @@ export class MockDataService {
     }
     throw new Error(`Team Tecnico with id ${id} not found`);
   }
-  deleteTeamTecnico(id: number): void {
+  deleteTeamTecnico(id: string): void {
     const index = this.teamTecnici.findIndex(t => t.id === id);
     if (index !== -1) this.teamTecnici.splice(index, 1);
     else throw new Error(`Team Tecnico with id ${id} not found`);
@@ -2025,12 +2040,12 @@ export class MockDataService {
 
   getTeamAPL(): TeamAPL[] { return [...this.teamAPL]; }
   addTeamAPL(team: TeamAPL): TeamAPL {
-    const newId = Math.max(...this.teamAPL.map(t => t.id || 0), 0) + 1;
-    const newTeam = { ...team, id: newId };
+    const maxId = Math.max(...this.teamAPL.map(t => parseInt(t.id || '0', 10)), 0);
+    const newTeam = { ...team, id: String(maxId + 1) };
     this.teamAPL.push(newTeam);
     return newTeam;
   }
-  updateTeamAPL(id: number, team: TeamAPL): TeamAPL {
+  updateTeamAPL(id: string, team: TeamAPL): TeamAPL {
     const index = this.teamAPL.findIndex(t => t.id === id);
     if (index !== -1) {
       this.teamAPL[index] = { ...team, id };
@@ -2038,7 +2053,7 @@ export class MockDataService {
     }
     throw new Error(`Team APL with id ${id} not found`);
   }
-  deleteTeamAPL(id: number): void {
+  deleteTeamAPL(id: string): void {
     const index = this.teamAPL.findIndex(t => t.id === id);
     if (index !== -1) this.teamAPL.splice(index, 1);
     else throw new Error(`Team APL with id ${id} not found`);
@@ -2046,12 +2061,12 @@ export class MockDataService {
 
   getSales(): Sales[] { return [...this.sales]; }
   addSales(sales: Sales): Sales {
-    const newId = Math.max(...this.sales.map(s => s.id || 0), 0) + 1;
-    const newSales = { ...sales, id: newId };
+    const maxId = Math.max(...this.sales.map(s => parseInt(s.id || '0', 10)), 0);
+    const newSales = { ...sales, id: String(maxId + 1) };
     this.sales.push(newSales);
     return newSales;
   }
-  updateSales(id: number, sales: Sales): Sales {
+  updateSales(id: string, sales: Sales): Sales {
     const index = this.sales.findIndex(s => s.id === id);
     if (index !== -1) {
       this.sales[index] = { ...sales, id };
@@ -2059,7 +2074,7 @@ export class MockDataService {
     }
     throw new Error(`Sales with id ${id} not found`);
   }
-  deleteSales(id: number): void {
+  deleteSales(id: string): void {
     const index = this.sales.findIndex(s => s.id === id);
     if (index !== -1) this.sales.splice(index, 1);
     else throw new Error(`Sales with id ${id} not found`);
@@ -2067,12 +2082,12 @@ export class MockDataService {
 
   getProjectManagers(): ProjectManager[] { return [...this.projectManagers]; }
   addProjectManager(pm: ProjectManager): ProjectManager {
-    const newId = Math.max(...this.projectManagers.map(p => p.id || 0), 0) + 1;
-    const newPM = { ...pm, id: newId };
+    const maxId = Math.max(...this.projectManagers.map(p => parseInt(p.id || '0', 10)), 0);
+    const newPM = { ...pm, id: String(maxId + 1) };
     this.projectManagers.push(newPM);
     return newPM;
   }
-  updateProjectManager(id: number, pm: ProjectManager): ProjectManager {
+  updateProjectManager(id: string, pm: ProjectManager): ProjectManager {
     const index = this.projectManagers.findIndex(p => p.id === id);
     if (index !== -1) {
       this.projectManagers[index] = { ...pm, id };
@@ -2080,7 +2095,7 @@ export class MockDataService {
     }
     throw new Error(`Project Manager with id ${id} not found`);
   }
-  deleteProjectManager(id: number): void {
+  deleteProjectManager(id: string): void {
     const index = this.projectManagers.findIndex(p => p.id === id);
     if (index !== -1) this.projectManagers.splice(index, 1);
     else throw new Error(`Project Manager with id ${id} not found`);
@@ -2088,12 +2103,12 @@ export class MockDataService {
 
   getSquadreInstallazione(): SquadraInstallazione[] { return [...this.squadreInstallazione]; }
   addSquadraInstallazione(squadra: SquadraInstallazione): SquadraInstallazione {
-    const newId = Math.max(...this.squadreInstallazione.map(s => s.id || 0), 0) + 1;
-    const newSquadra = { ...squadra, id: newId };
+    const maxId = Math.max(...this.squadreInstallazione.map(s => parseInt(s.id || '0', 10)), 0);
+    const newSquadra = { ...squadra, id: String(maxId + 1) };
     this.squadreInstallazione.push(newSquadra);
     return newSquadra;
   }
-  updateSquadraInstallazione(id: number, squadra: SquadraInstallazione): SquadraInstallazione {
+  updateSquadraInstallazione(id: string, squadra: SquadraInstallazione): SquadraInstallazione {
     const index = this.squadreInstallazione.findIndex(s => s.id === id);
     if (index !== -1) {
       this.squadreInstallazione[index] = { ...squadra, id };
@@ -2101,7 +2116,7 @@ export class MockDataService {
     }
     throw new Error(`Squadra Installazione with id ${id} not found`);
   }
-  deleteSquadraInstallazione(id: number): void {
+  deleteSquadraInstallazione(id: string): void {
     const index = this.squadreInstallazione.findIndex(s => s.id === id);
     if (index !== -1) this.squadreInstallazione.splice(index, 1);
     else throw new Error(`Squadra Installazione with id ${id} not found`);
@@ -2109,12 +2124,12 @@ export class MockDataService {
 
   getProdottiMaster(): ProdottoMaster[] { return [...this.prodottiMaster]; }
   addProdottoMaster(prodotto: ProdottoMaster): ProdottoMaster {
-    const newId = Math.max(...this.prodottiMaster.map(p => p.id || 0), 0) + 1;
-    const newProdotto = { ...prodotto, id: newId };
+    const maxId = Math.max(...this.prodottiMaster.map(p => parseInt(p.id || '0', 10)), 0);
+    const newProdotto = { ...prodotto, id: String(maxId + 1) };
     this.prodottiMaster.push(newProdotto);
     return newProdotto;
   }
-  updateProdottoMaster(id: number, prodotto: ProdottoMaster): ProdottoMaster {
+  updateProdottoMaster(id: string, prodotto: ProdottoMaster): ProdottoMaster {
     const index = this.prodottiMaster.findIndex(p => p.id === id);
     if (index !== -1) {
       this.prodottiMaster[index] = { ...prodotto, id };
@@ -2122,7 +2137,7 @@ export class MockDataService {
     }
     throw new Error(`Prodotto Master with id ${id} not found`);
   }
-  deleteProdottoMaster(id: number): void {
+  deleteProdottoMaster(id: string): void {
     const index = this.prodottiMaster.findIndex(p => p.id === id);
     if (index !== -1) this.prodottiMaster.splice(index, 1);
     else throw new Error(`Prodotto Master with id ${id} not found`);
@@ -2171,8 +2186,8 @@ export class MockDataService {
   }
 
   // Messages
-  getMessaggiByProgetto(progettoId: number): MessaggioProgetto[] {
-    return this.messaggi.filter(m => m.progettoId === progettoId);
+  getMessaggiByProgetto(numeroProgetto: string): MessaggioProgetto[] {
+    return this.messaggi.filter(m => m.numeroProgetto === numeroProgetto);
   }
 
   addMessaggio(messaggio: MessaggioProgetto): MessaggioProgetto {
@@ -2198,8 +2213,8 @@ export class MockDataService {
   }
 
   // Change Log
-  getChangeLogByProgetto(progettoId: number): ChangeLog[] {
-    return this.changeLogs.filter(cl => cl.progettoId === progettoId);
+  getChangeLogByProgetto(numeroProgetto: string): ChangeLog[] {
+    return this.changeLogs.filter(cl => cl.numeroProgetto === numeroProgetto);
   }
 
   addChangeLog(changeLog: ChangeLog): ChangeLog {

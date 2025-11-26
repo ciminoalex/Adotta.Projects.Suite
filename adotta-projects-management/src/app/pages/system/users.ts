@@ -14,8 +14,11 @@ import { TooltipModule } from 'primeng/tooltip';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { MockUserService, UserDto } from '../../services/mock/mock-user.service';
+import { UserService, UserDto } from '../../services/user.service';
+import { MockUserService } from '../../services/mock/mock-user.service';
+import { LookupService } from '../../services/lookup.service';
 import { MockLookupService } from '../../services/mock/mock-lookup.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
 
 @Component({
   selector: 'app-users',
@@ -126,15 +129,28 @@ import { MockLookupService } from '../../services/mock/mock-lookup.service';
             <p-select formControlName="teamTecnico" [options]="teams" optionLabel="nome" optionValue="nome" placeholder="Seleziona" appendTo="body" [style]="{ width: '100%' }" [fluid]="true"></p-select>
           </div>
 
-          <div class="col-span-12 md:col-span-3 flex items-center gap-2">
+    <div class="col-span-12 md:col-span-3 flex items-center gap-2">
             <p-checkbox formControlName="isActive" binary="true"></p-checkbox>
             <label>Abilitato</label>
           </div>
 
-          <div class="col-span-12 md:col-span-9" *ngIf="!isEdit">
-            <label class="block text-900 font-medium mb-2">Password *</label>
-            <input type="password" pInputText formControlName="password" class="w-full" placeholder="Password iniziale">
+          <div class="col-span-12 md:col-span-12" *ngIf="isEdit">
+             <div class="flex items-center gap-2">
+                <p-checkbox formControlName="changePassword" binary="true" inputId="cp"></p-checkbox>
+                <label for="cp">Modifica Password</label>
+             </div>
           </div>
+
+          <ng-container *ngIf="!isEdit || userForm.get('changePassword')?.value">
+            <div class="col-span-12 md:col-span-6">
+                <label class="block text-900 font-medium mb-2">Password {{ !isEdit ? '*' : '' }}</label>
+                <input type="password" pInputText formControlName="password" class="w-full" placeholder="Password">
+            </div>
+            <div class="col-span-12 md:col-span-6">
+                <label class="block text-900 font-medium mb-2">Conferma Password {{ !isEdit ? '*' : '' }}</label>
+                <input type="password" pInputText formControlName="confirmPassword" class="w-full" placeholder="Conferma Password">
+            </div>
+          </ng-container>
         </div>
       </form>
       <ng-template pTemplate="footer">
@@ -162,13 +178,18 @@ export class UsersComponent implements OnInit {
     { label: 'Timesheet', value: 'Timesheet' }
   ];
 
+  private userService: UserService | MockUserService;
+  private lookupService: LookupService | MockLookupService;
+
   constructor(
-    private userService: MockUserService,
-    private lookupService: MockLookupService,
+    private serviceProvider: ServiceProviderService,
     private fb: FormBuilder,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) {
+    this.userService = this.serviceProvider.provideUserService();
+    this.lookupService = this.serviceProvider.provideLookupService();
+  }
 
   ngOnInit(): void {
     this.userForm = this.fb.group({
@@ -179,7 +200,9 @@ export class UsersComponent implements OnInit {
       ruolo: [null, Validators.required],
       teamTecnico: [null],
       isActive: [true],
-      password: ['']
+      changePassword: [false],
+      password: [''],
+      confirmPassword: ['']
     });
     this.loadTeams();
     this.loadUsers();
@@ -206,13 +229,21 @@ export class UsersComponent implements OnInit {
 
   openDialog() {
     this.isEdit = false;
-    this.userForm.reset({ isActive: true });
+    this.userForm.reset({ isActive: true, changePassword: false });
+    // For new user, password is required
+    this.userForm.get('password')?.setValidators([Validators.required]);
+    this.userForm.get('confirmPassword')?.setValidators([Validators.required]);
     this.showDialog = true;
   }
 
   editUser(u: UserDto) {
     this.isEdit = true;
-    this.userForm.patchValue({ ...u, password: '' });
+    this.userForm.patchValue({ ...u, password: '', confirmPassword: '', changePassword: false });
+    // For edit, password is optional unless checkbox is checked
+    this.userForm.get('password')?.clearValidators();
+    this.userForm.get('confirmPassword')?.clearValidators();
+    this.userForm.get('password')?.updateValueAndValidity();
+    this.userForm.get('confirmPassword')?.updateValueAndValidity();
     this.showDialog = true;
   }
 
@@ -224,7 +255,32 @@ export class UsersComponent implements OnInit {
 
   saveUser() {
     if (this.userForm.invalid) return;
-    const payload: UserDto = this.userForm.value;
+
+    const formVal = this.userForm.value;
+
+    // Password validation
+    if (!this.isEdit || formVal.changePassword) {
+      if (!formVal.password) {
+        this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'La password è obbligatoria' });
+        return;
+      }
+      if (formVal.password !== formVal.confirmPassword) {
+        this.messageService.add({ severity: 'error', summary: 'Errore', detail: 'Le password non coincidono' });
+        return;
+      }
+    }
+
+    const payload: UserDto = {
+      id: formVal.id,
+      userName: formVal.userName,
+      email: formVal.email,
+      ruolo: formVal.ruolo,
+      teamTecnico: formVal.teamTecnico,
+      isActive: formVal.isActive,
+      // Only send password if it's a new user or changePassword is checked
+      password: (!this.isEdit || formVal.changePassword) ? formVal.password : undefined
+    };
+
     this.saving = true;
     const obs = this.isEdit ? this.userService.updateUser(payload) : this.userService.addUser(payload);
     obs.subscribe({
@@ -244,7 +300,7 @@ export class UsersComponent implements OnInit {
   confirmDelete(u: UserDto) {
     if (!u.id) return;
     this.confirmationService.confirm({
-      message: `Confermi l'eliminazione dell'utente ${u.username}?`,
+      message: `Confermi l'eliminazione dell'utente ${u.userName}?`,
       header: 'Conferma',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {

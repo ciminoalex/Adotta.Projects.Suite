@@ -32,27 +32,31 @@ export class AuthService {
     // Use mock if configured
     if (this.serviceConfig.getUseMockServices() && this.mockData) {
       const users = this.mockData.getUsers();
-      const user = users.find(u => u.username === username && u.password === password);
+      const user = users.find(u => (u.userCode === username || u.email === username) && u.password === password);
 
       if (user) {
         // Create session from mock data
-        const mockSessionId = `MOCK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const mockToken = `MOCK-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        const userWithoutPassword = { ...user, password: undefined };
+        
         const session: Session = {
-          sessionId: mockSessionId,
+          sessionId: mockToken,
           version: '1.0.0',
-          sessionTimeout: 30,
-          user: { ...user, password: undefined } as any,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+          sessionTimeout: 1440, // 24 hours in minutes
+          user: userWithoutPassword as any,
+          expiresAt: expiresAt
         };
 
         // Store session
         localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
 
-        // Return mock response compatible with LoginResponse
+        // Return mock response compatible with LoginResponseDto
         const mockResponse: LoginResponse = {
-          sessionId: mockSessionId,
-          version: '1.0.0',
-          sessionTimeout: 30
+          token: mockToken,
+          expiresAt: expiresAt,
+          expiresInSeconds: 24 * 60 * 60,
+          user: userWithoutPassword as any
         };
 
         return of(mockResponse);
@@ -63,24 +67,19 @@ export class AuthService {
 
     // Use real API
     const loginRequest: LoginRequest = {
-      companyDB: companyDB,
-      userName: username,
+      email: username,
       password: password
     };
 
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, loginRequest).pipe(
       map((response) => {
-        // Create session from response
+        // Create session from response (allineato con LoginResponseDto)
         const session: Session = {
-          sessionId: response.sessionId,
-          version: response.version,
-          sessionTimeout: response.sessionTimeout,
-          expiresAt: new Date(Date.now() + (response.sessionTimeout || 30) * 60 * 1000), // Convert minutes to milliseconds
-          user: {
-            userName: username, // Save username in session
-            username: username,
-            email: username // Use username as email fallback
-          }
+          sessionId: response.token,
+          version: '1.0.0',
+          sessionTimeout: Math.floor(response.expiresInSeconds / 60),
+          expiresAt: new Date(response.expiresAt),
+          user: response.user
         };
 
         // Store session
@@ -130,7 +129,7 @@ export class AuthService {
       // Call logout API
       return this.http.post<void>(`${this.API_URL}/logout`, null, {
         headers: {
-          'X-SAP-Session-Id': sessionId
+          'Authorization': `Bearer ${sessionId}`
         }
       }).pipe(
         catchError((error) => {
@@ -283,7 +282,7 @@ export class AuthService {
                   version: '1.0.0',
                   sessionTimeout: 480, // 8 ore (Office365 token durata tipica)
                   user: {
-                    username: appUser.username || email,
+                    userCode: appUser.userCode || email,
                     email: email,
                     userName: appUser.userName || name,
                     ruolo: appUser.ruolo,
@@ -317,7 +316,7 @@ export class AuthService {
                   version: '1.0.0',
                   sessionTimeout: 480,
                   user: {
-                    username: appUser.username || email,
+                    userCode: appUser.userCode || email,
                     email: email,
                     userName: appUser.userName || name,
                     ruolo: appUser.ruolo,
@@ -421,7 +420,7 @@ export class AuthService {
 
       // Restituisci i dati dell'utente trovato
       return of({
-        username: user.username,
+        userCode: user.userCode,
         email: user.email,
         userName: user.userName,
         ruolo: user.ruolo,

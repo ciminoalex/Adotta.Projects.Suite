@@ -1,34 +1,50 @@
 // Tabelle di Supporto (Lookup/Master Data)
+// Allineato con swagger.json API schemas
+
+export interface BPAddress {
+  addressName?: string;
+  street?: string;
+  city?: string;
+  country?: string;
+  zipCode?: string;
+}
 
 export interface Cliente {
-  id?: number;
+  id?: string;
+  cardCode?: string;
   nome: string;
   email?: string;
   telefono?: string;
   partitaIVA?: string;
-  indirizzoCompleto?: string;
   contatto?: string;
+  indirizzoCompleto?: string;
+  citta?: string;
+  provincia?: string;
+  cap?: string;
+  stato?: string;
   note?: string;
+  validFor?: string;
+  addresses?: BPAddress[];
 }
 
 export interface Stato {
-  id?: number;
+  id?: string;
   nome: string;
   codiceISO: string;
   continente: string;
 }
 
 export interface Citta {
-  id?: number;
+  id?: string;
   nome: string;
-  statoId: number;
+  statoId?: string;
   cap?: string;
   provincia?: string;
   regione?: string;
 }
 
 export interface TeamTecnico {
-  id?: number;
+  id?: string;
   nome: string;
   specializzazione?: string;
   membri?: string[];
@@ -38,7 +54,7 @@ export interface TeamTecnico {
 }
 
 export interface TeamAPL {
-  id?: number;
+  id?: string;
   nome: string;
   email?: string;
   telefono?: string;
@@ -47,7 +63,7 @@ export interface TeamAPL {
 }
 
 export interface Sales {
-  id?: number;
+  id?: string;
   nome: string;
   email?: string;
   telefono?: string;
@@ -57,7 +73,7 @@ export interface Sales {
 }
 
 export interface ProjectManager {
-  id?: number;
+  id?: string;
   nome: string;
   email?: string;
   telefono?: string;
@@ -67,7 +83,7 @@ export interface ProjectManager {
 }
 
 export interface SquadraInstallazione {
-  id?: number;
+  id?: string;
   nome: string;
   tipo?: string;
   contatto?: string;
@@ -77,7 +93,7 @@ export interface SquadraInstallazione {
 }
 
 export interface ProdottoMaster {
-  id?: number;
+  id?: string;
   nome: string;
   categoria: string; // Metafora/Wallen/Armonica
   unitaMisura: string;

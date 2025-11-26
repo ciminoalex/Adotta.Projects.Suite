@@ -39,11 +39,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Get session ID from AuthService
   const sessionId = authService.getSessionId();
 
-  // Clone request and add X-SAP-Session-Id header if session exists
+  // Clone request and add Authorization header if session exists
   if (sessionId) {
     const clonedReq = req.clone({
       setHeaders: {
-        'X-SAP-Session-Id': sessionId
+        'Authorization': `Bearer ${sessionId}`
       }
     });
 

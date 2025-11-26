@@ -1,10 +1,14 @@
+// Allineato con swagger.json API schemas (UserDto, LoginRequestDto, LoginResponseDto)
+
 export interface User {
   id?: number;
-  username: string;
+  userCode?: string; // Codice utente (sostituisce username)
   email: string;
-  userName: string; // SAP single field
+  userName: string; // Nome visualizzato
   ruolo?: string;
+  teamTecnico?: string;
   isActive?: boolean;
+  password?: string; // Solo per creazione/aggiornamento, non restituito nelle GET
 }
 
 export interface Session {
@@ -16,14 +20,13 @@ export interface Session {
 }
 
 export interface LoginRequest {
-  companyDB?: string;
-  userName: string;
+  email: string;
   password: string;
 }
 
 export interface LoginResponse {
-  sessionId: string;
-  version?: string;
-  sessionTimeout: number;
+  token: string;
+  expiresAt: Date;
+  expiresInSeconds: number;
+  user: User;
 }
-

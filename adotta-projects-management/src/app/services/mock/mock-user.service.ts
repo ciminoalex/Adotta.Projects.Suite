@@ -4,7 +4,7 @@ import { MockDataService } from './mock-data.service';
 
 export interface UserDto {
   id?: number;
-  username: string;
+  userCode?: string;
   email: string;
   userName: string;
   ruolo?: string;
@@ -25,9 +25,8 @@ export class MockUserService {
   getUsers(): Observable<UserDto[]> {
     const users = this.mockData.getUsers().map(u => ({
       id: u.id,
-      username: u.username,
-      email: u.email,
       userName: u.userName,
+      email: u.email,
       ruolo: u.ruolo,
       teamTecnico: u.teamTecnico,
       isActive: u.isActive
@@ -38,10 +37,9 @@ export class MockUserService {
   addUser(user: UserDto): Observable<UserDto> {
     const created = this.mockData.addUser({
       id: undefined,
-      username: user.username,
+      userName: user.userName,
       password: user.password || 'changeme',
       email: user.email,
-      userName: user.userName,
       ruolo: user.ruolo,
       teamTecnico: user.teamTecnico,
       isActive: user.isActive ?? true
@@ -55,10 +53,9 @@ export class MockUserService {
     if (!user.id) throw new Error('Missing user id');
     const toUpdate: any = {
       id: user.id,
-      username: user.username,
+      userName: user.userName,
       password: user.password || this.mockData.findUser(user.id!)?.password || 'changeme',
       email: user.email,
-      userName: user.userName,
       ruolo: user.ruolo,
       teamTecnico: user.teamTecnico,
       isActive: user.isActive

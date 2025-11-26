@@ -21,7 +21,7 @@ export class ServiceConfigurationService {
     // Check environment variable or configuration
     // Set to false to use real API endpoints
     // You can also check environment: return environment.production === false;
-    return true; // Change to true to enable mock services 
+    return false; // Change to true to enable mock services 
   }
 
   private initializeApiBaseUrl(): string {
@@ -32,7 +32,7 @@ export class ServiceConfigurationService {
     
     // Controlla se c'è una variabile d'ambiente (utile per build diverse)
     // In un progetto reale, usa file environment.ts
-    return 'https://localhost:5001'; // Stringa vuota = usa URL relativi (necessita proxy Angular o stesso dominio)
+    return 'http://localhost:5000'; // Stringa vuota = usa URL relativi (necessita proxy Angular o stesso dominio)
     
     // Per sviluppo con server API separato, decommenta e modifica:
     // return 'http://localhost:5000';

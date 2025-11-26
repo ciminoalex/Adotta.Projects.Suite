@@ -64,9 +64,8 @@ export class MockProjectService {
     if (project) {
       // Load related data
       const projectWithRelations = { ...project };
-      const numericId = this.getProjectNumericId(numeroProgetto);
-      projectWithRelations.messaggi = this.mockData.getMessaggiByProgetto(numericId);
-      projectWithRelations.changeLog = this.mockData.getChangeLogByProgetto(numericId);
+      projectWithRelations.messaggi = this.mockData.getMessaggiByProgetto(numeroProgetto);
+      projectWithRelations.changeLog = this.mockData.getChangeLogByProgetto(numeroProgetto);
       return of(projectWithRelations).pipe(delay(300));
     }
     throw new Error(`Project with numero ${numeroProgetto} not found`);
@@ -74,11 +73,10 @@ export class MockProjectService {
 
   createProject(project: Project): Observable<Project> {
     const newProject = this.mockData.addProject(project);
-    const numericId = this.getProjectNumericId(newProject.numeroProgetto);
     
     // Add change log entry
     this.mockData.addChangeLog({
-      progettoId: numericId,
+      numeroProgetto: newProject.numeroProgetto,
       data: new Date(),
       utente: this.getCurrentUserName(),
       azione: 'created',
@@ -89,8 +87,6 @@ export class MockProjectService {
   }
 
   updateProject(numeroProgetto: string, project: Project): Observable<Project> {
-    const numericId = this.getProjectNumericId(numeroProgetto);
-    
     // Get the current project to compare
     const currentProject = this.mockData.findProject(numeroProgetto);
     if (!currentProject) {
@@ -169,7 +165,7 @@ export class MockProjectService {
     // Add change log entries for each changed field
     changes.forEach(change => {
       this.mockData.addChangeLog({
-        progettoId: numericId,
+        numeroProgetto: numeroProgetto,
         data: new Date(),
         utente: this.getCurrentUserName(),
         azione: 'updated',
@@ -181,7 +177,7 @@ export class MockProjectService {
     // If no specific fields changed, add a general update entry
     if (changes.length === 0) {
       this.mockData.addChangeLog({
-        progettoId: numericId,
+        numeroProgetto: numeroProgetto,
         data: new Date(),
         utente: this.getCurrentUserName(),
         azione: 'updated',
@@ -194,12 +190,11 @@ export class MockProjectService {
 
   patchProject(numeroProgetto: string, partial: Partial<Project>): Observable<Project> {
     const updatedProject = this.mockData.patchProject(numeroProgetto, partial);
-    const numericId = this.getProjectNumericId(numeroProgetto);
     
     // Add change log entry
     const changedFields = Object.keys(partial).join(', ');
     this.mockData.addChangeLog({
-      progettoId: numericId,
+      numeroProgetto: numeroProgetto,
       data: new Date(),
       utente: this.getCurrentUserName(),
       azione: 'updated',
@@ -210,11 +205,9 @@ export class MockProjectService {
   }
 
   deleteProject(numeroProgetto: string): Observable<void> {
-    const numericId = this.getProjectNumericId(numeroProgetto);
-    
     // Add change log entry before deletion
     this.mockData.addChangeLog({
-      progettoId: numericId,
+      numeroProgetto: numeroProgetto,
       data: new Date(),
       utente: this.getCurrentUserName(),
       azione: 'deleted',
@@ -227,8 +220,7 @@ export class MockProjectService {
 
   // Messaggi Progetto
   getMessaggiProgetto(numeroProgetto: string): Observable<MessaggioProgetto[]> {
-    const numericId = this.getProjectNumericId(numeroProgetto);
-    return of(this.mockData.getMessaggiByProgetto(numericId)).pipe(delay(300));
+    return of(this.mockData.getMessaggiByProgetto(numeroProgetto)).pipe(delay(300));
   }
 
   addMessaggioProgetto(messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
@@ -244,18 +236,13 @@ export class MockProjectService {
   }
 
   deleteMessaggioProgetto(id: number): Observable<void> {
-    const messaggio = this.mockData.getMessaggiByProgetto(0).find(m => m.id === id);
-    if (messaggio) {
-      this.mockData.deleteMessaggio(id);
-      // Messages are not tracked in change log
-    }
+    this.mockData.deleteMessaggio(id);
     return of(undefined).pipe(delay(300));
   }
 
   // Change Log
   getChangeLogProgetto(numeroProgetto: string): Observable<ChangeLog[]> {
-    const numericId = this.getProjectNumericId(numeroProgetto);
-    return of(this.mockData.getChangeLogByProgetto(numericId)).pipe(delay(300));
+    return of(this.mockData.getChangeLogByProgetto(numeroProgetto)).pipe(delay(300));
   }
 
   addChangeLogProgetto(changeLog: ChangeLog): Observable<ChangeLog> {
@@ -301,7 +288,7 @@ export class MockProjectService {
       const newLivello = {
         ...livello,
         id: Math.max(...project.livelli.map(l => l.id || 0), 0) + 1,
-      progettoId: numericId
+      numeroProgetto: numeroProgetto
       };
     
       project.livelli.push(newLivello);
@@ -309,7 +296,7 @@ export class MockProjectService {
     
     // Add change log
     this.mockData.addChangeLog({
-      progettoId: numericId,
+      numeroProgetto: numeroProgetto,
       data: new Date(),
       utente: this.getCurrentUserName(),
       azione: 'livello_added',
@@ -328,12 +315,12 @@ export class MockProjectService {
     const numericId = this.getProjectNumericId(numeroProgetto);
       const index = project.livelli.findIndex(l => l.id === livelloId);
       if (index !== -1) {
-      project.livelli[index] = { ...livello, id: livelloId, progettoId: numericId };
+      project.livelli[index] = { ...livello, id: livelloId, numeroProgetto: numeroProgetto };
       this.mockData.updateProject(numeroProgetto, project);
       
       // Add change log
       this.mockData.addChangeLog({
-        progettoId: numericId,
+        numeroProgetto: numeroProgetto,
         data: new Date(),
         utente: this.getCurrentUserName(),
         azione: 'livello_updated',
@@ -365,7 +352,7 @@ export class MockProjectService {
       
       // Add change log
       this.mockData.addChangeLog({
-        progettoId: numericId,
+        numeroProgetto: numeroProgetto,
         data: new Date(),
         utente: this.getCurrentUserName(),
         azione: 'livello_deleted',
@@ -421,7 +408,7 @@ export class MockProjectService {
       const newProdotto = {
         ...prodotto,
         id: Math.max(...project.prodotti.map(p => p.id || 0), 0) + 1,
-      progettoId: numericId,
+      numeroProgetto: numeroProgetto,
       livelloId: prodotto.livelloId
       };
     
@@ -430,7 +417,7 @@ export class MockProjectService {
     
     // Add change log
     this.mockData.addChangeLog({
-      progettoId: numericId,
+      numeroProgetto: numeroProgetto,
       data: new Date(),
       utente: this.getCurrentUserName(),
       azione: 'prodotto_added',
@@ -449,12 +436,12 @@ export class MockProjectService {
     const numericId = this.getProjectNumericId(numeroProgetto);
       const index = project.prodotti.findIndex(p => p.id === prodottoId);
       if (index !== -1) {
-      project.prodotti[index] = { ...prodotto, id: prodottoId, progettoId: numericId };
+      project.prodotti[index] = { ...prodotto, id: prodottoId, numeroProgetto: numeroProgetto };
       this.mockData.updateProject(numeroProgetto, project);
       
       // Add change log
       this.mockData.addChangeLog({
-        progettoId: numericId,
+        numeroProgetto: numeroProgetto,
         data: new Date(),
         utente: this.getCurrentUserName(),
         azione: 'prodotto_updated',
@@ -480,7 +467,7 @@ export class MockProjectService {
       
       // Add change log
       this.mockData.addChangeLog({
-        progettoId: numericId,
+        numeroProgetto: numeroProgetto,
         data: new Date(),
         utente: this.getCurrentUserName(),
         azione: 'prodotto_deleted',
@@ -495,8 +482,7 @@ export class MockProjectService {
   // Storico Modifiche WIC
   getStoricoModifiche(numeroProgetto: string): Observable<StoricoModifica[]> {
     // Convert ChangeLog to StoricoModifica format for compatibility
-    const numericId = this.getProjectNumericId(numeroProgetto);
-    const changeLogs = this.mockData.getChangeLogByProgetto(numericId);
+    const changeLogs = this.mockData.getChangeLogByProgetto(numeroProgetto);
     
     // Convert ChangeLog[] to StoricoModifica[]
     const storicoModifiche: StoricoModifica[] = changeLogs.map(log => {
@@ -505,7 +491,7 @@ export class MockProjectService {
         // Return one StoricoModifica per field change with dettagli
         return {
           id: log.id,
-          progettoId: log.progettoId,
+          numeroProgetto: log.numeroProgetto,
           dataModifica: log.data,
           utenteModifica: log.utente,
           campoModificato: log.dettagli['campo'],
@@ -518,7 +504,7 @@ export class MockProjectService {
         if (match) {
           return {
             id: log.id,
-            progettoId: log.progettoId,
+            numeroProgetto: log.numeroProgetto,
             dataModifica: log.data,
             utenteModifica: log.utente,
             campoModificato: match[1].trim(),
@@ -530,7 +516,7 @@ export class MockProjectService {
       // For entries without proper dettagli or unrecognized format - skip or use action
       return {
         id: log.id,
-        progettoId: log.progettoId,
+        numeroProgetto: log.numeroProgetto,
         dataModifica: log.data,
         utenteModifica: log.utente,
         campoModificato: log.azione === 'updated' && log.descrizione ? 'Generale' : log.azione,

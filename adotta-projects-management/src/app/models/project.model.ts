@@ -1,3 +1,5 @@
+// Allineato con swagger.json API schemas (ProjectDto, LivelloProgettoDto, etc.)
+
 export interface Project {
   // Proprietà principali dell'entità Progetto dal diagramma
   numeroProgetto: string;
@@ -11,15 +13,20 @@ export interface Project {
   projectManager?: string;
   teamInstallazione?: string;
   dataCreazione: Date;
-  dataInizioInstallazione: Date;
-  dataFineInstallazione: Date;
+  dataInizioInstallazione?: Date;
+  dataFineInstallazione?: Date;
   versioneWIC?: string;
   ultimaModifica?: Date;
-  statoProgetto?: ProjectStatus | string; // Should be a ProjectStatus enum value (string)
+  statoProgetto?: ProjectStatus | string;
   note?: string;
 
+  // Campi finanziari dall'API
+  valoreProgetto?: number;
+  marginePrevisto?: number;
+  costiSostenuti?: number;
+
   // Metodi dell'entità Progetto
-  isInRitardo?: boolean; // Calcolato dal metodo IsInRitardo()
+  isInRitardo?: boolean;
     
   // Relazioni con le entità figlie
   livelli?: LivelloProgetto[];
@@ -34,12 +41,12 @@ export interface Project {
 }
 
 export interface LivelloProgetto {
-  // Proprietà dell'entità Livello dal diagramma
+  // Proprietà dell'entità Livello dal diagramma - allineato con LivelloProgettoDto
   id?: number;
-  progettoId: number;
+  numeroProgetto?: string; // FK al progetto (stringa come da API)
   nome: string;
   ordine: number;
-  descrizione: string;
+  descrizione?: string;
   dataInizioInstallazione?: Date;
   dataFineInstallazione?: Date;
   dataCaricamento?: Date;
@@ -50,10 +57,10 @@ export interface LivelloProgetto {
 }
 
 export interface ProdottoProgetto {
-  // Proprietà dell'entità Prodotto dal diagramma
+  // Proprietà dell'entità Prodotto - allineato con ProdottoProgettoDto
   id?: number;
-  progettoId: number;
-  livelloId?: number; // FK al livello - ora i prodotti sono subordinati ai livelli
+  numeroProgetto?: string; // FK al progetto (stringa come da API)
+  livelloId?: number; // FK al livello
   tipoProdotto: string;
   variante: string;
   qMq: number;
@@ -61,36 +68,38 @@ export interface ProdottoProgetto {
 }
 
 export interface StoricoModifica {
-  // Proprietà dell'entità Storico dal diagramma
+  // Proprietà dell'entità Storico - allineato con StoricoModificaDto
   id?: number;
-  progettoId: number;
+  numeroProgetto?: string;
   dataModifica: Date;
   utenteModifica: string;
   campoModificato: string;
   valorePrecedente?: string;
   nuovoValore?: string;
+  versioneWIC?: string;
+  descrizione?: string;
 }
 
 export interface MessaggioProgetto {
-  // Messaggi per il progetto
+  // Messaggi per il progetto - allineato con MessaggioProgettoDto
   id?: number;
-  progettoId: number;
+  numeroProgetto?: string;
   data: Date;
   utente: string;
   messaggio: string;
-  tipo?: 'info' | 'warning' | 'error' | 'success';
+  tipo?: string; // 'info', 'warning', 'error', 'success' o altri
   allegato?: string;
 }
 
 export interface ChangeLog {
-  // Registro modifiche per il progetto
+  // Registro modifiche - allineato con ChangeLogDto
   id?: number;
-  progettoId: number;
+  numeroProgetto?: string;
   data: Date;
   utente: string;
-  azione: string; // 'created', 'updated', 'deleted', 'status_changed', etc.
+  azione: string;
   descrizione: string;
-  dettagli?: Record<string, any>;
+  dettagli?: Record<string, string>;
 }
 
 // Enums per i nuovi stati del progetto (formato API con underscore)

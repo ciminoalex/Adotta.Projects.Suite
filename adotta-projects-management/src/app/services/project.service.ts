@@ -30,9 +30,7 @@ export class ProjectService {
     return this.http.put<Project>(`${this.apiUrl}/${numeroProgetto}`, project);
   }
 
-  // Note: PATCH is not in swagger, only PUT is available
   patchProject(numeroProgetto: string, partial: Partial<Project>): Observable<Project> {
-    // This endpoint is not in swagger - keeping for backward compatibility but may not work with real API
     return this.http.patch<Project>(`${this.apiUrl}/${numeroProgetto}`, partial);
   }
 
@@ -49,9 +47,7 @@ export class ProjectService {
     return this.http.post<LivelloProgetto>(`${this.apiUrl}/${numeroProgetto}/livelli`, livello);
   }
 
-  // Note: PUT for update is not in swagger, only POST (create) and DELETE are available
   updateLivelloProgetto(numeroProgetto: string, livelloId: number, livello: LivelloProgetto): Observable<LivelloProgetto> {
-    // This endpoint is not in swagger - keeping for backward compatibility but may not work with real API
     return this.http.put<LivelloProgetto>(`${this.apiUrl}/${numeroProgetto}/livelli/${livelloId}`, livello);
   }
 
@@ -64,23 +60,18 @@ export class ProjectService {
     return this.http.get<ProdottoProgetto[]>(`${this.apiUrl}/${numeroProgetto}/prodotti`);
   }
 
-  // Get prodotti by livello
   getProdottiByLivello(numeroProgetto: string, livelloId: number): Observable<ProdottoProgetto[]> {
     return this.http.get<ProdottoProgetto[]>(`${this.apiUrl}/${numeroProgetto}/livelli/${livelloId}/prodotti`);
   }
 
   addProdottoProgetto(numeroProgetto: string, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
-    // Se il prodotto ha un livelloId, usa l'endpoint specifico per livello
     if (prodotto.livelloId) {
       return this.http.post<ProdottoProgetto>(`${this.apiUrl}/${numeroProgetto}/livelli/${prodotto.livelloId}/prodotti`, prodotto);
     }
-    // Altrimenti usa l'endpoint generico (per retrocompatibilità)
     return this.http.post<ProdottoProgetto>(`${this.apiUrl}/${numeroProgetto}/prodotti`, prodotto);
   }
 
-  // Note: PUT for update is not in swagger, only POST (create) and DELETE are available
   updateProdottoProgetto(numeroProgetto: string, prodottoId: number, prodotto: ProdottoProgetto): Observable<ProdottoProgetto> {
-    // This endpoint is not in swagger - keeping for backward compatibility but may not work with real API
     return this.http.put<ProdottoProgetto>(`${this.apiUrl}/${numeroProgetto}/prodotti/${prodottoId}`, prodotto);
   }
 
@@ -102,16 +93,16 @@ export class ProjectService {
     return this.http.get<MessaggioProgetto[]>(`${this.apiUrl}/${numeroProgetto}/messaggi`);
   }
 
-  addMessaggioProgetto(messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
-    return this.http.post<MessaggioProgetto>(`${this.apiUrl}/${messaggio.progettoId}/messaggi`, messaggio);
+  addMessaggioProgetto(numeroProgetto: string, messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
+    return this.http.post<MessaggioProgetto>(`${this.apiUrl}/${numeroProgetto}/messaggi`, messaggio);
   }
 
-  updateMessaggioProgetto(id: number, messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
-    return this.http.put<MessaggioProgetto>(`${this.apiUrl}/${messaggio.progettoId}/messaggi/${id}`, messaggio);
+  updateMessaggioProgetto(numeroProgetto: string, messaggioId: number, messaggio: MessaggioProgetto): Observable<MessaggioProgetto> {
+    return this.http.put<MessaggioProgetto>(`${this.apiUrl}/${numeroProgetto}/messaggi/${messaggioId}`, messaggio);
   }
 
-  deleteMessaggioProgetto(progettoId: number, messaggioId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${progettoId}/messaggi/${messaggioId}`);
+  deleteMessaggioProgetto(numeroProgetto: string, messaggioId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${numeroProgetto}/messaggi/${messaggioId}`);
   }
 
   // Change Log
@@ -119,8 +110,8 @@ export class ProjectService {
     return this.http.get<ChangeLog[]>(`${this.apiUrl}/${numeroProgetto}/changelog`);
   }
 
-  addChangeLogProgetto(changeLog: ChangeLog): Observable<ChangeLog> {
-    return this.http.post<ChangeLog>(`${this.apiUrl}/${changeLog.progettoId}/changelog`, changeLog);
+  addChangeLogProgetto(numeroProgetto: string, changeLog: ChangeLog): Observable<ChangeLog> {
+    return this.http.post<ChangeLog>(`${this.apiUrl}/${numeroProgetto}/changelog`, changeLog);
   }
 
   // Ricerca e Filtri
@@ -147,7 +138,7 @@ export class ProjectService {
 
   // Export
   exportProjects(format: 'excel' | 'pdf' | 'csv', filters?: any): Observable<Blob> {
-    const params = filters ? { filters: JSON.stringify(filters) } : {};
-    return this.http.post(`${this.apiUrl}/export/${format}`, params, { responseType: 'blob' });
+    const body = filters ? { filters: JSON.stringify(filters) } : {};
+    return this.http.post(`${this.apiUrl}/export/${format}`, body, { responseType: 'blob' });
   }
 }

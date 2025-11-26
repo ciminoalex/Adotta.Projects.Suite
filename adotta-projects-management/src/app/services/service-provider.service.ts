@@ -2,8 +2,10 @@ import { inject, Injectable, Provider, Type } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { LookupService } from './lookup.service';
 import { ProjectService } from './project.service';
+import { UserService } from './user.service';
 import { MockLookupService } from './mock/mock-lookup.service';
 import { MockProjectService } from './mock/mock-project.service';
+import { MockUserService } from './mock/mock-user.service';
 import { ServiceConfigurationService } from './service-configuration.service';
 
 @Injectable({
@@ -34,6 +36,17 @@ export class ServiceProviderService {
       ? new MockProjectService()
       : new ProjectService(this.http);
   }
+
+  /**
+   * Returns the appropriate UserService instance based on configuration
+   */
+  provideUserService(): UserService | MockUserService {
+    const useMock = this.serviceConfig.getUseMockServices();
+    console.log('ServiceProviderService.provideUserService() - useMock:', useMock);
+    return useMock
+      ? new MockUserService()
+      : new UserService(this.http);
+  }
 }
 
 /**
@@ -63,6 +76,20 @@ export function provideProjectServiceFactory(): Provider {
         return new MockProjectService();
       }
       return new ProjectService(http);
+    }
+  };
+}
+
+export function provideUserServiceFactory(): Provider {
+  return {
+    provide: UserService,
+    useFactory: () => {
+      const serviceConfig = inject(ServiceConfigurationService);
+      const http = inject(HttpClient);
+      if (serviceConfig.getUseMockServices()) {
+        return new MockUserService();
+      }
+      return new UserService(http);
     }
   };
 }

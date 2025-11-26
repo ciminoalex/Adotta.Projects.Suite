@@ -25,12 +25,10 @@ export class LookupService {
   }
 
   updateCliente(id: string, cliente: Cliente): Observable<Cliente> {
-    // Note: This endpoint is not in swagger
     return this.http.put<Cliente>(`${this.apiUrl}/clienti/${id}`, cliente);
   }
 
   deleteCliente(id: string): Observable<void> {
-    // Note: This endpoint is not in swagger
     return this.http.delete<void>(`${this.apiUrl}/clienti/${id}`);
   }
 
@@ -43,7 +41,7 @@ export class LookupService {
     return this.http.get<Stato[]>(`${this.apiUrl}/stati`);
   }
 
-  getStato(id: number): Observable<Stato> {
+  getStato(id: string): Observable<Stato> {
     return this.http.get<Stato>(`${this.apiUrl}/stati/${id}`);
   }
 
@@ -56,8 +54,20 @@ export class LookupService {
     return this.http.get<Citta[]>(`${this.apiUrl}/citta?statoId=${statoId}`);
   }
 
-  getCittaById(id: number): Observable<Citta> {
+  getCittaById(id: string): Observable<Citta> {
     return this.http.get<Citta>(`${this.apiUrl}/citta/${id}`);
+  }
+
+  createCitta(citta: Citta): Observable<Citta> {
+    return this.http.post<Citta>(`${this.apiUrl}/citta`, citta);
+  }
+
+  updateCitta(id: string, citta: Citta): Observable<Citta> {
+    return this.http.put<Citta>(`${this.apiUrl}/citta/${id}`, citta);
+  }
+
+  deleteCitta(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/citta/${id}`);
   }
 
   // Team Tecnici
@@ -65,7 +75,7 @@ export class LookupService {
     return this.http.get<TeamTecnico[]>(`${this.apiUrl}/team-tecnici`);
   }
 
-  getTeamTecnico(id: number): Observable<TeamTecnico> {
+  getTeamTecnico(id: string): Observable<TeamTecnico> {
     return this.http.get<TeamTecnico>(`${this.apiUrl}/team-tecnici/${id}`);
   }
 
@@ -73,11 +83,11 @@ export class LookupService {
     return this.http.post<TeamTecnico>(`${this.apiUrl}/team-tecnici`, team);
   }
 
-  updateTeamTecnico(id: number, team: TeamTecnico): Observable<TeamTecnico> {
+  updateTeamTecnico(id: string, team: TeamTecnico): Observable<TeamTecnico> {
     return this.http.put<TeamTecnico>(`${this.apiUrl}/team-tecnici/${id}`, team);
   }
 
-  deleteTeamTecnico(id: number): Observable<void> {
+  deleteTeamTecnico(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/team-tecnici/${id}`);
   }
 
@@ -86,7 +96,7 @@ export class LookupService {
     return this.http.get<TeamAPL[]>(`${this.apiUrl}/team-apl`);
   }
 
-  getTeamAPLById(id: number): Observable<TeamAPL> {
+  getTeamAPLById(id: string): Observable<TeamAPL> {
     return this.http.get<TeamAPL>(`${this.apiUrl}/team-apl/${id}`);
   }
 
@@ -94,11 +104,11 @@ export class LookupService {
     return this.http.post<TeamAPL>(`${this.apiUrl}/team-apl`, team);
   }
 
-  updateTeamAPL(id: number, team: TeamAPL): Observable<TeamAPL> {
+  updateTeamAPL(id: string, team: TeamAPL): Observable<TeamAPL> {
     return this.http.put<TeamAPL>(`${this.apiUrl}/team-apl/${id}`, team);
   }
 
-  deleteTeamAPL(id: number): Observable<void> {
+  deleteTeamAPL(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/team-apl/${id}`);
   }
 
@@ -107,7 +117,7 @@ export class LookupService {
     return this.http.get<Sales[]>(`${this.apiUrl}/sales`);
   }
 
-  getSalesById(id: number): Observable<Sales> {
+  getSalesById(id: string): Observable<Sales> {
     return this.http.get<Sales>(`${this.apiUrl}/sales/${id}`);
   }
 
@@ -115,11 +125,11 @@ export class LookupService {
     return this.http.post<Sales>(`${this.apiUrl}/sales`, sales);
   }
 
-  updateSales(id: number, sales: Sales): Observable<Sales> {
+  updateSales(id: string, sales: Sales): Observable<Sales> {
     return this.http.put<Sales>(`${this.apiUrl}/sales/${id}`, sales);
   }
 
-  deleteSales(id: number): Observable<void> {
+  deleteSales(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/sales/${id}`);
   }
 
@@ -128,7 +138,7 @@ export class LookupService {
     return this.http.get<ProjectManager[]>(`${this.apiUrl}/project-managers`);
   }
 
-  getProjectManager(id: number): Observable<ProjectManager> {
+  getProjectManager(id: string): Observable<ProjectManager> {
     return this.http.get<ProjectManager>(`${this.apiUrl}/project-managers/${id}`);
   }
 
@@ -136,11 +146,11 @@ export class LookupService {
     return this.http.post<ProjectManager>(`${this.apiUrl}/project-managers`, pm);
   }
 
-  updateProjectManager(id: number, pm: ProjectManager): Observable<ProjectManager> {
+  updateProjectManager(id: string, pm: ProjectManager): Observable<ProjectManager> {
     return this.http.put<ProjectManager>(`${this.apiUrl}/project-managers/${id}`, pm);
   }
 
-  deleteProjectManager(id: number): Observable<void> {
+  deleteProjectManager(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/project-managers/${id}`);
   }
 
@@ -149,7 +159,7 @@ export class LookupService {
     return this.http.get<SquadraInstallazione[]>(`${this.apiUrl}/squadre-installazione`);
   }
 
-  getSquadraInstallazione(id: number): Observable<SquadraInstallazione> {
+  getSquadraInstallazione(id: string): Observable<SquadraInstallazione> {
     return this.http.get<SquadraInstallazione>(`${this.apiUrl}/squadre-installazione/${id}`);
   }
 
@@ -157,11 +167,11 @@ export class LookupService {
     return this.http.post<SquadraInstallazione>(`${this.apiUrl}/squadre-installazione`, squadra);
   }
 
-  updateSquadraInstallazione(id: number, squadra: SquadraInstallazione): Observable<SquadraInstallazione> {
+  updateSquadraInstallazione(id: string, squadra: SquadraInstallazione): Observable<SquadraInstallazione> {
     return this.http.put<SquadraInstallazione>(`${this.apiUrl}/squadre-installazione/${id}`, squadra);
   }
 
-  deleteSquadraInstallazione(id: number): Observable<void> {
+  deleteSquadraInstallazione(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/squadre-installazione/${id}`);
   }
 
@@ -174,7 +184,7 @@ export class LookupService {
     return this.http.get<ProdottoMaster[]>(`${this.apiUrl}/prodotti-master?categoria=${categoria}`);
   }
 
-  getProdottoMaster(id: number): Observable<ProdottoMaster> {
+  getProdottoMaster(id: string): Observable<ProdottoMaster> {
     return this.http.get<ProdottoMaster>(`${this.apiUrl}/prodotti-master/${id}`);
   }
 
@@ -182,11 +192,11 @@ export class LookupService {
     return this.http.post<ProdottoMaster>(`${this.apiUrl}/prodotti-master`, prodotto);
   }
 
-  updateProdottoMaster(id: number, prodotto: ProdottoMaster): Observable<ProdottoMaster> {
+  updateProdottoMaster(id: string, prodotto: ProdottoMaster): Observable<ProdottoMaster> {
     return this.http.put<ProdottoMaster>(`${this.apiUrl}/prodotti-master/${id}`, prodotto);
   }
 
-  deleteProdottoMaster(id: number): Observable<void> {
+  deleteProdottoMaster(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/prodotti-master/${id}`);
   }
 }
