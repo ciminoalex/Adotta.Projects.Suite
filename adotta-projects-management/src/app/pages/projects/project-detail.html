@@ -393,7 +393,7 @@
         <!-- Messages Area -->
         <div class="flex-1 overflow-y-auto" style="height: calc(100vh - 200px);">
           <div class="space-y-3 p-2">
-            <div *ngFor="let message of getSortedMessages()" class="flex gap-3">
+            <div *ngFor="let message of getSortedMessages()" class="flex gap-3 items-start">
               <div class="w-8 h-8 rounded-full bg-primary text-primary-contrast flex items-center justify-center text-xs font-semibold">
                 {{ message.avatar || getInitials(message.utente) }}
               </div>
@@ -401,6 +401,14 @@
                 <div class="flex items-center gap-2 mb-1">
                   <span class="font-semibold text-sm text-900">{{ message.utente }}</span>
                   <span class="text-xs text-500">{{ message.dataOra | date:'dd/MM/yyyy HH:mm' }}</span>
+                  <button 
+                    *ngIf="canDeleteMessage(message)" 
+                    pButton 
+                    type="button" 
+                    icon="pi pi-trash" 
+                    class="p-button-text p-button-sm p-button-danger ml-auto"
+                    (click)="deleteMessage(message)">
+                  </button>
                 </div>
                 <p class="text-sm text-700 m-0 message-bubble">
                   {{ message.messaggio }}
@@ -421,3 +429,4 @@
 </div>
 
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

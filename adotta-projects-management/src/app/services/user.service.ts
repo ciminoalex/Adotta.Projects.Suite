@@ -3,8 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface UserDto {
-  id?: number;
-  userCode?: string;
+  userCode: string;
   email: string;
   userName: string;
   ruolo?: string;
@@ -28,11 +27,11 @@ export class UserService {
   }
 
   updateUser(user: UserDto): Observable<UserDto> {
-    return this.http.put<UserDto>(`${this.apiUrl}/${user.id}`, user);
+    return this.http.put<UserDto>(`${this.apiUrl}/${user.userCode}`, user);
   }
 
-  deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  deleteUser(userCode: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${userCode}`);
   }
 }
 

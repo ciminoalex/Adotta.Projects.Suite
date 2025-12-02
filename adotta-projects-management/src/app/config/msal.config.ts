@@ -94,6 +94,23 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
  * Factory per creare l'istanza MSAL
  */
 export function MSALInstanceFactory(): IPublicClientApplication {
+  // Verifica disponibilità Web Crypto API
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || 
+     window.location.hostname === '127.0.0.1' ||
+     window.location.hostname === '[::1]');
+  
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  
+  if (!isLocalhost && !isHttps) {
+    console.warn('MSAL richiede HTTPS per funzionare correttamente in produzione. L\'API Web Crypto è disponibile solo su HTTPS.');
+  }
+  
+  // Verifica se crypto.subtle è disponibile
+  if (typeof window !== 'undefined' && window.crypto && !window.crypto.subtle) {
+    console.warn('window.crypto.subtle non è disponibile. MSAL potrebbe non funzionare correttamente.');
+  }
+  
   return new PublicClientApplication(msalConfig);
 }
 

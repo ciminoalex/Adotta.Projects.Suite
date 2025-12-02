@@ -44,8 +44,19 @@ export const appConfig: ApplicationConfig = {
           provide: APP_INITIALIZER,
           useFactory: (injector: Injector) => {
             return () => {
-              const msalInstance = injector.get<IPublicClientApplication>(MSAL_INSTANCE);
-              return msalInstance.initialize();
+              try {
+                const msalInstance = injector.get<IPublicClientApplication>(MSAL_INSTANCE);
+                return msalInstance.initialize().catch((error: unknown) => {
+                  // Gestisci errori durante l'inizializzazione MSAL
+                  console.error('Errore durante l\'inizializzazione di MSAL:', error);
+                  // Non bloccare l'avvio dell'applicazione se MSAL fallisce
+                  // L'utente potrà comunque usare l'app, ma senza autenticazione
+                  return Promise.resolve();
+                });
+              } catch (error) {
+                console.error('Errore critico durante la configurazione di MSAL:', error);
+                return Promise.resolve();
+              }
             };
           },
           deps: [Injector],

@@ -124,6 +124,26 @@ export class ProjectForm implements OnInit {
 
   // Priority options removed - not part of simplified model
 
+  // Helper function to convert ISO date string to YYYY-MM-DD format for HTML date inputs
+  private convertDateForInput(dateValue: any): string {
+    if (!dateValue) return '';
+    if (dateValue instanceof Date) {
+      return dateValue.toISOString().split('T')[0];
+    }
+    if (typeof dateValue === 'string' && dateValue.trim() !== '') {
+      // Parse ISO string and extract date part
+      const date = new Date(dateValue);
+      if (!isNaN(date.getTime())) {
+        // Format as YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+    }
+    return '';
+  }
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -180,6 +200,17 @@ export class ProjectForm implements OnInit {
 
   }
 
+  // Helper function to extract array from either direct array or paginated response
+  private extractArray<T>(response: T[] | { items: T[] } | any): T[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+    if (response && typeof response === 'object' && 'items' in response && Array.isArray(response.items)) {
+      return response.items;
+    }
+    return [];
+  }
+
   loadLookupData() {
     let completedRequests = 0;
     const totalRequests = 8;
@@ -191,10 +222,11 @@ export class ProjectForm implements OnInit {
       }
     };
 
-    this.lookupService.getClienti().subscribe({
-      next: (clienti: Cliente[]) => {
-        this.clienti = clienti;
-        console.log('Clienti loaded:', clienti);
+    // Load clienti with pageSize 100 (will use remote search for autocomplete)
+    this.lookupService.getClienti(1, 100).subscribe({
+      next: (response: any) => {
+        this.clienti = this.extractArray<Cliente>(response);
+        console.log('Clienti loaded:', this.clienti);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -203,10 +235,11 @@ export class ProjectForm implements OnInit {
       }
     });
 
-    this.lookupService.getStati().subscribe({
-      next: (stati: Stato[]) => {
-        this.stati = stati;
-        console.log('Stati loaded:', stati);
+    // Load stati with pageSize 1000
+    this.lookupService.getStati(1000).subscribe({
+      next: (response: any) => {
+        this.stati = this.extractArray<Stato>(response);
+        console.log('Stati loaded:', this.stati);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -216,9 +249,9 @@ export class ProjectForm implements OnInit {
     });
 
     this.lookupService.getTeamTecnici().subscribe({
-      next: (teams: TeamTecnico[]) => {
-        this.teamTecnici = teams;
-        console.log('Team Tecnici loaded:', teams);
+      next: (response: any) => {
+        this.teamTecnici = this.extractArray<TeamTecnico>(response);
+        console.log('Team Tecnici loaded:', this.teamTecnici);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -228,9 +261,9 @@ export class ProjectForm implements OnInit {
     });
 
     this.lookupService.getTeamAPL().subscribe({
-      next: (teams: TeamAPL[]) => {
-        this.teamAPL = teams;
-        console.log('Team APL loaded:', teams);
+      next: (response: any) => {
+        this.teamAPL = this.extractArray<TeamAPL>(response);
+        console.log('Team APL loaded:', this.teamAPL);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -240,9 +273,9 @@ export class ProjectForm implements OnInit {
     });
 
     this.lookupService.getSales().subscribe({
-      next: (sales: Sales[]) => {
-        this.sales = sales;
-        console.log('Sales loaded:', sales);
+      next: (response: any) => {
+        this.sales = this.extractArray<Sales>(response);
+        console.log('Sales loaded:', this.sales);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -252,9 +285,9 @@ export class ProjectForm implements OnInit {
     });
 
     this.lookupService.getProjectManagers().subscribe({
-      next: (pms: ProjectManager[]) => {
-        this.projectManagers = pms;
-        console.log('Project Managers loaded:', pms);
+      next: (response: any) => {
+        this.projectManagers = this.extractArray<ProjectManager>(response);
+        console.log('Project Managers loaded:', this.projectManagers);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -264,9 +297,9 @@ export class ProjectForm implements OnInit {
     });
 
     this.lookupService.getSquadreInstallazione().subscribe({
-      next: (squadre: SquadraInstallazione[]) => {
-        this.squadreInstallazione = squadre;
-        console.log('Squadre Installazione loaded:', squadre);
+      next: (response: any) => {
+        this.squadreInstallazione = this.extractArray<SquadraInstallazione>(response);
+        console.log('Squadre Installazione loaded:', this.squadreInstallazione);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -276,9 +309,9 @@ export class ProjectForm implements OnInit {
     });
 
     this.lookupService.getProdottiMaster().subscribe({
-      next: (prodotti: ProdottoMaster[]) => {
-        this.prodottiMaster = prodotti;
-        console.log('Prodotti Master loaded:', prodotti);
+      next: (response: any) => {
+        this.prodottiMaster = this.extractArray<ProdottoMaster>(response);
+        console.log('Prodotti Master loaded:', this.prodottiMaster);
         checkAllLoaded();
       },
       error: (error: any) => {
@@ -311,7 +344,39 @@ export class ProjectForm implements OnInit {
           console.log('Project data:', projectData);
           console.log('Project data statoProgetto:', projectData.statoProgetto);
           
-          this.projectForm.patchValue(projectData);
+          // Convert dates to YYYY-MM-DD format for HTML date inputs
+          const formData = {
+            ...projectData,
+            dataCreazione: this.convertDateForInput(projectData.dataCreazione),
+            dataInizioInstallazione: this.convertDateForInput(projectData.dataInizioInstallazione),
+            dataFineInstallazione: this.convertDateForInput(projectData.dataFineInstallazione),
+            ultimaModifica: this.convertDateForInput(projectData.ultimaModifica)
+          };
+          
+          this.projectForm.patchValue(formData);
+          
+          // Find and set the cliente object for autocomplete if cliente name exists
+          if (formData.cliente) {
+            // First try to find in loaded clienti
+            const clienteObj = this.clienti.find(c => c.nome === formData.cliente);
+            if (clienteObj) {
+              this.projectForm.patchValue({ cliente: clienteObj });
+            } else {
+              // If not found in loaded clienti, search remotely
+              this.lookupService.searchClienti(formData.cliente).subscribe({
+                next: (response: any) => {
+                  const searchResults = this.extractArray<Cliente>(response);
+                  const foundCliente = searchResults.find(c => c.nome === formData.cliente);
+                  if (foundCliente) {
+                    this.projectForm.patchValue({ cliente: foundCliente });
+                  }
+                },
+                error: (error: any) => {
+                  console.error('Error searching cliente for project load:', error);
+                }
+              });
+            }
+          }
           
           // Load levels and products from project data
           // Ora i prodotti sono subordinati ai livelli
@@ -352,15 +417,32 @@ export class ProjectForm implements OnInit {
     }
   }
 
-  get clientiNames(): string[] {
-    return this.clienti.map(c => c.nome || '');
+  filterClienti(event: any) {
+    const query = event.query;
+    if (!query || query.length < 1) {
+      this.filteredClienti = [];
+      return;
+    }
+    
+    // Use remote search API instead of local filtering
+    this.lookupService.searchClienti(query).subscribe({
+      next: (response: any) => {
+        this.filteredClienti = this.extractArray<Cliente>(response);
+      },
+      error: (error: any) => {
+        console.error('Error searching clienti:', error);
+        this.filteredClienti = [];
+      }
+    });
   }
 
-  filterClienti(event: any) {
-    const query = event.query.toLowerCase();
-    this.filteredClienti = this.clienti.filter(cliente => 
-      cliente.nome.toLowerCase().includes(query)
-    );
+  onClienteSelected(event: any) {
+    // When a cliente is selected, set the codiceSAP field with the cardCode
+    // The event contains the selected Cliente object in event.value
+    const cliente: Cliente = event.value || event;
+    if (cliente && cliente.cardCode) {
+      this.projectForm.patchValue({ codiceSAP: cliente.cardCode });
+    }
   }
 
   saveProject() {
@@ -392,9 +474,14 @@ export class ProjectForm implements OnInit {
       };
 
       // Build the project data object with proper formatting
+      // Extract cliente name if it's an object, otherwise use the string value
+      const clienteValue = typeof formValue.cliente === 'object' && formValue.cliente?.nome 
+        ? formValue.cliente.nome 
+        : formValue.cliente;
+      
       const projectData: any = {
         numeroProgetto: formValue.numeroProgetto,
-        cliente: formValue.cliente,
+        cliente: clienteValue,
         nomeProgetto: formValue.nomeProgetto,
         citta: cleanValue(formValue.citta),
         stato: cleanValue(formValue.stato),
@@ -416,35 +503,63 @@ export class ProjectForm implements OnInit {
         note: cleanValue(formValue.note)
       };
 
-      // Add livelli and prodotti only if they exist
+      // Add livelli and prodotti - sempre includerli se esistono
       // Ora i prodotti sono subordinati ai livelli
-      if (this.livelli && this.livelli.length > 0) {
-        projectData.livelli = this.livelli.map(livello => ({
-          ...livello,
-          dataInizioInstallazione: formatDate(livello.dataInizioInstallazione),
-          dataFineInstallazione: formatDate(livello.dataFineInstallazione),
-          dataCaricamento: formatDate(livello.dataCaricamento),
-          // Rimuovi prodotti e expanded dal livello (non vanno salvati nel backend)
-          prodotti: undefined,
-          expanded: undefined
-        }));
+      console.log('Livelli before save:', this.livelli);
+      console.log('Livelli length:', this.livelli?.length);
+      
+      if (this.livelli && Array.isArray(this.livelli)) {
+        // Mappa sempre i livelli, anche se l'array è vuoto
+        projectData.livelli = this.livelli.map(livello => {
+          // Build level object with explicit fields to ensure nome is included
+          const livelloData: any = {
+            id: livello.id,
+            numeroProgetto: livello.numeroProgetto || formValue.numeroProgetto,
+            nome: livello.nome || '',
+            ordine: livello.ordine,
+            descrizione: livello.descrizione || '',
+            dataInizioInstallazione: formatDate(livello.dataInizioInstallazione),
+            dataFineInstallazione: formatDate(livello.dataFineInstallazione),
+            dataCaricamento: formatDate(livello.dataCaricamento)
+          };
+          
+          // Remove undefined/null values except for id (which can be 0 for new levels)
+          Object.keys(livelloData).forEach(key => {
+            if (livelloData[key] === undefined && key !== 'id') {
+              delete livelloData[key];
+            }
+          });
+          
+          return livelloData;
+        });
+        
+        console.log('Livelli mapped:', projectData.livelli);
         
         // Raccogli tutti i prodotti dai livelli
-        const allProdotti = this.livelli.flatMap(livello => 
-          (livello.prodotti || []).map(prodotto => ({
+        const allProdotti = this.livelli.flatMap(livello => {
+          const prodottiDelLivello = livello.prodotti || [];
+          console.log(`Prodotti del livello ${livello.id} (${livello.nome}):`, prodottiDelLivello);
+          return prodottiDelLivello.map(prodotto => ({
             ...prodotto,
             livelloId: livello.id
-          }))
-        );
+          }));
+        });
         
-        if (allProdotti.length > 0) {
-          projectData.prodotti = allProdotti;
-        }
+        console.log('All prodotti collected:', allProdotti);
+        
+        // Includi sempre i prodotti, anche se l'array è vuoto
+        projectData.prodotti = allProdotti;
+      } else {
+        console.warn('No livelli found or livelli is not an array');
+        // Inizializza comunque come array vuoto se non esiste
+        projectData.livelli = [];
+        projectData.prodotti = [];
       }
 
       // Remove undefined fields to clean up the payload
+      // BUT keep livelli and prodotti arrays even if empty (they might be needed for new projects)
       Object.keys(projectData).forEach(key => {
-        if (projectData[key] === undefined) {
+        if (projectData[key] === undefined && key !== 'livelli' && key !== 'prodotti') {
           delete projectData[key];
         }
       });
@@ -557,8 +672,8 @@ export class ProjectForm implements OnInit {
       nome: [livello.nome, Validators.required],
       ordine: [livello.ordine, Validators.required],
       descrizione: [livello.descrizione],
-      dataInizioInstallazione: [livello.dataInizioInstallazione],
-      dataFineInstallazione: [livello.dataFineInstallazione]
+      dataInizioInstallazione: [this.convertDateForInput(livello.dataInizioInstallazione)],
+      dataFineInstallazione: [this.convertDateForInput(livello.dataFineInstallazione)]
     });
     this.showLevelDialog = true;
   }
@@ -650,8 +765,57 @@ export class ProjectForm implements OnInit {
       return;
     }
     
-    // Se non viene passato un livello, usa il primo
-    const targetLivello = livello || this.livelli[0];
+    // Trova il livello target: se viene passato un livello, cerca quello corrispondente nell'array
+    // per assicurarsi di avere il riferimento corretto
+    let targetLivello: LivelloProgetto | undefined;
+    
+    if (livello) {
+      // Cerca il livello nell'array usando l'id o il riferimento all'oggetto
+      if (livello.id) {
+        targetLivello = this.livelli.find(l => l.id === livello.id);
+      }
+      // Se non trovato per id, cerca per riferimento all'oggetto
+      if (!targetLivello) {
+        const index = this.livelli.findIndex(l => l === livello);
+        if (index !== -1) {
+          targetLivello = this.livelli[index];
+        }
+      }
+      // Se ancora non trovato, usa il livello passato (potrebbe essere appena creato)
+      if (!targetLivello) {
+        targetLivello = livello;
+      }
+    } else {
+      // Se non viene passato un livello, usa il primo disponibile
+      targetLivello = this.livelli[0];
+    }
+    
+    // Verifica che il livello target esista
+    if (!targetLivello) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Errore',
+        detail: 'Livello non trovato'
+      });
+      return;
+    }
+    
+    // A questo punto targetLivello è garantito non undefined (dopo il controllo sopra)
+    // Se il livello non ha un id, assegna un id temporaneo
+    const finalLivello = targetLivello; // TypeScript non riconosce il controllo sopra, usiamo una variabile locale
+    if (!finalLivello.id) {
+      finalLivello.id = Math.max(...this.livelli.map(l => l.id || 0), 0) + 1;
+    }
+    
+    // Assicurati che il livello sia nell'array livelli
+    const livelloIndex = this.livelli.findIndex(l => l === finalLivello || (finalLivello.id && l.id === finalLivello.id));
+    if (livelloIndex === -1) {
+      // Se il livello non è nell'array, aggiungilo
+      this.livelli.push(finalLivello);
+    } else {
+      // Aggiorna il riferimento per assicurarsi di usare quello nell'array
+      targetLivello = this.livelli[livelloIndex];
+    }
     
     this.editingProduct = undefined;
     this.productForm = this.fb.group({
@@ -662,8 +826,9 @@ export class ProjectForm implements OnInit {
       livelloId: [targetLivello.id, Validators.required] // Memorizza il livelloId
     });
     this.showProductDialog = true;
-    // Memorizza il livello target per quando si salva
-    (this.productForm as any).targetLivello = targetLivello;
+    // Memorizza il livello target per quando si salva (usa finalLivello se disponibile, altrimenti targetLivello)
+    const livelloToStore = livelloIndex !== -1 ? this.livelli[livelloIndex] : finalLivello;
+    (this.productForm as any).targetLivello = livelloToStore;
   }
 
   editProduct(prodotto: ProdottoProgetto) {
@@ -686,15 +851,36 @@ export class ProjectForm implements OnInit {
   saveProduct() {
     if (this.productForm?.valid) {
       const productData = this.productForm.value;
-      const targetLivello = (this.productForm as any).targetLivello;
+      let targetLivello = (this.productForm as any).targetLivello;
       
-      if (!targetLivello || !productData.livelloId) {
+      // Se targetLivello non è impostato, prova a trovarlo usando livelloId
+      if (!targetLivello && productData.livelloId) {
+        targetLivello = this.livelli.find(l => l.id === productData.livelloId);
+      }
+      
+      // Verifica che abbiamo sia il livello che l'id
+      if (!targetLivello) {
         this.messageService.add({
           severity: 'error',
           summary: 'Errore',
-          detail: 'Livello non specificato'
+          detail: 'Livello non trovato. Assicurati di aver selezionato un livello valido.'
         });
         return;
+      }
+      
+      if (productData.livelloId === undefined || productData.livelloId === null || productData.livelloId === '') {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Errore',
+          detail: 'ID livello non specificato nel form'
+        });
+        return;
+      }
+      
+      // Assicurati che targetLivello.id corrisponda a productData.livelloId
+      if (targetLivello.id !== productData.livelloId) {
+        // Aggiorna l'id del livello se necessario
+        targetLivello.id = productData.livelloId;
       }
       
       // Assicurati che il livello abbia un array prodotti

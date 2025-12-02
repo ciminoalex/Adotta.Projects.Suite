@@ -8,6 +8,31 @@
         <link rel="preconnect" href="https://primefaces.org" />
         <link rel="icon" type="image/x-icon" href="https://primefaces.org/cdn/primeng/images/favicon.png" />
         <link href="https://fonts.cdnfonts.com/css/lato" rel="stylesheet" />
+        <script>
+            // Verifica disponibilità Web Crypto API per MSAL
+            (function() {
+                // Verifica se crypto è disponibile
+                if (!window.crypto || !window.crypto.subtle) {
+                    // Su localhost, crypto.subtle è disponibile anche su HTTP
+                    const isLocalhost = window.location.hostname === 'localhost' || 
+                                       window.location.hostname === '127.0.0.1' ||
+                                       window.location.hostname === '[::1]';
+                    
+                    // Se non siamo su localhost e non c'è HTTPS, mostra un avviso
+                    if (!isLocalhost && window.location.protocol !== 'https:') {
+                        console.error('MSAL richiede HTTPS per funzionare correttamente. L\'API Web Crypto è disponibile solo su HTTPS.');
+                    }
+                    
+                    // Prova a usare crypto.getRandomValues come fallback minimo
+                    if (!window.crypto) {
+                        window.crypto = {};
+                    }
+                    
+                    // Se crypto.subtle non è disponibile, MSAL userà un fallback
+                    // ma è comunque necessario HTTPS per l'autenticazione
+                }
+            })();
+        </script>
     </head>
 
     <body>

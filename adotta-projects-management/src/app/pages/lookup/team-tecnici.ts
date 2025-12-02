@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
@@ -23,6 +25,8 @@ import { TeamTecnico } from '../../models/lookup.model';
     TableModule,
     ButtonModule,
     InputTextModule,
+    IconFieldModule,
+    InputIconModule,
     DialogModule,
     ConfirmDialogModule,
     ToastModule,
@@ -35,21 +39,15 @@ import { TeamTecnico } from '../../models/lookup.model';
       <p-toolbar>
         <ng-template pTemplate="left">
           <div class="flex gap-2">
-            <button class="p-button p-button-primary" (click)="openDialog()">
-              <i class="pi pi-plus mr-2"></i>
-              Nuovo Team Tecnico
-            </button>
+          <p-button icon="pi pi-plus" label="Nuovo Team Tecnico" (click)="openDialog()">
+            </p-button>
           </div>
         </ng-template>
         <ng-template pTemplate="right">
-          <span class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <input type="text" 
-                   pInputText 
-                   placeholder="Cerca team tecnici..." 
-                   [(ngModel)]="globalFilter"
-                   (input)="filterGlobal($event)">
-          </span>
+          <p-iconfield iconPosition="left">
+              <input pInputText type="text" placeholder="Cerca team tecnici..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+              <p-inputicon class="pi pi-search" />
+          </p-iconfield>
         </ng-template>
       </p-toolbar>
 

@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
@@ -23,6 +25,8 @@ import { ProdottoMaster } from '../../models/lookup.model';
     TableModule,
     ButtonModule,
     InputTextModule,
+    IconFieldModule,
+    InputIconModule,
     DialogModule,
     ConfirmDialogModule,
     ToastModule,
@@ -35,21 +39,15 @@ import { ProdottoMaster } from '../../models/lookup.model';
       <p-toolbar>
         <ng-template pTemplate="left">
           <div class="flex gap-2">
-            <button class="p-button p-button-primary" (click)="openDialog()">
-              <i class="pi pi-plus mr-2"></i>
-              Nuovo Prodotto Master
-            </button>
+            <p-button icon="pi pi-plus" label="Nuovo Prodotto Master" (click)="openDialog()">
+            </p-button>
           </div>
         </ng-template>
         <ng-template pTemplate="right">
-          <span class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <input type="text" 
-                   pInputText 
-                   placeholder="Cerca prodotti master..." 
-                   [(ngModel)]="globalFilter"
-                   (input)="filterGlobal($event)">
-          </span>
+          <p-iconfield iconPosition="left">
+              <input pInputText type="text" placeholder="Cerca prodotti master..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+              <p-inputicon class="pi pi-search" />
+          </p-iconfield>
         </ng-template>
       </p-toolbar>
 
@@ -63,7 +61,7 @@ import { ProdottoMaster } from '../../models/lookup.model';
         stripedRows
         [showCurrentPageReport]="true"
         currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} prodotti master"
-        [globalFilterFields]="['nome','categoria','codice']"
+        [globalFilterFields]="['nome','categoria','codiceSAP','unitaMisura']"
         [loading]="loading"
         styleClass="p-datatable-sm">
         
@@ -73,22 +71,19 @@ import { ProdottoMaster } from '../../models/lookup.model';
               Nome Prodotto
               <p-sortIcon field="nome"></p-sortIcon>
             </th>
-            <th pSortableColumn="codice">
-              Codice
-              <p-sortIcon field="codice"></p-sortIcon>
+            <th pSortableColumn="codiceSAP">
+              Codice SAP
+              <p-sortIcon field="codiceSAP"></p-sortIcon>
             </th>
             <th pSortableColumn="categoria">
               Categoria
               <p-sortIcon field="categoria"></p-sortIcon>
             </th>
-            <th pSortableColumn="prezzo">
-              Prezzo
-              <p-sortIcon field="prezzo"></p-sortIcon>
-            </th>
             <th pSortableColumn="unitaMisura">
               Unità Misura
               <p-sortIcon field="unitaMisura"></p-sortIcon>
             </th>
+            <th>Descrizione</th>
             <th style="width: 120px">Azioni</th>
           </tr>
         </ng-template>
@@ -96,15 +91,10 @@ import { ProdottoMaster } from '../../models/lookup.model';
         <ng-template pTemplate="body" let-prodotto>
           <tr>
             <td class="font-bold">{{ prodotto.nome }}</td>
-            <td>{{ prodotto.codice || '-' }}</td>
+            <td>{{ prodotto.codiceSAP || '-' }}</td>
             <td>{{ prodotto.categoria || '-' }}</td>
-            <td>
-              <span *ngIf="prodotto.prezzo" class="font-bold">
-                {{ prodotto.prezzo | currency:'EUR':'symbol':'1.2-2' }}
-              </span>
-              <span *ngIf="!prodotto.prezzo" class="text-500">-</span>
-            </td>
             <td>{{ prodotto.unitaMisura || '-' }}</td>
+            <td>{{ prodotto.descrizione || '-' }}</td>
             <td>
               <div class="flex gap-1">
                 <button class="p-button p-button-text p-button-sm" 
@@ -159,40 +149,38 @@ import { ProdottoMaster } from '../../models/lookup.model';
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Codice</label>
+            <label class="block text-900 font-medium mb-2">Codice SAP</label>
             <input type="text" 
                    pInputText 
-                   formControlName="codice"
-                   placeholder="Codice prodotto"
+                   formControlName="codiceSAP"
+                   placeholder="Codice SAP"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Categoria</label>
+            <label class="block text-900 font-medium mb-2">Categoria *</label>
             <input type="text" 
                    pInputText 
                    formControlName="categoria"
-                   placeholder="Es. HVAC, Elettrico"
+                   placeholder="Es. Metafora, Wallen, Armonica"
                    class="w-full">
+            <small *ngIf="prodottoForm.get('categoria')?.invalid && prodottoForm.get('categoria')?.touched" 
+                   class="text-red-500">
+              Categoria obbligatoria
+            </small>
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Prezzo</label>
-            <input type="number" 
-                   pInputText 
-                   formControlName="prezzo"
-                   placeholder="0.00"
-                   step="0.01"
-                   class="w-full">
-          </div>
-
-          <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Unità Misura</label>
+            <label class="block text-900 font-medium mb-2">Unità Misura *</label>
             <input type="text" 
                    pInputText 
                    formControlName="unitaMisura"
                    placeholder="Es. pz, mq, ml"
                    class="w-full">
+            <small *ngIf="prodottoForm.get('unitaMisura')?.invalid && prodottoForm.get('unitaMisura')?.touched" 
+                   class="text-red-500">
+              Unità di misura obbligatoria
+            </small>
           </div>
 
           <div class="col-span-12">
@@ -201,16 +189,6 @@ import { ProdottoMaster } from '../../models/lookup.model';
               formControlName="descrizione"
               placeholder="Descrizione prodotto"
               rows="3"
-              class="w-full p-3 border-1 surface-border rounded">
-            </textarea>
-          </div>
-
-          <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Note</label>
-            <textarea 
-              formControlName="note"
-              placeholder="Note aggiuntive"
-              rows="2"
               class="w-full p-3 border-1 surface-border rounded">
             </textarea>
           </div>
@@ -258,12 +236,11 @@ export class ProdottiMaster implements OnInit {
     this.prodottoForm = this.fb.group({
       id: [''],
       nome: ['', Validators.required],
-      codice: [''],
-      categoria: [''],
-      prezzo: [''],
-      unitaMisura: [''],
+      codiceSAP: [''],
+      categoria: ['', Validators.required],
+      unitaMisura: ['', Validators.required],
       descrizione: [''],
-      note: ['']
+      variantiDisponibili: [[]]
     });
   }
 
@@ -300,10 +277,59 @@ export class ProdottiMaster implements OnInit {
   saveProdotto() {
     if (this.prodottoForm.valid) {
       this.loading = true;
-      const prodottoData = this.prodottoForm.value;
+      const formValue = this.prodottoForm.value;
+      
+      // Build prodotto data object aligned with C# model
+      // Required fields: Nome, Categoria, UnitaMisura (always strings, never empty)
+      // Optional fields: CodiceSAP, Descrizione, VariantiDisponibili (null if empty)
+      const prodottoData: any = {
+        nome: formValue.nome || '',
+        categoria: formValue.categoria || '',
+        unitaMisura: formValue.unitaMisura || ''
+      };
+      
+      // Add optional nullable fields only if they have values
+      if (formValue.codiceSAP && formValue.codiceSAP.trim() !== '') {
+        prodottoData.codiceSAP = formValue.codiceSAP;
+      } else {
+        prodottoData.codiceSAP = null;
+      }
+      
+      if (formValue.descrizione && formValue.descrizione.trim() !== '') {
+        prodottoData.descrizione = formValue.descrizione;
+      } else {
+        prodottoData.descrizione = null;
+      }
+      
+      if (formValue.variantiDisponibili && Array.isArray(formValue.variantiDisponibili) && formValue.variantiDisponibili.length > 0) {
+        prodottoData.variantiDisponibili = formValue.variantiDisponibili;
+      } else {
+        prodottoData.variantiDisponibili = null;
+      }
+      
+      // Add id only for edit (for create, don't send id - backend will generate it)
+      if (this.isEdit) {
+        if (formValue.id && formValue.id.trim() !== '') {
+          prodottoData.id = formValue.id;
+        } else {
+          // If editing but no id, this is an error
+          console.error('Cannot update prodotto master without id');
+          this.loading = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Errore',
+            detail: 'ID prodotto mancante per l\'aggiornamento'
+          });
+          return;
+        }
+      }
+      // For create, don't include id - backend will generate it
+      
+      // Log the payload being sent for debugging
+      console.log('Sending prodotto master data:', JSON.stringify(prodottoData, null, 2));
 
       const saveOperation = this.isEdit 
-        ? this.lookupService.updateProdottoMaster(prodottoData.id, prodottoData)
+        ? this.lookupService.updateProdottoMaster(prodottoData.id!, prodottoData)
         : this.lookupService.createProdottoMaster(prodottoData);
 
       saveOperation.subscribe({
@@ -317,10 +343,45 @@ export class ProdottiMaster implements OnInit {
           this.loadProdottiMaster();
         },
         error: (error: any) => {
+          console.error('Error saving prodotto master:', error);
+          console.error('Error response:', error.error);
+          
+          let errorDetail = 'Errore nel salvataggio del prodotto master';
+          
+          // Check for validation errors (ASP.NET Core format)
+          if (error.error && error.error.errors) {
+            const validationErrors = error.error.errors;
+            const errorMessages: string[] = [];
+            
+            Object.keys(validationErrors).forEach(field => {
+              const fieldErrors = validationErrors[field];
+              if (Array.isArray(fieldErrors)) {
+                fieldErrors.forEach((msg: string) => {
+                  errorMessages.push(`${field}: ${msg}`);
+                });
+              } else if (typeof fieldErrors === 'string') {
+                errorMessages.push(`${field}: ${fieldErrors}`);
+              }
+            });
+            
+            if (errorMessages.length > 0) {
+              errorDetail = 'Errori di validazione:\n' + errorMessages.join('\n');
+            } else if (error.error.title) {
+              errorDetail = error.error.title;
+            }
+          } else if (error.error && error.error.message) {
+            errorDetail = error.error.message;
+          } else if (error.error && typeof error.error === 'string') {
+            errorDetail = error.error;
+          } else if (error.error && error.error.title) {
+            errorDetail = error.error.title;
+          }
+          
           this.messageService.add({
             severity: 'error',
             summary: 'Errore',
-            detail: 'Errore nel salvataggio del prodotto master'
+            detail: errorDetail,
+            life: 10000
           });
           this.loading = false;
         }

@@ -10,7 +10,8 @@ import { TableModule } from 'primeng/table';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { TimesheetService } from '../../services/timesheet.service';
@@ -22,6 +23,7 @@ import { TimesheetOverview } from '../../models/timesheet.model';
 
 export interface ChatMessage {
   id: string;
+  backendId?: number;
   utente: string;
   messaggio: string;
   dataOra: Date;
@@ -49,9 +51,10 @@ export interface ModificaRaggruppata {
     TableModule,
     TextareaModule,
     SelectModule,
-    ToastModule
+    ToastModule,
+    ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './project-detail.html',
   styleUrl: './project-detail.css'
 })
@@ -86,6 +89,7 @@ export class ProjectDetail implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private authService: AuthService,
     private serviceProvider: ServiceProviderService,
     private serviceConfig: ServiceConfigurationService,
@@ -206,13 +210,18 @@ export class ProjectDetail implements OnInit {
     this.projectService.getMessaggiProgetto(numeroProgetto).subscribe({
       next: (messaggi: MessaggioProgetto[]) => {
         // Convert MessaggioProgetto to ChatMessage
-        this.chatMessages = messaggi.map((msg: MessaggioProgetto) => ({
-          id: msg.id?.toString() || '0',
-          utente: msg.utente,
-          messaggio: msg.messaggio,
-          dataOra: msg.data,
-          avatar: this.getInitials(msg.utente)
-        }));
+        this.chatMessages = messaggi.map((msg: MessaggioProgetto) => {
+          const data = msg.data ? new Date(msg.data) : new Date();
+          return {
+            id: msg.id?.toString() || data.getTime().toString(),
+            backendId: msg.id,
+            utente: msg.utente,
+            messaggio: msg.messaggio,
+            // Ensure we always work with a Date instance (API returns ISO string)
+            dataOra: data,
+            avatar: this.getInitials(msg.utente)
+          };
+        });
       },
       error: (error: any) => {
         console.error('Error loading chat messages:', error);
@@ -239,11 +248,13 @@ export class ProjectDetail implements OnInit {
       this.projectService.addMessaggioProgetto(this.project.numeroProgetto, messaggio).subscribe({
         next: (savedMessage: MessaggioProgetto) => {
           // Add to local array for immediate display
+          const data = savedMessage.data ? new Date(savedMessage.data) : new Date();
           const chatMsg: ChatMessage = {
             id: savedMessage.id?.toString() || Date.now().toString(),
+            backendId: savedMessage.id,
             utente: savedMessage.utente,
             messaggio: savedMessage.messaggio,
-            dataOra: savedMessage.data,
+            dataOra: data,
             avatar: this.getInitials(savedMessage.utente)
           };
           
@@ -262,7 +273,76 @@ export class ProjectDetail implements OnInit {
   }
 
   getSortedMessages(): ChatMessage[] {
-    return [...this.chatMessages].sort((a, b) => b.dataOra.getTime() - a.dataOra.getTime());
+    return [...this.chatMessages].sort((a, b) => {
+      const aTime = a.dataOra ? new Date(a.dataOra).getTime() : 0;
+      const bTime = b.dataOra ? new Date(b.dataOra).getTime() : 0;
+      return bTime - aTime;
+    });
+  }
+
+  // Un messaggio è cancellabile solo se:
+  // - è dell'utente corrente
+  // - è l'ultimo in ordine cronologico (nessun messaggio con data successiva)
+  canDeleteMessage(message: ChatMessage): boolean {
+    if (!this.project || !this.currentUser) {
+      return false;
+    }
+
+    if (message.utente !== this.currentUser) {
+      return false;
+    }
+
+    const messageTime = message.dataOra ? new Date(message.dataOra).getTime() : 0;
+    return !this.chatMessages.some(m => {
+      const time = m.dataOra ? new Date(m.dataOra).getTime() : 0;
+      return time > messageTime;
+    });
+  }
+
+  deleteMessage(message: ChatMessage): void {
+    if (!this.project?.numeroProgetto || !message.backendId) {
+      return;
+    }
+
+    const numeroProgetto = this.project.numeroProgetto;
+
+    this.confirmationService.confirm({
+      message: 'Sei sicuro di eliminare il messaggio?',
+      header: 'Conferma Eliminazione',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Elimina',
+      rejectLabel: 'Annulla',
+      accept: () => {
+        // L'API backend costruisce la chiave come `${numeroProgetto}-MSG${idNumerico}`.
+        // L'ID che leggiamo dal backend è del tipo "250001-MSG1602981324".
+        // Per la DELETE dobbiamo passare solo la parte numerica finale: "1602981324".
+        let rawId = message.backendId!.toString();
+
+        // Se contiene il numero progetto, rimuovo il prefisso "250001-"
+        const prefix = `${numeroProgetto}-`;
+        if (rawId.startsWith(prefix)) {
+          rawId = rawId.substring(prefix.length);
+        }
+
+        // Se ora inizia con "MSG", tolgo il prefisso "MSG"
+        if (rawId.startsWith('MSG')) {
+          rawId = rawId.substring(3);
+        }
+
+        const apiMessageId = rawId;
+
+        // Chiamata API per cancellare il messaggio
+        this.projectService.deleteMessaggioProgetto(numeroProgetto, apiMessageId).subscribe({
+          next: () => {
+            // Rimuovo il messaggio dalla lista locale
+            this.chatMessages = this.chatMessages.filter(m => m.id !== message.id);
+          },
+          error: (error: any) => {
+            console.error('Error deleting message:', error);
+          }
+        });
+      }
+    });
   }
 
   getStatusSeverity(status?: ProjectStatus | string): string {

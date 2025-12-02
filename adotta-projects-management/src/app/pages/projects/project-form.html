@@ -100,10 +100,11 @@
           <p-autoComplete 
             *ngIf="!loadingLookupData"
             formControlName="cliente"
-            [suggestions]="clientiNames"
+            [suggestions]="filteredClienti"
             (completeMethod)="filterClienti($event)"
+            (onSelect)="onClienteSelected($event)"
             placeholder="Cerca cliente..."
-            field="nome"
+            optionLabel="nome"
             [minLength]="1" 
             class="w-full"
             inputStyleClass="w-full">
@@ -119,7 +120,7 @@
             formControlName="stato"
             placeholder="Seleziona stato"
             optionLabel="nome"
-            optionValue="codiceISO"
+            optionValue="id"
             [showClear]="true"
             class="w-full"
             inputStyleClass="w-full">

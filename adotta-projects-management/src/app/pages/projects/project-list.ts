@@ -143,8 +143,17 @@ export class ProjectList implements OnInit {
   }
 
   loadLookupData() {
-    this.lookupService.getClienti().subscribe((clienti: Cliente[]) => {
-      this.clienti = clienti;
+    // Carica un sottoinsieme di clienti (prima pagina) per i filtri
+    this.lookupService.getClienti(1, 100).subscribe({
+      next: (response: any) => {
+        const clienti = Array.isArray(response)
+          ? response
+          : (response && Array.isArray(response.items) ? response.items : []);
+        this.clienti = clienti;
+      },
+      error: (error: any) => {
+        console.error('Errore nel caricamento clienti per lista progetti:', error);
+      }
     });
 
     this.lookupService.getProjectManagers().subscribe((pms: ProjectManager[]) => {

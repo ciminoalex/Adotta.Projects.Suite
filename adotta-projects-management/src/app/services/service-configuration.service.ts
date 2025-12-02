@@ -32,7 +32,7 @@ export class ServiceConfigurationService {
     
     // Controlla se c'è una variabile d'ambiente (utile per build diverse)
     // In un progetto reale, usa file environment.ts
-    return 'http://localhost:5000'; // Stringa vuota = usa URL relativi (necessita proxy Angular o stesso dominio)
+    return 'https://projects.adotta.net/api'; // Stringa vuota = usa URL relativi (necessita proxy Angular o stesso dominio)
     
     // Per sviluppo con server API separato, decommenta e modifica:
     // return 'http://localhost:5000';

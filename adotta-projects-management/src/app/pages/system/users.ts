@@ -19,6 +19,7 @@ import { MockUserService } from '../../services/mock/mock-user.service';
 import { LookupService } from '../../services/lookup.service';
 import { MockLookupService } from '../../services/mock/mock-lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-users',
@@ -217,8 +218,8 @@ export class UsersComponent implements OnInit {
 
   loadUsers() {
     this.loading = true;
-    this.userService.getUsers().subscribe({
-      next: (res) => { this.users = res; this.loading = false; },
+    (this.userService.getUsers() as Observable<UserDto[]>).subscribe({
+      next: (res: UserDto[]) => { this.users = res; this.loading = false; },
       error: () => { this.loading = false; }
     });
   }
@@ -271,7 +272,7 @@ export class UsersComponent implements OnInit {
     }
 
     const payload: UserDto = {
-      id: formVal.id,
+      userCode: formVal.userCode,
       userName: formVal.userName,
       email: formVal.email,
       ruolo: formVal.ruolo,
@@ -283,14 +284,14 @@ export class UsersComponent implements OnInit {
 
     this.saving = true;
     const obs = this.isEdit ? this.userService.updateUser(payload) : this.userService.addUser(payload);
-    obs.subscribe({
+    (obs as Observable<UserDto>).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Salvato', detail: 'Utente salvato correttamente' });
         this.saving = false;
         this.showDialog = false;
         this.loadUsers();
       },
-      error: (e) => {
+      error: (e: any) => {
         this.saving = false;
         this.messageService.add({ severity: 'error', summary: 'Errore', detail: e?.message || 'Errore salvataggio' });
       }
@@ -298,13 +299,13 @@ export class UsersComponent implements OnInit {
   }
 
   confirmDelete(u: UserDto) {
-    if (!u.id) return;
+    if (!u.userCode) return;
     this.confirmationService.confirm({
       message: `Confermi l'eliminazione dell'utente ${u.userName}?`,
       header: 'Conferma',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.userService.deleteUser(u.id!).subscribe({
+        this.userService.deleteUser(u.userCode as never).subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Eliminato', detail: 'Utente eliminato' });
             this.loadUsers();

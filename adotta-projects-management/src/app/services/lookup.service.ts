@@ -12,8 +12,25 @@ export class LookupService {
   constructor(private http: HttpClient) {}
 
   // Clienti
-  getClienti(): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(`${this.apiUrl}/clienti`);
+  getClienti(
+    page: number = 1,
+    pageSize: number = 20,
+    search?: string | null,
+    sortBy?: string | null,
+    sortDirection?: string | null
+  ): Observable<any> {
+    const queryParams: string[] = [`page=${page}`, `pageSize=${pageSize}`];
+    if (search && search.trim() !== '') {
+      queryParams.push(`search=${encodeURIComponent(search.trim())}`);
+    }
+    if (sortBy && sortBy.trim() !== '') {
+      queryParams.push(`sortBy=${encodeURIComponent(sortBy.trim())}`);
+    }
+    if (sortDirection && sortDirection.trim() !== '') {
+      queryParams.push(`sortDirection=${encodeURIComponent(sortDirection.trim())}`);
+    }
+    const params = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+    return this.http.get<any>(`${this.apiUrl}/clienti${params}`);
   }
 
   getCliente(id: string): Observable<Cliente> {
@@ -37,8 +54,9 @@ export class LookupService {
   }
 
   // Stati
-  getStati(): Observable<Stato[]> {
-    return this.http.get<Stato[]>(`${this.apiUrl}/stati`);
+  getStati(pageSize?: number): Observable<Stato[]> {
+    const params = pageSize ? `?pageSize=${pageSize}` : '';
+    return this.http.get<Stato[]>(`${this.apiUrl}/stati${params}`);
   }
 
   getStato(id: string): Observable<Stato> {

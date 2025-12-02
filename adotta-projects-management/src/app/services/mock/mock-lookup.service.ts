@@ -16,8 +16,62 @@ export class MockLookupService {
   }
 
   // Clienti
-  getClienti(): Observable<Cliente[]> {
-    return of(this.mockData.getClienti()).pipe(delay(300));
+  getClienti(
+    page: number = 1,
+    pageSize: number = 20,
+    search?: string | null,
+    sortBy?: string | null,
+    sortDirection?: string | null
+  ): Observable<any> {
+    let allClienti = this.mockData.getClienti();
+
+    // Applica filtro di ricerca se presente
+    if (search && search.trim() !== '') {
+      const term = search.toLowerCase();
+      allClienti = allClienti.filter(cliente =>
+        cliente.nome.toLowerCase().includes(term) ||
+        cliente.email?.toLowerCase().includes(term) ||
+        cliente.contatto?.toLowerCase().includes(term)
+      );
+    }
+
+    // Applica ordinamento se specificato
+    if (sortBy && sortBy.trim() !== '') {
+      const field = sortBy as keyof Cliente;
+      const direction = (sortDirection || 'asc').toLowerCase();
+      allClienti = [...allClienti].sort((a: any, b: any) => {
+        const va = (a?.[field] ?? '') as any;
+        const vb = (b?.[field] ?? '') as any;
+        if (va == null && vb == null) return 0;
+        if (va == null) return direction === 'asc' ? -1 : 1;
+        if (vb == null) return direction === 'asc' ? 1 : -1;
+        if (typeof va === 'string' && typeof vb === 'string') {
+          const cmp = va.localeCompare(vb, 'it-IT', { sensitivity: 'base' });
+          return direction === 'asc' ? cmp : -cmp;
+        }
+        if (va < vb) return direction === 'asc' ? -1 : 1;
+        if (va > vb) return direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    const totalCount = allClienti.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const currentPage = Math.min(Math.max(page, 1), totalPages);
+    const startIndex = (currentPage - 1) * pageSize;
+    const items = allClienti.slice(startIndex, startIndex + pageSize);
+
+    const pagedResult = {
+      items,
+      totalCount,
+      page: currentPage,
+      pageSize,
+      totalPages,
+      hasPrevious: currentPage > 1,
+      hasNext: currentPage < totalPages
+    };
+
+    return of(pagedResult).pipe(delay(300));
   }
 
   getCliente(id: string): Observable<Cliente> {
