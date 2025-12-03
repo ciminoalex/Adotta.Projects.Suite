@@ -11,13 +11,14 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { TimesheetService } from '../../services/timesheet.service';
+import { ServiceConfigurationService } from '../../services/service-configuration.service';
+import { HttpClient } from '@angular/common/http';
 import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
-import { ProjectService } from '../../services/project.service';
-import { MockProjectService } from '../../services/mock/mock-project.service';
-import { TimesheetProjectDto, TimesheetSummary } from '../../models/timesheet.model';
+import { TimesheetEntry, TimesheetProjectDto, TimesheetSummary } from '../../models/timesheet.model';
 import { Project } from '../../models/project.model';
 
 @Component({
@@ -36,9 +37,10 @@ import { Project } from '../../models/project.model';
     TagModule,
     ToolbarModule,
     ToastModule,
+    ConfirmDialogModule,
     CardModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './timesheet-overview.html'
 })
 export class TimesheetOverviewComponent implements OnInit {
@@ -56,16 +58,21 @@ export class TimesheetOverviewComponent implements OnInit {
   selectedProjectId: string | null = null;
   selectedProject: TimesheetProjectDto | null = null;
 
-  private timesheetService: TimesheetService;
+  private timesheetService: TimesheetService | MockTimesheetService;
 
   constructor(
     private messageService: MessageService,
+    private confirmationService: ConfirmationService,
+    private serviceConfig: ServiceConfigurationService,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router
   ) {
-    // Use mock service for development
-    this.timesheetService = new MockTimesheetService() as any;
+    // Usa il servizio mock solo se configurato esplicitamente, altrimenti chiama le API reali
+    this.timesheetService = this.serviceConfig.getUseMockServices()
+      ? new MockTimesheetService()
+      : new TimesheetService(this.http);
   }
 
   ngOnInit() {
@@ -224,6 +231,46 @@ export class TimesheetOverviewComponent implements OnInit {
       severity: 'success',
       summary: 'Successo',
       detail: 'Export completato'
+    });
+  }
+
+  deleteTimesheetEntry(entry: TimesheetEntry) {
+    if (!entry || entry.id == null) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Impossibile eliminare',
+        detail: 'ID rendicontazione non valido'
+      });
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: 'Sei sicuro di voler eliminare questa rendicontazione?',
+      header: 'Conferma Eliminazione',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Elimina',
+      rejectLabel: 'Annulla',
+      accept: () => {
+        this.timesheetService.deleteTimesheetEntry(entry.id!).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Eliminata',
+              detail: 'Rendicontazione eliminata con successo'
+            });
+            // Ricarica dati overview e dettaglio
+            this.loadData();
+          },
+          error: (error) => {
+            console.error('Errore nell\'eliminazione timesheet:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Errore',
+              detail: 'Errore durante l\'eliminazione della rendicontazione'
+            });
+          }
+        });
+      }
     });
   }
 }

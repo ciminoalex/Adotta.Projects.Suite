@@ -188,6 +188,7 @@
           <th style="width: 120px">Ore</th>
           <th class="hidden md:table-cell">Utente</th>
           <th>Note</th>
+          <th style="width: 60px"></th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-r>
@@ -196,14 +197,23 @@
           <td><p-tag [value]="r.oreLavorate + 'h'" severity="info"></p-tag></td>
           <td class="hidden md:table-cell">{{ r.utente }}</td>
           <td>{{ r.note }}</td>
+          <td class="text-right">
+            <button 
+              class="p-button p-button-text p-button-sm p-button-danger" 
+              (click)="deleteTimesheetEntry(r)"
+              pTooltip="Elimina rendicontazione">
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="text-center p-4 text-500">Nessuna rendicontazione presente</td>
+          <td colspan="5" class="text-center p-4 text-500">Nessuna rendicontazione presente</td>
         </tr>
       </ng-template>
     </p-table>
   </div>
 
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog> 

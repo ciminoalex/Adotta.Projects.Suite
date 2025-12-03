@@ -13,9 +13,12 @@ import { CardModule } from 'primeng/card';
 import { FieldsetModule } from 'primeng/fieldset';
 import { MessageService } from 'primeng/api';
 import { TimesheetService } from '../../services/timesheet.service';
-import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
 import { ProjectService } from '../../services/project.service';
-import { MockProjectService } from '../../services/mock/mock-project.service';
+import { ServiceProviderService } from '../../services/service-provider.service';
+import { ServiceConfigurationService } from '../../services/service-configuration.service';
+import { HttpClient } from '@angular/common/http';
+import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
+import { AuthService } from '../../services/auth.service';
 import { TimesheetEntry } from '../../models/timesheet.model';
 import { Project, LivelloProgetto } from '../../models/project.model';
 
@@ -52,18 +55,27 @@ export class TimesheetFormComponent implements OnInit {
   timesheetId: number | null = null;
   maxDate: Date = new Date();
 
-  private timesheetService: TimesheetService;
+  private timesheetService: TimesheetService | MockTimesheetService;
   private projectService: ProjectService;
 
   constructor(
     private fb: FormBuilder,
     private messageService: MessageService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private serviceProvider: ServiceProviderService,
+    private serviceConfig: ServiceConfigurationService,
+    private http: HttpClient,
+    private authService: AuthService
   ) {
-    this.timesheetService = new MockTimesheetService() as any;
-    this.projectService = new MockProjectService() as any;
-    
+    // ProjectService: usa il provider centralizzato (mock o API reali)
+    this.projectService = this.serviceProvider.provideProjectService() as ProjectService;
+
+    // TimesheetService: usa mock solo se esplicitamente configurato, altrimenti API reali
+    this.timesheetService = this.serviceConfig.getUseMockServices()
+      ? new MockTimesheetService()
+      : new TimesheetService(this.http);
+
     this.initForm();
   }
 
@@ -273,7 +285,7 @@ export class TimesheetFormComponent implements OnInit {
       dataRendicontazione: formValue.dataRendicontazione,
       oreLavorate: formValue.oreLavorate,
       note: formValue.note,
-      utente: 'current_user' // In production, get from auth service
+      utente: this.authService.getFullName() || 'current_user' // In production, get from auth service
     };
 
     if (this.isEditMode && this.timesheetId) {

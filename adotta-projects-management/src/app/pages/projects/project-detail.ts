@@ -15,9 +15,9 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { TimesheetService } from '../../services/timesheet.service';
-import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { ServiceConfigurationService } from '../../services/service-configuration.service';
+import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
 import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus, MessaggioProgetto } from '../../models/project.model';
 import { TimesheetOverview } from '../../models/timesheet.model';
 
@@ -97,16 +97,14 @@ export class ProjectDetail implements OnInit {
   ) {
     // Use services based on configuration (mock or real API)
     this.projectService = this.serviceProvider.provideProjectService();
-    // TimesheetService: use mock if configured, otherwise use real service
-    if (this.serviceConfig.getUseMockServices()) {
-      this.timesheetService = new MockTimesheetService() as any;
-    } else {
-      this.timesheetService = new TimesheetService(this.http);
-    }
+    // TimesheetService: usa mock solo se configurato, altrimenti chiama le API reali
+    this.timesheetService = this.serviceConfig.getUseMockServices()
+      ? new MockTimesheetService()
+      : new TimesheetService(this.http);
   }
 
   private projectService: ProjectService | any;
-  private timesheetService: TimesheetService | any;
+  private timesheetService: TimesheetService | MockTimesheetService;
   
 
   ngOnInit() {
@@ -481,6 +479,10 @@ export class ProjectDetail implements OnInit {
               nuovoValore
             });
           });
+
+          // Abbiamo già creato tutte le voci di dettaglio per questo log,
+          // quindi non deve essere aggiunta anche una riga generica "updated".
+          return;
         }
       } else if (log?.descrizione && typeof log.descrizione === 'string' && log.descrizione.includes('→')) {
         // 2c) fallback: descrizione "Campo: \"vecchio\" → \"nuovo\""

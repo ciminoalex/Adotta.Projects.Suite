@@ -81,7 +81,7 @@
         </td>
         <td *ngFor="let col of selectedColumns">
             <div *ngIf="col.field === 'stato'" class="flex items-center gap-2">
-              <img src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png" [class]="'flag flag-' + project.stato.toLowerCase()" style="width: 20px" />
+              <img src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png" [class]="'flag flag-' + project.stato.substring(0, 2).toLowerCase()" style="width: 20px" />
               <span>{{ project.stato || '-' }}</span>
             </div>
             <ng-container *ngIf="col.field !== 'stato'">

@@ -105,9 +105,9 @@ import { AuthService } from '../../services/auth.service';
     `
 })
 export class Login implements OnInit {
-    email: string = 'admin';
+    email: string = '';
 
-    password: string = 'admin123';
+    password: string = '';
 
     checked: boolean = false;
 
