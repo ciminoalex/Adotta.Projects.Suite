@@ -277,8 +277,8 @@
               </td>
               <td>
                 <div class="text-sm">
-                  <div class="font-semibold">{{ istanza.dataModifica | date:'dd/MM/yyyy' }}</div>
-                  <div class="text-500">{{ istanza.dataModifica | date:'HH:mm:ss' }}</div>
+                  <div class="font-semibold">{{ istanza.dataModifica | date:'dd/MM/yyyy':'UTC' }}</div>
+                  <div class="text-500">{{ istanza.dataModifica | date:'HH:mm:ss':'UTC' }}</div>
                 </div>
               </td>
               <td>

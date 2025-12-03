@@ -187,9 +187,12 @@ export class ProjectDetail implements OnInit {
       }
     });
 
-    // Load storico modifiche
+    // Load storico modifiche dal servizio (endpoint /storico)
+    // L'API può restituire già StoricoModifica oppure un payload "tipo ChangeLog":
+    // in entrambi i casi normalizziamo al formato StoricoModifica usato dalla UI.
     this.projectService.getStoricoModifiche(numeroProgetto).subscribe({
-      next: (storico: StoricoModifica[]) => {
+      next: (storicoRaw: any[]) => {
+        const storico = this.normalizeStorico(storicoRaw || []);
         this.storicoModifiche = storico;
         this.registroModifiche = storico || [];
         this.modificheRaggruppate = this.raggruppaModifiche(this.registroModifiche);
@@ -402,6 +405,115 @@ export class ProjectDetail implements OnInit {
 
   toggleExpanded(modifica: ModificaRaggruppata) {
     modifica.expanded = !modifica.expanded;
+  }
+
+  /**
+   * Normalizza il payload restituito dall'endpoint /storico
+   * in una lista di StoricoModifica usabile dalla UI.
+   *
+   * Supporta:
+   * - elementi già nel formato StoricoModifica;
+   * - elementi "tipo ChangeLog" con proprietà { id, numeroProgetto, data, utente, azione, descrizione, dettagli }.
+   */
+  private normalizeStorico(items: any[]): StoricoModifica[] {
+    const result: StoricoModifica[] = [];
+
+    items.forEach(item => {
+      // Caso 1: è già uno StoricoModifica (ha campoModificato)
+      if (item && item.campoModificato) {
+        result.push({
+          id: item.id,
+          numeroProgetto: item.numeroProgetto,
+          dataModifica: item.dataModifica ? new Date(item.dataModifica) : new Date(),
+          utenteModifica: item.utenteModifica,
+          campoModificato: item.campoModificato,
+          valorePrecedente: item.valorePrecedente,
+          nuovoValore: item.nuovoValore,
+          versioneWIC: item.versioneWIC,
+          descrizione: item.descrizione
+        });
+        return;
+      }
+
+      // Caso 2: formato "tipo ChangeLog"
+      const log = item;
+      const dettagli: any = log?.dettagli;
+
+      if (dettagli && typeof dettagli === 'object') {
+        // 2a) mock: { campo, vecchioValore, nuovoValore }
+        if ('campo' in dettagli) {
+          result.push({
+            id: log.id,
+            numeroProgetto: log.numeroProgetto,
+            dataModifica: new Date(log.data),
+            utenteModifica: log.utente,
+            campoModificato: String(dettagli.campo),
+            valorePrecedente: dettagli.vecchioValore != null ? String(dettagli.vecchioValore) : '-',
+            nuovoValore: dettagli.nuovoValore != null ? String(dettagli.nuovoValore) : '-'
+          });
+        } else {
+          // 2b) backend reale: dizionario { NomeCampo: "Da: ... -> A: ..." }
+          Object.keys(dettagli).forEach((campo: string) => {
+            const rawValue = dettagli[campo];
+            let valorePrecedente = '';
+            let nuovoValore = '';
+
+            if (typeof rawValue === 'string') {
+              const match = rawValue.match(/Da:\s*(.*?)\s*->\s*A:\s*(.*)/);
+              if (match) {
+                valorePrecedente = match[1].trim();
+                nuovoValore = match[2].trim();
+              } else {
+                nuovoValore = rawValue;
+              }
+            } else if (rawValue && typeof rawValue === 'object') {
+              valorePrecedente = rawValue.vecchioValore != null ? String(rawValue.vecchioValore) : '-';
+              nuovoValore = rawValue.nuovoValore != null ? String(rawValue.nuovoValore) : '-';
+            }
+
+            result.push({
+              id: log.id,
+              numeroProgetto: log.numeroProgetto,
+              dataModifica: new Date(log.data),
+              utenteModifica: log.utente,
+              campoModificato: campo,
+              valorePrecedente,
+              nuovoValore
+            });
+          });
+        }
+      } else if (log?.descrizione && typeof log.descrizione === 'string' && log.descrizione.includes('→')) {
+        // 2c) fallback: descrizione "Campo: \"vecchio\" → \"nuovo\""
+        const match = log.descrizione.match(/([^:]+):\s*"([^"]*)"\s*→\s*"([^"]*)"/);
+        if (match) {
+          result.push({
+            id: log.id,
+            numeroProgetto: log.numeroProgetto,
+            dataModifica: new Date(log.data),
+            utenteModifica: log.utente,
+            campoModificato: match[1].trim(),
+            valorePrecedente: match[2] || '-',
+            nuovoValore: match[3] || '-'
+          });
+          return;
+        }
+      }
+
+      // 2d) ultimo fallback: voce generica
+      if (log) {
+        result.push({
+          id: log.id,
+          numeroProgetto: log.numeroProgetto,
+          dataModifica: log.data ? new Date(log.data) : new Date(),
+          utenteModifica: log.utente,
+          campoModificato: log.azione || 'Modifica',
+          valorePrecedente: '',
+          nuovoValore: log.descrizione || ''
+        });
+      }
+    });
+
+    return result;
   }
 
   raggruppaModifiche(modifiche: StoricoModifica[]): ModificaRaggruppata[] {
