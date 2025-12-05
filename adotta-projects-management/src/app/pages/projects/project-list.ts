@@ -16,13 +16,14 @@ import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { SkeletonModule } from 'primeng/skeleton';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { Project, ProjectStatus } from '../../models/project.model';
-import { Cliente, ProjectManager } from '../../models/lookup.model';
+import { Cliente, ProjectManager, TeamTecnico, TeamAPL, Sales, SquadraInstallazione } from '../../models/lookup.model';
 
 interface Column {
   field: string;
@@ -50,6 +51,7 @@ interface Column {
     DialogModule,
     TooltipModule,
     ToggleSwitchModule,
+    SkeletonModule,
     DragDropModule
   ],
   providers: [ConfirmationService, MessageService],
@@ -80,6 +82,11 @@ export class ProjectList implements OnInit {
 
   clienti: Cliente[] = [];
   projectManagers: ProjectManager[] = [];
+  teamTecnici: TeamTecnico[] = [];
+  teamAPL: TeamAPL[] = [];
+  sales: Sales[] = [];
+  squadreInstallazione: SquadraInstallazione[] = [];
+  loadingLookupData = true;
 
   private projectService: ProjectService | any;
   private lookupService: LookupService | any;
@@ -143,22 +150,130 @@ export class ProjectList implements OnInit {
   }
 
   loadLookupData() {
+    this.loadingLookupData = true;
+    let completedRequests = 0;
+    const totalRequests = 6; // clienti, projectManagers, teamTecnici, teamAPL, sales, squadreInstallazione
+
+    // Helper function to extract array from either direct array or paginated response
+    const extractArray = <T>(response: T[] | { items: T[] } | any): T[] => {
+      if (Array.isArray(response)) {
+        return response;
+      }
+      if (response && typeof response === 'object' && 'items' in response && Array.isArray(response.items)) {
+        return response.items;
+      }
+      return [];
+    };
+
+    const checkAllLoaded = () => {
+      completedRequests++;
+      if (completedRequests === totalRequests) {
+        this.loadingLookupData = false;
+      }
+    };
+
     // Carica un sottoinsieme di clienti (prima pagina) per i filtri
     this.lookupService.getClienti(1, 100).subscribe({
       next: (response: any) => {
-        const clienti = Array.isArray(response)
-          ? response
-          : (response && Array.isArray(response.items) ? response.items : []);
-        this.clienti = clienti;
+        this.clienti = extractArray<Cliente>(response);
+        checkAllLoaded();
       },
       error: (error: any) => {
         console.error('Errore nel caricamento clienti per lista progetti:', error);
+        checkAllLoaded();
       }
     });
 
-    this.lookupService.getProjectManagers().subscribe((pms: ProjectManager[]) => {
-      this.projectManagers = pms;
+    this.lookupService.getProjectManagers().subscribe({
+      next: (response: any) => {
+        this.projectManagers = extractArray<ProjectManager>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading project managers:', error);
+        checkAllLoaded();
+      }
     });
+
+    this.lookupService.getTeamTecnici().subscribe({
+      next: (response: any) => {
+        this.teamTecnici = extractArray<TeamTecnico>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading team tecnici:', error);
+        checkAllLoaded();
+      }
+    });
+
+    this.lookupService.getTeamAPL().subscribe({
+      next: (response: any) => {
+        this.teamAPL = extractArray<TeamAPL>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading team APL:', error);
+        checkAllLoaded();
+      }
+    });
+
+    this.lookupService.getSales().subscribe({
+      next: (response: any) => {
+        this.sales = extractArray<Sales>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading sales:', error);
+        checkAllLoaded();
+      }
+    });
+
+    this.lookupService.getSquadreInstallazione().subscribe({
+      next: (response: any) => {
+        this.squadreInstallazione = extractArray<SquadraInstallazione>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading squadre installazione:', error);
+        checkAllLoaded();
+      }
+    });
+  }
+
+  // Helper functions to convert ID to name
+  getTeamTecnicoName(id?: string): string {
+    if (!id) return '-';
+    if (this.teamTecnici.length === 0) return id;
+    const team = this.teamTecnici.find(t => t.id === id || t.nome === id);
+    return team?.nome || id;
+  }
+
+  getTeamAPLName(id?: string): string {
+    if (!id) return '-';
+    if (this.teamAPL.length === 0) return id;
+    const team = this.teamAPL.find(t => t.id === id || t.nome === id);
+    return team?.nome || id;
+  }
+
+  getSalesName(id?: string): string {
+    if (!id) return '-';
+    if (this.sales.length === 0) return id;
+    const salesItem = this.sales.find(s => s.id === id || s.nome === id);
+    return salesItem?.nome || id;
+  }
+
+  getProjectManagerName(id?: string): string {
+    if (!id) return '-';
+    if (this.projectManagers.length === 0) return id;
+    const pm = this.projectManagers.find(p => p.id === id || p.nome === id);
+    return pm?.nome || id;
+  }
+
+  getTeamInstallazioneName(id?: string): string {
+    if (!id) return '-';
+    if (this.squadreInstallazione.length === 0) return id;
+    const squadra = this.squadreInstallazione.find(s => s.id === id || s.nome === id);
+    return squadra?.nome || id;
   }
 
   loadProjects() {
@@ -184,18 +299,25 @@ export class ProjectList implements OnInit {
     }
     
     this.filteredProjects = this.projects.filter(project => {
-      return (
+      // Check direct fields
+      const directMatch = (
         project.numeroProgetto?.toLowerCase().includes(filterValue) ||
         project.cliente?.toLowerCase().includes(filterValue) ||
         project.nomeProgetto?.toLowerCase().includes(filterValue) ||
         project.citta?.toLowerCase().includes(filterValue) ||
-        project.stato?.toLowerCase().includes(filterValue) ||
-        project.teamTecnico?.toLowerCase().includes(filterValue) ||
-        project.teamAPL?.toLowerCase().includes(filterValue) ||
-        project.sales?.toLowerCase().includes(filterValue) ||
-        project.projectManager?.toLowerCase().includes(filterValue) ||
-        project.teamInstallazione?.toLowerCase().includes(filterValue)
+        project.stato?.toLowerCase().includes(filterValue)
       );
+      
+      // Check lookup fields by name (convert ID to name for search)
+      const lookupMatch = (
+        this.getTeamTecnicoName(project.teamTecnico).toLowerCase().includes(filterValue) ||
+        this.getTeamAPLName(project.teamAPL).toLowerCase().includes(filterValue) ||
+        this.getSalesName(project.sales).toLowerCase().includes(filterValue) ||
+        this.getProjectManagerName(project.projectManager).toLowerCase().includes(filterValue) ||
+        this.getTeamInstallazioneName(project.teamInstallazione).toLowerCase().includes(filterValue)
+      );
+      
+      return directMatch || lookupMatch;
     });
   }
 

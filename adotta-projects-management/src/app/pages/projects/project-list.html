@@ -97,8 +97,29 @@
               <span *ngIf="col.field === 'quantitaTotaleFt'">
                 {{ getTotalFt(project).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}
               </span>
+              <!-- Lookup columns - convert ID to name -->
+              <span *ngIf="col.field === 'teamTecnico'">
+                <p-skeleton *ngIf="loadingLookupData" height="1rem" width="80%"></p-skeleton>
+                <span *ngIf="!loadingLookupData">{{ getTeamTecnicoName(project.teamTecnico) }}</span>
+              </span>
+              <span *ngIf="col.field === 'teamAPL'">
+                <p-skeleton *ngIf="loadingLookupData" height="1rem" width="80%"></p-skeleton>
+                <span *ngIf="!loadingLookupData">{{ getTeamAPLName(project.teamAPL) }}</span>
+              </span>
+              <span *ngIf="col.field === 'sales'">
+                <p-skeleton *ngIf="loadingLookupData" height="1rem" width="80%"></p-skeleton>
+                <span *ngIf="!loadingLookupData">{{ getSalesName(project.sales) }}</span>
+              </span>
+              <span *ngIf="col.field === 'projectManager'">
+                <p-skeleton *ngIf="loadingLookupData" height="1rem" width="80%"></p-skeleton>
+                <span *ngIf="!loadingLookupData">{{ getProjectManagerName(project.projectManager) }}</span>
+              </span>
+              <span *ngIf="col.field === 'teamInstallazione'">
+                <p-skeleton *ngIf="loadingLookupData" height="1rem" width="80%"></p-skeleton>
+                <span *ngIf="!loadingLookupData">{{ getTeamInstallazioneName(project.teamInstallazione) }}</span>
+              </span>
               <!-- Default columns -->
-              <span *ngIf="col.field !== 'dataInizioInstallazione' && col.field !== 'dataFineInstallazione' && col.field !== 'quantitaTotaleMq' && col.field !== 'quantitaTotaleFt' && col.field !== 'stato'">
+              <span *ngIf="col.field !== 'dataInizioInstallazione' && col.field !== 'dataFineInstallazione' && col.field !== 'quantitaTotaleMq' && col.field !== 'quantitaTotaleFt' && col.field !== 'stato' && col.field !== 'teamTecnico' && col.field !== 'teamAPL' && col.field !== 'sales' && col.field !== 'projectManager' && col.field !== 'teamInstallazione'">
                 {{ project[col.field] || '-' }}
               </span>
             </ng-container>

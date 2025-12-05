@@ -11,15 +11,18 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { TimesheetService } from '../../services/timesheet.service';
+import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { ServiceConfigurationService } from '../../services/service-configuration.service';
 import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
 import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, ProjectStatus, MessaggioProgetto } from '../../models/project.model';
 import { TimesheetOverview } from '../../models/timesheet.model';
+import { TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione } from '../../models/lookup.model';
 
 export interface ChatMessage {
   id: string;
@@ -52,7 +55,8 @@ export interface ModificaRaggruppata {
     TextareaModule,
     SelectModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    SkeletonModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './project-detail.html',
@@ -85,6 +89,14 @@ export class ProjectDetail implements OnInit {
     { label: 'Tutte', value: 'tutte' }
   ];
 
+  // Lookup data for displaying names
+  teamTecnici: TeamTecnico[] = [];
+  teamAPL: TeamAPL[] = [];
+  sales: Sales[] = [];
+  projectManagers: ProjectManager[] = [];
+  squadreInstallazione: SquadraInstallazione[] = [];
+  loadingLookupData = true;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -105,9 +117,15 @@ export class ProjectDetail implements OnInit {
 
   private projectService: ProjectService | any;
   private timesheetService: TimesheetService | MockTimesheetService;
-  
+  private lookupService: LookupService | any;
 
   ngOnInit() {
+    // Use services based on configuration (mock or real API)
+    this.lookupService = this.serviceProvider.provideLookupService();
+    
+    // Load lookup data for displaying names
+    this.loadLookupData();
+    
     // Get current user from auth service
     const user = this.authService.getCurrentUser();
     this.currentUser = user ? this.authService.getFullName() : 'Utente Anonimo';
@@ -118,6 +136,122 @@ export class ProjectDetail implements OnInit {
         this.loadProject(numeroProgetto);
       }
     });
+  }
+
+  loadLookupData() {
+    this.loadingLookupData = true;
+    let completedRequests = 0;
+    const totalRequests = 5;
+
+    // Helper function to extract array from either direct array or paginated response
+    const extractArray = <T>(response: T[] | { items: T[] } | any): T[] => {
+      if (Array.isArray(response)) {
+        return response;
+      }
+      if (response && typeof response === 'object' && 'items' in response && Array.isArray(response.items)) {
+        return response.items;
+      }
+      return [];
+    };
+
+    const checkAllLoaded = () => {
+      completedRequests++;
+      if (completedRequests === totalRequests) {
+        this.loadingLookupData = false;
+      }
+    };
+
+    this.lookupService.getTeamTecnici().subscribe({
+      next: (response: any) => {
+        this.teamTecnici = extractArray<TeamTecnico>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading team tecnici:', error);
+        checkAllLoaded();
+      }
+    });
+
+    this.lookupService.getTeamAPL().subscribe({
+      next: (response: any) => {
+        this.teamAPL = extractArray<TeamAPL>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading team APL:', error);
+        checkAllLoaded();
+      }
+    });
+
+    this.lookupService.getSales().subscribe({
+      next: (response: any) => {
+        this.sales = extractArray<Sales>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading sales:', error);
+        checkAllLoaded();
+      }
+    });
+
+    this.lookupService.getProjectManagers().subscribe({
+      next: (response: any) => {
+        this.projectManagers = extractArray<ProjectManager>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading project managers:', error);
+        checkAllLoaded();
+      }
+    });
+
+    this.lookupService.getSquadreInstallazione().subscribe({
+      next: (response: any) => {
+        this.squadreInstallazione = extractArray<SquadraInstallazione>(response);
+        checkAllLoaded();
+      },
+      error: (error: any) => {
+        console.error('Error loading squadre installazione:', error);
+        checkAllLoaded();
+      }
+    });
+  }
+
+  // Helper functions to convert ID to name
+  getTeamTecnicoName(id?: string): string {
+    if (!id) return '-';
+    // Handle backward compatibility: if id is actually a name, return it
+    if (this.teamTecnici.length === 0) return id;
+    const team = this.teamTecnici.find(t => t.id === id || t.nome === id);
+    return team?.nome || id;
+  }
+
+  getTeamAPLName(id?: string): string {
+    if (!id) return '-';
+    if (this.teamAPL.length === 0) return id;
+    const team = this.teamAPL.find(t => t.id === id || t.nome === id);
+    return team?.nome || id;
+  }
+
+  getSalesName(id?: string): string {
+    if (!id) return '-';
+    if (this.sales.length === 0) return id;
+    const salesItem = this.sales.find(s => s.id === id || s.nome === id);
+    return salesItem?.nome || id;
+  }
+
+  getProjectManagerName(id?: string): string {
+    if (!id) return '-';
+    if (this.projectManagers.length === 0) return id;
+    const pm = this.projectManagers.find(p => p.id === id || p.nome === id);
+    return pm?.nome || id;
+  }
+
+  getTeamInstallazioneName(id?: string): string {
+    if (!id) return '-';
+    if (this.squadreInstallazione.length === 0) return id;
+    const squadra = this.squadreInstallazione.find(s => s.id === id || s.nome === id);
+    return squadra?.nome || id;
   }
 
   loadProject(numeroProgetto: string) {

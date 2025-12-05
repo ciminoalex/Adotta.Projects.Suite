@@ -23,15 +23,25 @@
         </div>
         <!-- Project details -->
         <div>
-          <h1 class="text-900 font-bold text-2xl m-0 mb-2">
-            {{ project?.numeroProgetto }} - {{ project?.nomeProgetto }}
-          </h1>
-          <div class="flex items-center gap-4">
-            <p-tag [value]="project?.statoProgetto" 
-                   [severity]="getStatusSeverity(project?.statoProgetto)">
-            </p-tag>
-            <span class="text-500">{{ project?.cliente }}</span>
-            <span class="text-500">{{ project?.citta }}, {{ project?.stato }}</span>
+          <div *ngIf="loading || !project">
+            <p-skeleton height="2rem" width="60%" class="mb-2"></p-skeleton>
+            <div class="flex items-center gap-4 mt-2">
+              <p-skeleton height="1.5rem" width="100px"></p-skeleton>
+              <p-skeleton height="1rem" width="150px"></p-skeleton>
+              <p-skeleton height="1rem" width="120px"></p-skeleton>
+            </div>
+          </div>
+          <div *ngIf="!loading && project">
+            <h1 class="text-900 font-bold text-2xl m-0 mb-2">
+              {{ project?.numeroProgetto }} - {{ project?.nomeProgetto }}
+            </h1>
+            <div class="flex items-center gap-4">
+              <p-tag [value]="project?.statoProgetto" 
+                     [severity]="getStatusSeverity(project?.statoProgetto)">
+              </p-tag>
+              <span class="text-500">{{ project?.cliente }}</span>
+              <span class="text-500">{{ project?.citta }}, {{ project?.stato }}</span>
+            </div>
           </div>
         </div>
       </p-card>
@@ -40,7 +50,33 @@
     <!-- Informazioni Generali -->
     <div class="col-span-12 lg:col-span-6 mb-4">
     <p-card header="Dati Principali">
-      <div class="grid grid-cols-2 gap-4">
+      <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.5rem" width="100px"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+      </div>
+      <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-500 text-sm">Numero Progetto</label>
           <div class="font-bold">{{ project?.numeroProgetto }}</div>
@@ -75,26 +111,63 @@
 
     <div class="col-span-12 lg:col-span-6 mb-4">
       <p-card header="Team e Responsabilità">
-      <div class="grid grid-cols-2 gap-4">
+      <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.5rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.5rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.5rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.5rem" width="80%"></p-skeleton>
+        </div>
+        <div class="col-span-2">
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.5rem" width="80%"></p-skeleton>
+        </div>
+      </div>
+      <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-500 text-sm">Project Manager</label>
-          <div class="font-bold">{{ project?.projectManager || '-' }}</div>
+          <div class="font-bold">
+            <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
+            <span *ngIf="!loadingLookupData">{{ getProjectManagerName(project?.projectManager) }}</span>
+          </div>
         </div>
         <div>
           <label class="text-500 text-sm">Team Tecnico</label>
-          <div class="font-bold">{{ project?.teamTecnico || '-' }}</div>
+          <div class="font-bold">
+            <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
+            <span *ngIf="!loadingLookupData">{{ getTeamTecnicoName(project?.teamTecnico) }}</span>
+          </div>
         </div>
         <div>
           <label class="text-500 text-sm">Team APL</label>
-          <div class="font-bold">{{ project?.teamAPL || '-' }}</div>
+          <div class="font-bold">
+            <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
+            <span *ngIf="!loadingLookupData">{{ getTeamAPLName(project?.teamAPL) }}</span>
+          </div>
         </div>
         <div>
           <label class="text-500 text-sm">Sales</label>
-          <div class="font-bold">{{ project?.sales || '-' }}</div>
+          <div class="font-bold">
+            <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
+            <span *ngIf="!loadingLookupData">{{ getSalesName(project?.sales) }}</span>
+          </div>
         </div>
         <div class="col-span-2">
           <label class="text-500 text-sm">Team Installazione</label>
-          <div class="font-bold">{{ project?.teamInstallazione || '-' }}</div>
+          <div class="font-bold">
+            <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
+            <span *ngIf="!loadingLookupData">{{ getTeamInstallazioneName(project?.teamInstallazione) }}</span>
+          </div>
         </div>
       </div>
     </p-card>
@@ -102,7 +175,25 @@
 
     <div class="col-span-12 lg:col-span-6 mb-4">
       <p-card header="Pianificazione">
-      <div class="grid grid-cols-2 gap-4">
+      <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="80%"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="60px"></p-skeleton>
+        </div>
+      </div>
+      <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-500 text-sm">Data Creazione</label>
           <div class="font-bold">{{ project?.dataCreazione | date:'dd/MM/yyyy' }}</div>
@@ -127,7 +218,21 @@
 
     <div class="col-span-12 lg:col-span-6 mb-4">
       <p-card header="Ore Rendicontate">
-      <div class="grid grid-cols-2 gap-4">
+      <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="2rem" width="80px"></p-skeleton>
+        </div>
+        <div>
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="60px"></p-skeleton>
+        </div>
+        <div class="col-span-2">
+          <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
+          <p-skeleton height="1.25rem" width="150px"></p-skeleton>
+        </div>
+      </div>
+      <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-500 text-sm">Totale Ore</label>
           <div class="font-bold text-2xl">{{ totaleOreRendicontate }} h</div>
@@ -151,10 +256,17 @@
     <p-card>
       <div class="flex justify-between items-center mb-4">
         <h4 class="text-900 font-bold">Livelli del Progetto</h4>
-        <span class="p-tag p-tag-info">{{ livelli.length }} livelli</span>
+        <span *ngIf="!loading && project" class="p-tag p-tag-info">{{ livelli.length }} livelli</span>
+        <p-skeleton *ngIf="loading || !project" height="1.5rem" width="80px"></p-skeleton>
       </div>
 
-      <p-table [value]="livelli" styleClass="p-datatable-sm">
+      <div *ngIf="loading || !project" class="space-y-3">
+        <p-skeleton height="2.5rem" width="100%" class="mb-2"></p-skeleton>
+        <p-skeleton height="2.5rem" width="100%" class="mb-2"></p-skeleton>
+        <p-skeleton height="2.5rem" width="100%"></p-skeleton>
+      </div>
+
+      <p-table *ngIf="!loading && project" [value]="livelli" styleClass="p-datatable-sm">
         <ng-template pTemplate="header">
           <tr>
             <th style="width: 40px"></th>
@@ -239,7 +351,7 @@
       <p-card>
         <div class="flex justify-between items-center mb-4">
           <h4 class="text-900 font-bold">Registro Modifiche Progetto</h4>
-          <div class="flex items-center gap-3">
+          <div *ngIf="!loading && project" class="flex items-center gap-3">
             <span class="p-tag p-tag-info">{{ modificheRaggruppate.length }} istanze</span>
             <div class="flex items-center gap-2">
               <label class="text-sm text-500">Visualizza:</label>
@@ -253,9 +365,19 @@
               </p-select>
             </div>
           </div>
+          <div *ngIf="loading || !project" class="flex items-center gap-3">
+            <p-skeleton height="1.5rem" width="100px"></p-skeleton>
+            <p-skeleton height="2rem" width="120px"></p-skeleton>
+          </div>
         </div>
 
-        <p-table [value]="getModificheFiltrate()" styleClass="p-datatable-sm">
+        <div *ngIf="loading || !project" class="space-y-3">
+          <p-skeleton height="3rem" width="100%" class="mb-2"></p-skeleton>
+          <p-skeleton height="3rem" width="100%" class="mb-2"></p-skeleton>
+          <p-skeleton height="3rem" width="100%"></p-skeleton>
+        </div>
+
+        <p-table *ngIf="!loading && project" [value]="getModificheFiltrate()" styleClass="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
               <th style="width: 40px"></th>

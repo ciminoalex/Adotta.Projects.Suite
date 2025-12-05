@@ -378,6 +378,44 @@ export class ProjectForm implements OnInit {
             }
           }
           
+          // Set lookup IDs in form - if the project has names, find the corresponding IDs
+          // This handles backward compatibility: if the project has names instead of IDs,
+          // we find the matching lookup by name and set the ID
+          if (formData.teamTecnico) {
+            const teamTecnico = this.teamTecnici.find(t => t.id === formData.teamTecnico || t.nome === formData.teamTecnico);
+            if (teamTecnico?.id) {
+              this.projectForm.patchValue({ teamTecnico: teamTecnico.id });
+            }
+          }
+          
+          if (formData.teamAPL) {
+            const teamAPL = this.teamAPL.find(t => t.id === formData.teamAPL || t.nome === formData.teamAPL);
+            if (teamAPL?.id) {
+              this.projectForm.patchValue({ teamAPL: teamAPL.id });
+            }
+          }
+          
+          if (formData.sales) {
+            const sales = this.sales.find(s => s.id === formData.sales || s.nome === formData.sales);
+            if (sales?.id) {
+              this.projectForm.patchValue({ sales: sales.id });
+            }
+          }
+          
+          if (formData.projectManager) {
+            const pm = this.projectManagers.find(p => p.id === formData.projectManager || p.nome === formData.projectManager);
+            if (pm?.id) {
+              this.projectForm.patchValue({ projectManager: pm.id });
+            }
+          }
+          
+          if (formData.teamInstallazione) {
+            const squadra = this.squadreInstallazione.find(s => s.id === formData.teamInstallazione || s.nome === formData.teamInstallazione);
+            if (squadra?.id) {
+              this.projectForm.patchValue({ teamInstallazione: squadra.id });
+            }
+          }
+          
           // Load levels and products from project data
           // Ora i prodotti sono subordinati ai livelli
           const livelliWithProdotti = (project.livelli || []).map(livello => {
