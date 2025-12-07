@@ -490,7 +490,9 @@ export class ProjectDetail implements OnInit {
       case ProjectStatus.TO_CHECK: return 'info';
       case ProjectStatus.UPCOMING: return 'info';
       case ProjectStatus.PUSHED_OUT: return 'success';
-      case ProjectStatus.ON_BID: return 'warning';
+      case ProjectStatus.TO_BE_ASSIGNED: return 'warning';
+      case ProjectStatus.ON_HOLD: return 'warning';
+      case ProjectStatus.COMPLETED: return 'success';
       default: return 'secondary';
     }
   }

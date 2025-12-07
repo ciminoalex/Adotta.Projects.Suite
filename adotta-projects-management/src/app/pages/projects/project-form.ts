@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -89,7 +89,9 @@ export class ProjectForm implements OnInit {
     { label: 'TO CHECK', value: ProjectStatus.TO_CHECK },
     { label: 'UPCOMING', value: ProjectStatus.UPCOMING },
     { label: 'PUSHED OUT', value: ProjectStatus.PUSHED_OUT },
-    { label: 'ON BID', value: ProjectStatus.ON_BID }
+    { label: 'TO BE ASSIGNED', value: ProjectStatus.TO_BE_ASSIGNED },
+    { label: 'ON HOLD', value: ProjectStatus.ON_HOLD },
+    { label: 'COMPLETED', value: ProjectStatus.COMPLETED }
   ];
 
   // Mapping between ProjectStatus enum string and integer (as per C# enum order)
@@ -102,7 +104,9 @@ export class ProjectForm implements OnInit {
       [ProjectStatus.TO_CHECK]: 4,
       [ProjectStatus.UPCOMING]: 5,
       [ProjectStatus.PUSHED_OUT]: 6,
-      [ProjectStatus.ON_BID]: 7
+      [ProjectStatus.TO_BE_ASSIGNED]: 7,
+      [ProjectStatus.ON_HOLD]: 8,
+      [ProjectStatus.COMPLETED]: 9
     };
     return mapping[status] ?? 0;
   }
@@ -117,7 +121,9 @@ export class ProjectForm implements OnInit {
       4: ProjectStatus.TO_CHECK,
       5: ProjectStatus.UPCOMING,
       6: ProjectStatus.PUSHED_OUT,
-      7: ProjectStatus.ON_BID
+      7: ProjectStatus.TO_BE_ASSIGNED,
+      8: ProjectStatus.ON_HOLD,
+      9: ProjectStatus.COMPLETED
     };
     return mapping[value] ?? ProjectStatus.UPCOMING;
   }
@@ -858,11 +864,11 @@ export class ProjectForm implements OnInit {
     this.editingProduct = undefined;
     this.productForm = this.fb.group({
       tipoProdotto: ['', Validators.required],
-      variante: ['', Validators.required],
-      qMq: [0, [Validators.required, Validators.min(0)]],
-      qFt: [0, [Validators.required, Validators.min(0)]],
+      variante: [''], // Non più obbligatorio
+      qMq: [0, [Validators.min(0)]], // Non più obbligatorio
+      qFt: [0, [Validators.min(0)]], // Non più obbligatorio
       livelloId: [targetLivello.id, Validators.required] // Memorizza il livelloId
-    });
+    }, { validators: this.validateProductQuantities }); // Validatore custom per quantità
     this.showProductDialog = true;
     // Memorizza il livello target per quando si salva (usa finalLivello se disponibile, altrimenti targetLivello)
     const livelloToStore = livelloIndex !== -1 ? this.livelli[livelloIndex] : finalLivello;
@@ -876,19 +882,32 @@ export class ProjectForm implements OnInit {
     
     this.productForm = this.fb.group({
       tipoProdotto: [prodotto.tipoProdotto, Validators.required],
-      variante: [prodotto.variante, Validators.required],
-      qMq: [prodotto.qMq, [Validators.required, Validators.min(0)]],
-      qFt: [prodotto.qFt, [Validators.required, Validators.min(0)]],
+      variante: [prodotto.variante], // Non più obbligatorio
+      qMq: [prodotto.qMq, [Validators.min(0)]], // Non più obbligatorio
+      qFt: [prodotto.qFt, [Validators.min(0)]], // Non più obbligatorio
       livelloId: [prodotto.livelloId, Validators.required]
-    });
+    }, { validators: this.validateProductQuantities }); // Validatore custom per quantità
     this.showProductDialog = true;
     // Memorizza il livello target
     (this.productForm as any).targetLivello = livello;
   }
 
   saveProduct() {
-    if (this.productForm?.valid) {
+    // Verifica validità del form e che almeno una quantità sia compilata
+    if (this.productForm?.valid && !this.productForm?.hasError('quantityRequired')) {
       const productData = this.productForm.value;
+      
+      // Verifica che almeno una quantità sia > 0
+      const qMq = productData.qMq || 0;
+      const qFt = productData.qFt || 0;
+      if (qMq <= 0 && qFt <= 0) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Attenzione',
+          detail: 'È obbligatorio compilare almeno una quantità tra m² o ft'
+        });
+        return;
+      }
       let targetLivello = (this.productForm as any).targetLivello;
       
       // Se targetLivello non è impostato, prova a trovarlo usando livelloId
@@ -1014,5 +1033,18 @@ export class ProjectForm implements OnInit {
         });
       }
     });
+  }
+
+  // Validatore custom: richiede almeno una quantità tra m² o ft
+  validateProductQuantities(control: AbstractControl): ValidationErrors | null {
+    const qMq = control.get('qMq')?.value || 0;
+    const qFt = control.get('qFt')?.value || 0;
+    
+    // Almeno una delle due quantità deve essere > 0
+    if (qMq <= 0 && qFt <= 0) {
+      return { quantityRequired: true };
+    }
+    
+    return null;
   }
 }

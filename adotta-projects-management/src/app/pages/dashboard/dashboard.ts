@@ -83,7 +83,9 @@ export class Dashboard implements OnInit {
       case ProjectStatus.TO_CHECK: return 'bg-pink-200';
       case ProjectStatus.UPCOMING: return 'bg-purple-200';
       case ProjectStatus.PUSHED_OUT: return 'bg-green-500';
-      case ProjectStatus.ON_BID: return 'bg-purple-600';
+      case ProjectStatus.TO_BE_ASSIGNED: return 'bg-yellow-500';
+      case ProjectStatus.ON_HOLD: return 'bg-orange-500';
+      case ProjectStatus.COMPLETED: return 'bg-green-600';
       default: return 'bg-gray-500';
     }
   }
@@ -97,7 +99,9 @@ export class Dashboard implements OnInit {
       case ProjectStatus.TO_CHECK: return 'p-tag-info';
       case ProjectStatus.UPCOMING: return 'p-tag-info';
       case ProjectStatus.PUSHED_OUT: return 'p-tag-success';
-      case ProjectStatus.ON_BID: return 'p-tag-warning';
+      case ProjectStatus.TO_BE_ASSIGNED: return 'p-tag-warning';
+      case ProjectStatus.ON_HOLD: return 'p-tag-warning';
+      case ProjectStatus.COMPLETED: return 'p-tag-success';
       default: return 'p-tag-secondary';
     }
   }

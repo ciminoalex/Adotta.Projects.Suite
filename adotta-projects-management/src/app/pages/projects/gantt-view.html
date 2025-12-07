@@ -47,6 +47,16 @@
       </div>
       <div class="gantt-timeline-scroll" #timelineScroll (scroll)="onTimelineScroll($event)">
         <div class="gantt-timeline-labels" [style.width.px]="getTimelineWidth()" [style.min-width.px]="getTimelineWidth()">
+          <!-- Header giorni settimana -->
+          <div class="gantt-weekday-header" [style.width.px]="getTimelineWidth()" [style.min-width.px]="getTimelineWidth()">
+            <div *ngFor="let day of getTimelineDays(); let i = index" 
+                 class="gantt-weekday-cell"
+                 [class.weekend]="day.getDay() === 0 || day.getDay() === 6"
+                 [style.left.px]="i * dayWidth"
+                 [style.width.px]="dayWidth">
+              <div class="weekday-label">{{ getWeekdayLabel(day) }}</div>
+            </div>
+          </div>
           <!-- Celle giornaliere -->
           <div *ngFor="let day of getTimelineDays(); let i = index" 
                class="gantt-day-cell"
@@ -75,10 +85,10 @@
         <!-- Row Header -->
         <div class="gantt-row-header" style="width: 300px;">
           <div class="p-2">
-            <div class="font-bold text-sm">{{ row.numeroProgetto }}</div>
+            <div class="font-bold text-sm">{{ row.nomeProgetto || row.numeroProgetto }}</div>
             <div class="text-xs text-500 mt-1">{{ row.nomeLivello }}</div>
-            <div class="text-xs text-600 mt-1" *ngIf="row.teamTecnico">
-              <i class="pi pi-users mr-1"></i>{{ row.teamTecnico }}
+            <div class="text-xs text-600 mt-1" *ngIf="row.teamInstallazione">
+              <i class="pi pi-users mr-1"></i>{{ row.teamInstallazione }}
             </div>
           </div>
         </div>
@@ -102,7 +112,7 @@
                  [class.overdue]="isOverdue(row)"
                  [style.left.px]="getBarLeft(row)"
                  [style.width.px]="getBarWidth(row)"
-                 [style.background-color]="getTeamColor(row.teamTecnico)"
+                 [style.background-color]="getTeamColor(row.teamInstallazione)"
                  [pTooltip]="row.numeroProgetto + ' - ' + row.nomeLivello + ': ' + formatDate(row.dataInizio) + ' / ' + formatDate(row.dataFine)"
                  tooltipPosition="top"
                  (click)="onBarClick(row, $event)">
@@ -119,7 +129,7 @@
                  [class.overdue]="isOverdue(row)"
                  [style.left.px]="getBarLeft(row)"
                  [style.width.px]="getBarWidth(row)"
-                 [style.background-color]="getTeamColor(row.teamTecnico)"
+                 [style.background-color]="getTeamColor(row.teamInstallazione)"
                  [pTooltip]="row.numeroProgetto + ' - ' + row.nomeLivello + ': ' + formatDate(row.dataInizio || row.dataFine)"
                  tooltipPosition="top"
                  (click)="onBarClick(row, $event)">

@@ -77,7 +77,9 @@ export class ProjectList implements OnInit {
     { label: 'TO CHECK', value: ProjectStatus.TO_CHECK },
     { label: 'UPCOMING', value: ProjectStatus.UPCOMING },
     { label: 'PUSHED OUT', value: ProjectStatus.PUSHED_OUT },
-    { label: 'ON BID', value: ProjectStatus.ON_BID }
+    { label: 'TO BE ASSIGNED', value: ProjectStatus.TO_BE_ASSIGNED },
+    { label: 'ON HOLD', value: ProjectStatus.ON_HOLD },
+    { label: 'COMPLETED', value: ProjectStatus.COMPLETED }
   ];
 
   clienti: Cliente[] = [];
@@ -280,8 +282,12 @@ export class ProjectList implements OnInit {
     this.loading = true;
     this.projectService.getProjects().subscribe({
       next: (projects: Project[]) => {
-        this.projects = projects;
-        this.filteredProjects = projects;
+        // Aggiungi proprietà expanded a ogni progetto per gestire l'accordion
+        this.projects = projects.map(project => ({
+          ...project,
+          expanded: false
+        }));
+        this.filteredProjects = this.projects.map(p => ({ ...p }));
         this.loading = false;
       },
       error: (error: any) => {
@@ -289,6 +295,19 @@ export class ProjectList implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  toggleProjectExpansion(project: Project) {
+    // Trova il progetto nell'array e toggle expanded
+    const projectIndex = this.filteredProjects.findIndex(p => p.numeroProgetto === project.numeroProgetto);
+    if (projectIndex !== -1) {
+      const currentExpanded = this.filteredProjects[projectIndex].expanded || false;
+      this.filteredProjects[projectIndex].expanded = !currentExpanded;
+    }
+  }
+
+  hasMultipleLevels(project: Project): boolean {
+    return !!(project.livelli && project.livelli.length > 1);
   }
 
   filterGlobal(event: any) {
@@ -440,7 +459,9 @@ export class ProjectList implements OnInit {
       case ProjectStatus.TO_CHECK: return 'info';
       case ProjectStatus.UPCOMING: return 'info';
       case ProjectStatus.PUSHED_OUT: return 'success';
-      case ProjectStatus.ON_BID: return 'warning';
+      case ProjectStatus.TO_BE_ASSIGNED: return 'warning';
+      case ProjectStatus.ON_HOLD: return 'warning';
+      case ProjectStatus.COMPLETED: return 'success';
       default: return 'secondary';
     }
   }
@@ -453,7 +474,9 @@ export class ProjectList implements OnInit {
       case ProjectStatus.TO_CHECK: return 'background-color: #f8d7da; color: #721c24;';
       case ProjectStatus.UPCOMING: return 'background-color: #d1ecf1; color: #0c5460;';
       case ProjectStatus.PUSHED_OUT: return 'background-color: #d4edda; color: #155724;';
-      case ProjectStatus.ON_BID: return 'background-color: #6f42c1; color: white;';
+      case ProjectStatus.TO_BE_ASSIGNED: return 'background-color: #ffc107; color: #000;';
+      case ProjectStatus.ON_HOLD: return 'background-color: #fd7e14; color: white;';
+      case ProjectStatus.COMPLETED: return 'background-color: #28a745; color: white;';
       default: return '';
     }
   }

@@ -4,7 +4,7 @@ import { Project, MessaggioProgetto, ChangeLog, LivelloProgetto, ProdottoProgett
 
 // Extended User interface with password for mock data - allineato con UserDto
 interface UserWithPassword {
-  id?: number;
+  code?: string;
   userCode?: string;
   password: string;
   email: string;
@@ -331,7 +331,7 @@ export class MockDataService {
   private initializeUsers() {
     this.users = [
       {
-        id: 1,
+        code: 'admin',
         userCode: 'admin',
         password: 'admin123',
         email: 'alessandro.cimino@mtf-srl.com',
@@ -341,7 +341,7 @@ export class MockDataService {
         isActive: true
       },
       {
-        id: 2,
+        code: 'manager',
         userCode: 'manager',
         password: 'manager123',
         email: 'manager@adotta.it',
@@ -351,7 +351,7 @@ export class MockDataService {
         isActive: true
       },
       {
-        id: 3,
+        code: 'user',
         userCode: 'user',
         password: 'user123',
         email: 'user@adotta.it',
@@ -1888,7 +1888,7 @@ export class MockDataService {
           dataFineInstallazione: new Date('2024-11-11'),
           versioneWIC: 'WIC-2.2',
           ultimaModifica: new Date('2024-03-18'),
-          statoProgetto: ProjectStatus.ON_BID,
+          statoProgetto: ProjectStatus.TO_BE_ASSIGNED,
           isInRitardo: false,
           note: 'Fase gara - valutazione'
         },
@@ -1908,7 +1908,7 @@ export class MockDataService {
           dataFineInstallazione: new Date('2024-12-15'),
           versioneWIC: 'WIC-2.5',
           ultimaModifica: new Date('2024-03-15'),
-          statoProgetto: ProjectStatus.ON_BID,
+          statoProgetto: ProjectStatus.TO_BE_ASSIGNED,
           isInRitardo: false
         },
         {
@@ -1927,7 +1927,7 @@ export class MockDataService {
           dataFineInstallazione: new Date('2024-10-24'),
           versioneWIC: 'WIC-2.1',
           ultimaModifica: new Date('2024-03-30'),
-          statoProgetto: ProjectStatus.ON_BID,
+          statoProgetto: ProjectStatus.TO_BE_ASSIGNED,
           isInRitardo: false
         },
         {
@@ -1946,7 +1946,7 @@ export class MockDataService {
           dataFineInstallazione: new Date('2024-07-30'),
           versioneWIC: 'WIC-3.0',
           ultimaModifica: new Date('2024-03-18'),
-          statoProgetto: ProjectStatus.ON_BID,
+          statoProgetto: ProjectStatus.TO_BE_ASSIGNED,
           isInRitardo: false
         },
         {
@@ -1965,7 +1965,7 @@ export class MockDataService {
           dataFineInstallazione: new Date('2024-09-25'),
           versioneWIC: 'WIC-3.3',
           ultimaModifica: new Date('2024-04-01'),
-          statoProgetto: ProjectStatus.ON_BID,
+          statoProgetto: ProjectStatus.TO_BE_ASSIGNED,
           isInRitardo: false
         }
       ];
@@ -2230,32 +2230,31 @@ export class MockDataService {
   }
 
   addUser(user: UserWithPassword): UserWithPassword {
-    const newId = Math.max(...this.users.map(u => u.id || 0), 0) + 1;
-    const newUser = { ...user, id: newId };
+    const newUser = { ...user, code: user.code || user.userCode || `user_${Date.now()}` };
     this.users.push(newUser);
     return newUser;
   }
 
-  updateUser(id: number, user: UserWithPassword): UserWithPassword {
-    const index = this.users.findIndex(u => u.id === id);
+  updateUser(code: string, user: UserWithPassword): UserWithPassword {
+    const index = this.users.findIndex(u => u.code === code || u.userCode === code);
     if (index !== -1) {
-      this.users[index] = { ...user, id };
+      this.users[index] = { ...user, code };
       return this.users[index];
     }
-    throw new Error(`User with id ${id} not found`);
+    throw new Error(`User with code ${code} not found`);
   }
 
-  deleteUser(id: number): void {
-    const index = this.users.findIndex(u => u.id === id);
+  deleteUser(code: string): void {
+    const index = this.users.findIndex(u => u.code === code || u.userCode === code);
     if (index !== -1) {
       this.users.splice(index, 1);
     } else {
-      throw new Error(`User with id ${id} not found`);
+      throw new Error(`User with code ${code} not found`);
     }
   }
 
-  findUser(id: number): UserWithPassword | undefined {
-    return this.users.find(u => u.id === id);
+  findUser(code: string): UserWithPassword | undefined {
+    return this.users.find(u => u.code === code || u.userCode === code);
   }
 }
 

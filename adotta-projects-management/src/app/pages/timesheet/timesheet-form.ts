@@ -108,8 +108,13 @@ export class TimesheetFormComponent implements OnInit {
         // Carica i livelli quando viene selezionato un progetto
         if (this.selectedProject) {
           this.loadLivelli(this.selectedProject.numeroProgetto);
-          // Rendi livelloId obbligatorio quando viene selezionato un progetto
-          this.timesheetForm.get('livelloId')?.setValidators([Validators.required]);
+          // Rendi livelloId obbligatorio SOLO se il progetto ha livelli
+          // Se il progetto non ha livelli, il campo rimane opzionale
+          if (this.selectedProject.livelli && this.selectedProject.livelli.length > 0) {
+            this.timesheetForm.get('livelloId')?.setValidators([Validators.required]);
+          } else {
+            this.timesheetForm.get('livelloId')?.clearValidators();
+          }
           this.timesheetForm.get('livelloId')?.updateValueAndValidity();
         }
       } else {
@@ -155,6 +160,17 @@ export class TimesheetFormComponent implements OnInit {
       next: (livelli) => {
         this.livelli = livelli;
         
+        // Aggiorna la validazione: se non ci sono livelli, rendi il campo opzionale
+        if (livelli.length === 0) {
+          this.timesheetForm.get('livelloId')?.clearValidators();
+          this.timesheetForm.get('livelloId')?.setValue(null);
+          this.timesheetForm.get('livelloId')?.updateValueAndValidity();
+        } else {
+          // Se ci sono livelli, rendi il campo obbligatorio
+          this.timesheetForm.get('livelloId')?.setValidators([Validators.required]);
+          this.timesheetForm.get('livelloId')?.updateValueAndValidity();
+        }
+        
         // Se è stato passato un livelloId da impostare (ad esempio durante il caricamento di un timesheet esistente)
         if (livelloIdToSet !== undefined) {
           const livelloExists = livelli.find(l => l.id === livelloIdToSet);
@@ -176,6 +192,9 @@ export class TimesheetFormComponent implements OnInit {
       error: (error) => {
         console.error('Errore nel caricamento livelli:', error);
         this.livelli = [];
+        // In caso di errore, rendi il campo opzionale
+        this.timesheetForm.get('livelloId')?.clearValidators();
+        this.timesheetForm.get('livelloId')?.updateValueAndValidity();
       }
     });
   }
@@ -218,8 +237,12 @@ export class TimesheetFormComponent implements OnInit {
       return;
     }
     
-    // Rendi livelloId obbligatorio quando c'è un progetto selezionato
-    this.timesheetForm.get('livelloId')?.setValidators([Validators.required]);
+    // Rendi livelloId obbligatorio SOLO se il progetto ha livelli
+    if (this.selectedProject.livelli && this.selectedProject.livelli.length > 0) {
+      this.timesheetForm.get('livelloId')?.setValidators([Validators.required]);
+    } else {
+      this.timesheetForm.get('livelloId')?.clearValidators();
+    }
     this.timesheetForm.get('livelloId')?.updateValueAndValidity();
     
     // Imposta i valori del form (eccetto livelloId che verrà impostato dopo il caricamento dei livelli)

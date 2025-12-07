@@ -3,7 +3,7 @@ import { Observable, of, delay } from 'rxjs';
 import { MockDataService } from './mock-data.service';
 
 export interface UserDto {
-  id?: number;
+  code?: string;
   userCode?: string;
   email: string;
   userName: string;
@@ -24,7 +24,8 @@ export class MockUserService {
 
   getUsers(): Observable<UserDto[]> {
     const users = this.mockData.getUsers().map(u => ({
-      id: u.id,
+      code: u.code,
+      userCode: u.userCode,
       userName: u.userName,
       email: u.email,
       ruolo: u.ruolo,
@@ -36,7 +37,8 @@ export class MockUserService {
 
   addUser(user: UserDto): Observable<UserDto> {
     const created = this.mockData.addUser({
-      id: undefined,
+      code: user.code || user.userCode,
+      userCode: user.userCode,
       userName: user.userName,
       password: user.password || 'changeme',
       email: user.email,
@@ -50,24 +52,27 @@ export class MockUserService {
   }
 
   updateUser(user: UserDto): Observable<UserDto> {
-    if (!user.id) throw new Error('Missing user id');
+    const userCode = user.code || user.userCode;
+    if (!userCode) throw new Error('Missing user code');
+    const existingUser = this.mockData.findUser(userCode);
     const toUpdate: any = {
-      id: user.id,
+      code: userCode,
+      userCode: user.userCode,
       userName: user.userName,
-      password: user.password || this.mockData.findUser(user.id!)?.password || 'changeme',
+      password: user.password || existingUser?.password || 'changeme',
       email: user.email,
       ruolo: user.ruolo,
       teamTecnico: user.teamTecnico,
       isActive: user.isActive
     };
-    const updated = this.mockData.updateUser(user.id, toUpdate);
+    const updated = this.mockData.updateUser(userCode, toUpdate);
     const dto: UserDto = { ...updated } as any;
     delete (dto as any).password;
     return of(dto).pipe(delay(150));
   }
 
-  deleteUser(id: number): Observable<void> {
-    this.mockData.deleteUser(id);
+  deleteUser(userCode: string): Observable<void> {
+    this.mockData.deleteUser(userCode);
     return of(void 0).pipe(delay(150));
   }
 }

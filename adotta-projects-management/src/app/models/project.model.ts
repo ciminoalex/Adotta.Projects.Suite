@@ -38,6 +38,9 @@ export interface Project {
   // Proprietà calcolate per le quantità totali dei prodotti
   quantitaTotaleMq?: number;
   quantitaTotaleFt?: number;
+  
+  // Proprietà UI per espansione (non viene salvata nel backend)
+  expanded?: boolean;
 }
 
 export interface LivelloProgetto {
@@ -111,5 +114,7 @@ export enum ProjectStatus {
   TO_CHECK = 'TO_CHECK',
   UPCOMING = 'UPCOMING',
   PUSHED_OUT = 'PUSHED_OUT',
-  ON_BID = 'ON_BID'
+  TO_BE_ASSIGNED = 'TO_BE_ASSIGNED',
+  ON_HOLD = 'ON_HOLD',
+  COMPLETED = 'COMPLETED'
 }

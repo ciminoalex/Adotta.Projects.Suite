@@ -38,14 +38,44 @@
 
 .gantt-timeline-labels {
   position: relative;
-  height: 50px;
+  height: 70px; /* Aumentato per includere header giorni settimana */
   flex-shrink: 0;
+}
+
+.gantt-weekday-header {
+  position: relative;
+  height: 20px;
+  border-bottom: 1px solid var(--p-border-color);
+  background: var(--p-surface-100);
+}
+
+.gantt-weekday-cell {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-left: 1px solid var(--p-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--p-surface-100);
+  min-width: 25px;
+}
+
+.gantt-weekday-cell.weekend {
+  background: var(--p-surface-200);
+}
+
+.weekday-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--p-text-color);
+  text-transform: uppercase;
 }
 
 .gantt-day-cell {
   position: absolute;
-  top: 0;
-  height: 100%;
+  top: 20px; /* Spazio per header giorni settimana */
+  height: calc(100% - 20px);
   border-left: 1px solid var(--p-border-color);
   display: flex;
   flex-direction: column;

@@ -15,8 +15,10 @@ import { Project, LivelloProgetto } from '../../models/project.model';
 
 interface GanttRow {
   numeroProgetto: string;
+  nomeProgetto?: string;
   nomeLivello: string;
   teamTecnico?: string;
+  teamInstallazione?: string;
   dataInizio?: Date;
   dataFine?: Date;
   progetto?: Project;
@@ -162,11 +164,17 @@ export class GanttView implements OnInit, AfterViewInit {
     this.ganttRows = [];
     const teamsSet = new Set<string>();
     
-    // Raccogli tutti i team unici
+    // Raccogli tutti i team unici (team installazione)
     for (const project of this.projects) {
-      if (project.livelli && project.livelli.length > 0) {
-        if (project.teamTecnico) {
-          teamsSet.add(project.teamTecnico);
+      if (project.teamInstallazione) {
+        teamsSet.add(project.teamInstallazione);
+      }
+      // Gestisci anche progetti senza livelli ma con date progetto
+      if (!project.livelli || project.livelli.length === 0) {
+        if (project.dataInizioInstallazione || project.dataFineInstallazione) {
+          if (project.teamInstallazione) {
+            teamsSet.add(project.teamInstallazione);
+          }
         }
       }
     }
@@ -180,18 +188,35 @@ export class GanttView implements OnInit, AfterViewInit {
     
     for (const project of this.projects) {
       if (project.livelli && project.livelli.length > 0) {
+        // Progetto con livelli: crea una riga per ogni livello
         for (const livello of project.livelli) {
           if (livello.dataInizioInstallazione || livello.dataFineInstallazione) {
             this.ganttRows.push({
               numeroProgetto: project.numeroProgetto,
+              nomeProgetto: project.nomeProgetto,
               nomeLivello: livello.nome,
               teamTecnico: project.teamTecnico,
+              teamInstallazione: project.teamInstallazione,
               dataInizio: livello.dataInizioInstallazione ? new Date(livello.dataInizioInstallazione) : undefined,
               dataFine: livello.dataFineInstallazione ? new Date(livello.dataFineInstallazione) : undefined,
               progetto: project,
               livello: livello
             });
           }
+        }
+      } else {
+        // Progetto senza livelli: usa le date del progetto stesso
+        if (project.dataInizioInstallazione || project.dataFineInstallazione) {
+          this.ganttRows.push({
+            numeroProgetto: project.numeroProgetto,
+            nomeProgetto: project.nomeProgetto,
+            nomeLivello: 'Progetto completo',
+            teamTecnico: project.teamTecnico,
+            teamInstallazione: project.teamInstallazione,
+            dataInizio: project.dataInizioInstallazione ? new Date(project.dataInizioInstallazione) : undefined,
+            dataFine: project.dataFineInstallazione ? new Date(project.dataFineInstallazione) : undefined,
+            progetto: project
+          });
         }
       }
     }
@@ -230,7 +255,7 @@ export class GanttView implements OnInit, AfterViewInit {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 
-  // Ottiene il colore per un team
+  // Ottiene il colore per un team (ora usa team installazione)
   getTeamColor(team: string | undefined): string {
     if (!team) {
       return 'var(--p-primary-color)'; // Colore di default se non c'è team
@@ -492,6 +517,13 @@ export class GanttView implements OnInit, AfterViewInit {
     }
     
     return days;
+  }
+
+  // Ottiene l'etichetta del giorno della settimana (M, T, W, T, F, S, S)
+  getWeekdayLabel(date: Date): string {
+    const dayOfWeek = date.getDay();
+    const labels = ['D', 'L', 'M', 'M', 'G', 'V', 'S']; // Domenica, Lunedì, Martedì, Mercoledì, Giovedì, Venerdì, Sabato
+    return labels[dayOfWeek];
   }
 
   // Ottiene le etichette principali per la timeline (ogni settimana o ogni giorno se range piccolo)

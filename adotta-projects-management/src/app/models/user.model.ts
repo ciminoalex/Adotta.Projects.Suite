@@ -1,7 +1,7 @@
 // Allineato con swagger.json API schemas (UserDto, LoginRequestDto, LoginResponseDto)
 
 export interface User {
-  id?: number;
+  code?: string;
   userCode?: string; // Codice utente (sostituisce username)
   email: string;
   userName: string; // Nome visualizzato
