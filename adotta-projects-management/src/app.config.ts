@@ -18,6 +18,7 @@ import {
   MSALGuardConfigFactory, 
   MSALInterceptorConfigFactory
 } from './app/config/msal.config';
+import { TranslationService } from './app/services/translation.service';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -39,6 +40,15 @@ export const appConfig: ApplicationConfig = {
           useFactory: MSALInterceptorConfigFactory
         },
         MsalService,
+        // Inizializza il servizio di traduzione all'avvio
+        {
+          provide: APP_INITIALIZER,
+          useFactory: (translationService: TranslationService) => {
+            return () => translationService.initialize().toPromise();
+          },
+          deps: [TranslationService],
+          multi: true
+        },
         // Inizializza MSAL all'avvio dell'applicazione
         {
           provide: APP_INITIALIZER,

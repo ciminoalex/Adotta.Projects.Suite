@@ -10,11 +10,13 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
 import { AuthService } from '../../services/auth.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, ToastModule],
+    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, ToastModule, TranslatePipe],
     providers: [MessageService],
     template: `
         <p-toast></p-toast>
@@ -31,9 +33,9 @@ import { AuthService } from '../../services/auth.service';
                 </div>
 
                 <div class="z-20 text-white text-center px-12">
-                    <h1 class="text-5xl font-bold mb-4 tracking-tight" style="color: #ffffff !important;">ADOTTA ITALIA</h1>
+                    <h1 class="text-5xl font-bold mb-4 tracking-tight" style="color: #ffffff !important;">{{ 'auth.branding' | translate }}</h1>
                     <p class="text-xl text-primary-100 max-w-md mx-auto leading-relaxed" style="color: rgba(255,255,255,0.9);">
-                        Gestione progetti e risorse aziendali in un'unica suite integrata.
+                        {{ 'auth.brandingDescription' | translate }}
                     </p>
                 </div>
             </div>
@@ -43,38 +45,38 @@ import { AuthService } from '../../services/auth.service';
                 <div class="w-full max-w-md">
                     <!-- Mobile Logo -->
                     <div class="lg:hidden text-center mb-12">
-                        <div class="text-primary-600 text-3xl font-bold">ADOTTA ITALIA</div>
+                        <div class="text-primary-600 text-3xl font-bold">{{ 'auth.branding' | translate }}</div>
                     </div>
 
                     <div class="mb-10">
-                        <h2 class="text-3xl font-bold text-surface-900 dark:text-surface-0 mb-3">Bentornato</h2>
-                        <p class="text-muted-color text-lg">Accedi al tuo account per continuare</p>
+                        <h2 class="text-3xl font-bold text-surface-900 dark:text-surface-0 mb-3">{{ 'auth.welcome' | translate }}</h2>
+                        <p class="text-muted-color text-lg">{{ 'auth.loginMessage' | translate }}</p>
                     </div>
 
                     <div class="flex flex-col gap-6">
                         <div>
-                            <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Email</label>
-                            <input pInputText id="email" type="text" placeholder="nome@esempio.com" class="w-full p-3" [(ngModel)]="email" />
+                            <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ 'auth.email' | translate }}</label>
+                            <input pInputText id="email" type="text" [placeholder]="'auth.email' | translate" class="w-full p-3" [(ngModel)]="email" />
                         </div>
 
                         <div>
-                            <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Password</label>
-                            <p-password id="password" [(ngModel)]="password" placeholder="••••••••" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%', 'padding':'0.75rem'}" [feedback]="false"></p-password>
+                            <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ 'auth.password' | translate }}</label>
+                            <p-password id="password" [(ngModel)]="password" [placeholder]="'auth.password' | translate" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%', 'padding':'0.75rem'}" [feedback]="false"></p-password>
                         </div>
 
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <p-checkbox [(ngModel)]="checked" id="rememberme" binary="true"></p-checkbox>
-                                <label for="rememberme" class="text-surface-900 dark:text-surface-0">Ricordami</label>
+                                <label for="rememberme" class="text-surface-900 dark:text-surface-0">{{ 'auth.rememberMe' | translate }}</label>
                             </div>
-                            <a class="text-primary font-medium cursor-pointer hover:underline">Password dimenticata?</a>
+                            <a class="text-primary font-medium cursor-pointer hover:underline">{{ 'auth.forgotPassword' | translate }}</a>
                         </div>
 
-                        <p-button label="Accedi" styleClass="w-full p-3 text-lg" (click)="onLogin()" [loading]="loading"></p-button>
+                        <p-button [label]="'auth.signIn' | translate" styleClass="w-full p-3 text-lg" (click)="onLogin()" [loading]="loading"></p-button>
 
                         <div class="flex items-center gap-4 my-2">
                             <div class="flex-1 border-t border-surface-300 dark:border-surface-700"></div>
-                            <span class="text-muted-color text-sm">oppure</span>
+                            <span class="text-muted-color text-sm">{{ 'auth.or' | translate }}</span>
                             <div class="flex-1 border-t border-surface-300 dark:border-surface-700"></div>
                         </div>
 
@@ -91,13 +93,13 @@ import { AuthService } from '../../services/auth.service';
                                     <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
                                     <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
                                 </svg>
-                                <span class="font-bold">Accedi con Office365</span>
+                                <span class="font-bold">{{ 'auth.signInWithOffice365' | translate }}</span>
                             </ng-template>
                         </p-button>
                     </div>
                     
                     <div class="mt-12 text-center text-sm text-muted-color">
-                        &copy; 2025 Adotta Italia. Tutti i diritti riservati.
+                        {{ 'auth.copyright' | translate }}
                     </div>
                 </div>
             </div>
@@ -118,7 +120,8 @@ export class Login implements OnInit {
     constructor(
         private authService: AuthService,
         private router: Router,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private translationService: TranslationService
     ) { }
 
     ngOnInit() {
@@ -132,8 +135,8 @@ export class Login implements OnInit {
         if (!this.email || !this.password) {
             this.messageService.add({
                 severity: 'warn',
-                summary: 'Attenzione',
-                detail: 'Inserisci username e password'
+                summary: this.translationService.translate('messages.warning'),
+                detail: this.translationService.translate('validation.required')
             });
             return;
         }
@@ -144,8 +147,8 @@ export class Login implements OnInit {
             next: (response) => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Login effettuato',
-                    detail: 'Autenticazione riuscita'
+                    summary: this.translationService.translate('messages.success'),
+                    detail: this.translationService.translate('messages.saveSuccess')
                 });
 
                 // Navigate to dashboard after short delay
@@ -156,7 +159,7 @@ export class Login implements OnInit {
             },
             error: (error) => {
                 this.loading = false;
-                // Estrai il messaggio di errore in modo più affidabile
+                // Estrai il messaggio di errore in modo pi� affidabile
                 const errorMessage = error?.message || error?.error?.message || 'Errore durante il login. Riprovare.';
 
                 this.messageService.add({
@@ -176,8 +179,8 @@ export class Login implements OnInit {
             next: (response) => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Login effettuato',
-                    detail: `Autenticato come ${response.email}`
+                    summary: this.translationService.translate('messages.success'),
+                    detail: this.translationService.translate('messages.saveSuccess')
                 });
 
                 // Navigate to dashboard after short delay
@@ -188,11 +191,11 @@ export class Login implements OnInit {
             },
             error: (error) => {
                 this.loadingOffice365 = false;
-                const errorMessage = error?.message || 'Errore durante il login Office365. Riprovare.';
+                const errorMessage = error?.message || this.translationService.translate('messages.loadError');
 
                 this.messageService.add({
                     severity: 'error',
-                    summary: 'Errore di autenticazione',
+                    summary: this.translationService.translate('messages.error'),
                     detail: errorMessage,
                     life: 5000
                 });

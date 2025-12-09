@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +13,9 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
+import { Subscription } from 'rxjs';
 import { ProjectService } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { TimesheetService } from '../../services/timesheet.service';
@@ -56,13 +59,14 @@ export interface ModificaRaggruppata {
     SelectModule,
     ToastModule,
     ConfirmDialogModule,
-    SkeletonModule
+    SkeletonModule,
+    TranslatePipe
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './project-detail.html',
   styleUrl: './project-detail.css'
 })
-export class ProjectDetail implements OnInit {
+export class ProjectDetail implements OnInit, OnDestroy {
   project?: Project;
   livelli: LivelloProgetto[] = []; // Ora ogni livello contiene i suoi prodotti
   prodotti: ProdottoProgetto[] = []; // Mantenuto per retrocompatibilità
@@ -83,11 +87,7 @@ export class ProjectDetail implements OnInit {
   registroModifiche: StoricoModifica[] = [];
   modificheRaggruppate: ModificaRaggruppata[] = [];
   filtroModifiche: string = 'ultime10';
-  opzioniFiltroModifiche = [
-    { label: 'Ultime 10', value: 'ultime10' },
-    { label: 'Ultime 50', value: 'ultime50' },
-    { label: 'Tutte', value: 'tutte' }
-  ];
+  opzioniFiltroModifiche: { label: string; value: string }[] = [];
 
   // Lookup data for displaying names
   teamTecnici: TeamTecnico[] = [];
@@ -97,6 +97,8 @@ export class ProjectDetail implements OnInit {
   squadreInstallazione: SquadraInstallazione[] = [];
   loadingLookupData = true;
 
+  private translationSubscription?: Subscription;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -105,7 +107,9 @@ export class ProjectDetail implements OnInit {
     private authService: AuthService,
     private serviceProvider: ServiceProviderService,
     private serviceConfig: ServiceConfigurationService,
-    private http: HttpClient
+    private http: HttpClient,
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {
     // Use services based on configuration (mock or real API)
     this.projectService = this.serviceProvider.provideProjectService();
@@ -123,12 +127,25 @@ export class ProjectDetail implements OnInit {
     // Use services based on configuration (mock or real API)
     this.lookupService = this.serviceProvider.provideLookupService();
     
+    // Initialize filter options
+    this.updateFilterOptions();
+    
+    // Subscribe to language changes
+    this.translationSubscription = this.translationService.language$.subscribe(() => {
+      this.updateFilterOptions();
+      // Update current user label
+      const user = this.authService.getCurrentUser();
+      this.currentUser = user ? this.authService.getFullName() : this.translationService.translate('common.user');
+      // Force change detection to update all translated texts
+      this.cdr.markForCheck();
+    });
+    
     // Load lookup data for displaying names
     this.loadLookupData();
     
     // Get current user from auth service
     const user = this.authService.getCurrentUser();
-    this.currentUser = user ? this.authService.getFullName() : 'Utente Anonimo';
+    this.currentUser = user ? this.authService.getFullName() : this.translationService.translate('common.user');
     
     this.route.params.subscribe(params => {
       const numeroProgetto = params['id'];
@@ -136,6 +153,27 @@ export class ProjectDetail implements OnInit {
         this.loadProject(numeroProgetto);
       }
     });
+  }
+
+  private updateFilterOptions() {
+    this.opzioniFiltroModifiche = [
+      { label: this.translationService.translate('common.last') + ' 10', value: 'ultime10' },
+      { label: this.translationService.translate('common.last') + ' 50', value: 'ultime50' },
+      { label: this.translationService.translate('common.all'), value: 'tutte' }
+    ];
+    // Update current filter if it exists
+    if (this.filtroModifiche) {
+      const currentFilter = this.opzioniFiltroModifiche.find(opt => opt.value === this.filtroModifiche);
+      if (!currentFilter) {
+        this.filtroModifiche = 'ultime10';
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.translationSubscription) {
+      this.translationSubscription.unsubscribe();
+    }
   }
 
   loadLookupData() {

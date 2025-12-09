@@ -7,7 +7,7 @@
         <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
             <div class="flex justify-between gap-4">
                 <div class="flex flex-col gap-2">
-                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Progetti attivi</span>
+                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'dashboard.activeProjects' | translate }}</span>
                     <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ stats.progettiAttivi }}</div>
                 </div>
                 <div class="flex items-center justify-center bg-linear-to-b from-cyan-400 dark:from-cyan-300 to-cyan-600 dark:to-cyan-500 rounded-lg w-10 h-10">
@@ -15,15 +15,15 @@
                 </div>
             </div>
             <div class="mt-4">
-                <span class="text-surface-600 dark:text-surface-300 font-medium leading-tight">Stato del portafoglio</span>
-                <span class="text-surface-500 dark:text-surface-300 leading-tight"> aggiornato ora</span>
+                <span class="text-surface-600 dark:text-surface-300 font-medium leading-tight">{{ 'dashboard.portfolioStatus' | translate }}</span>
+                <span class="text-surface-500 dark:text-surface-300 leading-tight"> {{ 'dashboard.updatedNow' | translate }}</span>
             </div>
         </div>
 
         <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
             <div class="flex justify-between gap-4">
                 <div class="flex flex-col gap-2">
-                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Valore portafoglio</span>
+                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'dashboard.portfolioValue' | translate }}</span>
                     <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ stats.valorePortfolio | currency:'EUR':'symbol':'1.0-0':'it-IT' }}</div>
                 </div>
                 <div class="flex items-center justify-center bg-linear-to-b from-orange-400 dark:from-orange-300 to-orange-600 dark:to-orange-500 rounded-lg w-10 h-10">
@@ -31,15 +31,15 @@
                 </div>
             </div>
             <div class="mt-4">
-                <span class="text-surface-600 dark:text-surface-300 font-medium leading-tight">Somma dei budget</span>
-                <span class="text-surface-500 dark:text-surface-300 leading-tight"> dei progetti in corso</span>
+                <span class="text-surface-600 dark:text-surface-300 font-medium leading-tight">{{ 'dashboard.sumOfBudgets' | translate }}</span>
+                <span class="text-surface-500 dark:text-surface-300 leading-tight"> {{ 'dashboard.ongoingProjects' | translate }}</span>
             </div>
         </div>
 
         <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
             <div class="flex justify-between gap-4">
                 <div class="flex flex-col gap-2">
-                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Installazioni mese</span>
+                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'dashboard.monthlyInstallations' | translate }}</span>
                     <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ stats.installazioniMese }}</div>
                 </div>
                 <div class="flex items-center justify-center bg-linear-to-b from-slate-400 dark:from-slate-300 to-slate-600 dark:to-slate-500 rounded-lg w-10 h-10">
@@ -47,14 +47,14 @@
                 </div>
             </div>
             <div class="mt-4">
-                <span class="text-surface-500 dark:text-surface-300 leading-tight">Completamenti previsti nel mese corrente</span>
+                <span class="text-surface-500 dark:text-surface-300 leading-tight">{{ 'dashboard.completionsExpected' | translate }}</span>
             </div>
         </div>
 
         <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
             <div class="flex justify-between gap-4">
                 <div class="flex flex-col gap-2">
-                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Progetti in ritardo</span>
+                    <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'dashboard.delayedProjects' | translate }}</span>
                     <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ stats.progettiRitardo }}</div>
                 </div>
                 <div class="flex items-center justify-center bg-linear-to-b from-violet-400 dark:from-violet-300 to-violet-600 dark:to-violet-500 rounded-lg w-10 h-10">
@@ -62,8 +62,8 @@
                 </div>
             </div>
             <div class="mt-4">
-                <span class="text-surface-600 dark:text-surface-300 font-medium leading-tight">Monitoraggio scadenze</span>
-                <span class="text-surface-500 dark:text-surface-300 leading-tight"> e rischi di progetto</span>
+                <span class="text-surface-600 dark:text-surface-300 font-medium leading-tight">{{ 'dashboard.deadlineMonitoring' | translate }}</span>
+                <span class="text-surface-500 dark:text-surface-300 leading-tight"> {{ 'dashboard.projectRisks' | translate }}</span>
             </div>
         </div>
     </div>
@@ -74,7 +74,7 @@
   <!-- Grafici -->
   <div class="col-span-12 lg:col-span-6">
     <div class="card">
-      <h5 class="text-900 font-bold text-xl mb-4">Progetti per Stato</h5>
+      <h5 class="text-900 font-bold text-xl mb-4">{{ 'dashboard.projectsByStatus' | translate }}</h5>
       <div class="flex flex-wrap gap-4">
         <div *ngFor="let status of progettiPerStato" class="flex items-center">
           <div class="w-3rem h-3rem rounded-full flex items-center justify-center mr-3" 
@@ -92,9 +92,9 @@
 
   <div class="col-span-12 lg:col-span-6">
     <div class="card">
-      <h5 class="text-900 font-bold text-xl mb-4">Trend Mensile</h5>
+      <h5 class="text-900 font-bold text-xl mb-4">{{ 'dashboard.monthlyTrend' | translate }}</h5>
       <div class="text-center">
-        <div class="text-500 mb-2">Progetti creati negli ultimi 6 mesi</div>
+        <div class="text-500 mb-2">{{ 'dashboard.projectsCreated' | translate }}</div>
         <div class="flex justify-center items-end h-8rem gap-2">
           <div *ngFor="let month of trendMensile" 
                class="bg-blue-500 rounded-t" 
@@ -114,18 +114,18 @@
   <div class="col-span-12 lg:col-span-6">
     <div class="card">
       <div class="flex items-center justify-between mb-4">
-        <h5 class="text-900 font-bold text-xl">Progetti Recenti</h5>
-        <p-button label="Vedi Tutti" icon="pi pi-list" severity="secondary" size="small" routerLink="/projects"></p-button>
+        <h5 class="text-900 font-bold text-xl">{{ 'dashboard.recentProjects' | translate }}</h5>
+        <p-button [label]="'dashboard.seeAll' | translate" icon="pi pi-list" severity="secondary" size="small" routerLink="/projects"></p-button>
       </div>
       <div class="overflow-auto">
         <table class="w-full">
           <thead>
             <tr class="border-bottom-1 surface-border">
-              <th class="text-left p-3">Progetto</th>
-              <th class="text-left p-3">Cliente</th>
-              <th class="text-left p-3">PM</th>
-              <th class="text-left p-3">Data Installazione</th>
-              <th class="text-left p-3">Stato</th>
+              <th class="text-left p-3">{{ 'projects.title' | translate }}</th>
+              <th class="text-left p-3">{{ 'dashboard.client' | translate }}</th>
+              <th class="text-left p-3">{{ 'dashboard.pm' | translate }}</th>
+              <th class="text-left p-3">{{ 'dashboard.installationDate' | translate }}</th>
+              <th class="text-left p-3">{{ 'dashboard.status' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -158,17 +158,17 @@
   <!-- Notifiche e Azioni Rapide -->
   <div class="col-span-12 lg:col-span-6">
     <div class="card mb-4">
-      <h5 class="text-900 font-bold text-xl mb-4">Azioni Rapide</h5>
+      <h5 class="text-900 font-bold text-xl mb-4">{{ 'dashboard.quickActions' | translate }}</h5>
       <div class="flex flex-column gap-3">
-        <p-button label="Nuovo Progetto" icon="pi pi-plus" severity="primary" routerLink="/projects/new"></p-button>
-        <p-button label="Calendario Installazioni" icon="pi pi-calendar" severity="secondary"></p-button>
-        <p-button label="Export Dati" icon="pi pi-download" severity="secondary"></p-button>
-        <p-button label="Report Progetti" icon="pi pi-chart-bar" severity="secondary"></p-button>
+        <p-button [label]="'projects.newProject' | translate" icon="pi pi-plus" severity="primary" routerLink="/projects/new"></p-button>
+        <p-button [label]="'dashboard.installationCalendar' | translate" icon="pi pi-calendar" severity="secondary"></p-button>
+        <p-button [label]="'dashboard.exportData' | translate" icon="pi pi-download" severity="secondary"></p-button>
+        <p-button [label]="'dashboard.projectReports' | translate" icon="pi pi-chart-bar" severity="secondary"></p-button>
       </div>
     </div>
 
     <div class="card">
-      <h5 class="text-900 font-bold text-xl mb-4">Notifiche</h5>
+      <h5 class="text-900 font-bold text-xl mb-4">{{ 'dashboard.notifications' | translate }}</h5>
       <div class="flex flex-column gap-3">
         <div *ngFor="let notification of notifiche" class="flex items-start gap-3 p-3 border-1 surface-border rounded">
           <i class="pi pi-info-circle text-blue-500 mt-1"></i>

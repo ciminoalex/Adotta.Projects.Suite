@@ -1,6 +1,6 @@
 <div class="card p-3 sm:p-4">
   <div class="flex flex-column sm:flex-row justify-content-between align-items-start sm:align-items-center mb-4 gap-2">
-    <h1 class="m-0 text-xl sm:text-2xl">{{ isEditMode ? 'Modifica' : 'Nuova' }} Rendicontazione Timesheet</h1>
+    <h1 class="m-0 text-xl sm:text-2xl">{{ isEditMode ? ('timesheet.editEntry' | translate) : ('timesheet.newEntry' | translate) }}</h1>
   </div>
 
   <form [formGroup]="timesheetForm" (ngSubmit)="saveTimesheet()">
@@ -11,7 +11,7 @@
           <!-- Date Field -->
           <div class="field mb-4">
             <label for="dataRendicontazione" class="block text-900 font-medium mb-2">
-              Data Rendicontazione *
+              {{ 'timesheet.reportDate' | translate }} *
             </label>
             <p-datepicker
               id="dataRendicontazione"
@@ -24,14 +24,14 @@
               inputStyleClass="w-full text-sm">
             </p-datepicker>
             <small *ngIf="f['dataRendicontazione'].invalid && submitted" class="text-red-500">
-              La data è obbligatoria
+              {{ 'validation.required' | translate }}
             </small>
           </div>
 
           <!-- Project Selection -->
           <div class="field mb-4">
             <label for="progetto" class="block text-900 font-medium mb-2">
-              Progetto *
+              {{ 'timesheet.project' | translate }} *
             </label>
             <p-select
               id="progetto"
@@ -39,7 +39,7 @@
               optionLabel="numeroProgetto"
               optionValue="numeroProgetto"
               formControlName="progettoId"
-              placeholder="Seleziona un progetto"
+              [placeholder]="'timesheet.selectProject' | translate"
               [filter]="true"
               filterBy="numeroProgetto,nomeProgetto,cliente"
               [showClear]="true"
@@ -54,14 +54,14 @@
               </ng-template>
             </p-select>
             <small *ngIf="f['progettoId'].invalid && submitted" class="text-red-500">
-              Il progetto è obbligatorio
+              {{ 'validation.required' | translate }}
             </small>
           </div>
 
           <!-- Level Selection -->
           <div class="field mb-4" *ngIf="selectedProject">
             <label for="livello" class="block text-900 font-medium mb-2">
-              Livello <span *ngIf="livelli.length > 0">*</span>
+              {{ 'timesheet.level' | translate }} <span *ngIf="livelli.length > 0">*</span>
             </label>
             <p-select
               id="livello"
@@ -69,7 +69,7 @@
               optionLabel="nome"
               optionValue="id"
               formControlName="livelloId"
-              [placeholder]="livelli.length > 0 ? 'Seleziona un livello' : 'Progetto senza livelli - campo opzionale'"
+              [placeholder]="livelli.length > 0 ? ('timesheet.selectLevel' | translate) : ('timesheet.projectWithoutLevels' | translate)"
               [filter]="true"
               filterBy="nome,descrizione"
               [showClear]="true"
@@ -83,28 +83,28 @@
               </ng-template>
             </p-select>
             <small *ngIf="f['livelloId'].invalid && submitted && livelli.length > 0" class="text-red-500">
-              Il livello è obbligatorio per questo progetto
+              {{ 'timesheet.levelRequired' | translate }}
             </small>
             <small *ngIf="livelli.length === 0 && selectedProject" class="text-500">
               <i class="pi pi-info-circle mr-1"></i>
-              Questo progetto non ha livelli definiti. Il campo livello è opzionale.
+              {{ 'timesheet.noLevelsInfo' | translate }}
             </small>
           </div>
 
           <!-- Selected Project Info -->
           <div *ngIf="selectedProject" class="surface-100 border-round p-3 mb-4">
-            <div class="text-900 font-medium mb-2">Progetto Selezionato:</div>
+            <div class="text-900 font-medium mb-2">{{ 'timesheet.selectedProject' | translate }}:</div>
             <div class="text-sm">
               <div class="mb-2">
-                <span class="text-500 font-medium">Codice:</span>
+                <span class="text-500 font-medium">{{ 'timesheet.code' | translate }}:</span>
                 <span class="ml-2 font-bold">{{ selectedProject.numeroProgetto }}</span>
               </div>
               <div class="mb-2">
-                <span class="text-500 font-medium">Nome:</span>
+                <span class="text-500 font-medium">{{ 'timesheet.name' | translate }}:</span>
                 <span class="ml-2">{{ selectedProject.nomeProgetto }}</span>
               </div>
               <div>
-                <span class="text-500 font-medium">Cliente:</span>
+                <span class="text-500 font-medium">{{ 'projects.customer' | translate }}:</span>
                 <span class="ml-2">{{ selectedProject.cliente }}</span>
               </div>
             </div>
@@ -113,7 +113,7 @@
           <!-- Hours -->
           <div class="field mb-4">
             <label for="oreLavorate" class="block text-900 font-medium mb-2">
-              Ore Lavorate *
+              {{ 'timesheet.hoursWorked' | translate }} *
             </label>
             <p-inputNumber
               id="oreLavorate"
@@ -126,10 +126,10 @@
               inputStyleClass="w-full text-sm">
             </p-inputNumber>
             <small *ngIf="f['oreLavorate'].invalid && submitted" class="text-red-500">
-              Inserisci un numero di ore valido (0.5 - 24)
+              {{ 'timesheet.validHours' | translate }}
             </small>
             <small *ngIf="f['oreLavorate'].valid" class="text-500">
-              Min 0.5 ore, Max 24 ore
+              {{ 'timesheet.minMaxHours' | translate }}
             </small>
           </div>
       </div>
@@ -138,23 +138,23 @@
       <div style="width: 100%;">
           <div class="field">
             <label for="note" class="block text-900 font-medium mb-2">
-              Note *
+              {{ 'timesheet.notes' | translate }} *
             </label>
             <textarea
               id="note"
               formControlName="note"
               pTextarea
               [rows]="isEditMode ? 10 : 8"
-              placeholder="Descrivi le attività svolte..."
+              [placeholder]="'timesheet.notesPlaceholder' | translate"
               [autoResize]="true"
               class="w-full text-sm"
               [style]="{'min-height': '120px'}">
             </textarea>
             <small *ngIf="f['note'].invalid && submitted" class="text-red-500 block">
-              Le note sono obbligatorie
+              {{ 'timesheet.notesRequired' | translate }}
             </small>
             <small *ngIf="f['note'].valid" class="text-500 block">
-              Dettaglia le attività svolte durante le ore rendicontate
+              {{ 'timesheet.notesDescription' | translate }}
             </small>
           </div>
       </div>
@@ -163,14 +163,14 @@
     <!-- Action Buttons -->
     <div class="flex flex-column sm:flex-row justify-content-end gap-2 mt-4">
       <p-button 
-        label="Annulla" 
+        [label]="'common.cancel' | translate" 
         icon="pi pi-times" 
         severity="secondary"
         styleClass="w-full sm:w-auto order-2 sm:order-1"
         (click)="cancel()">
       </p-button>
       <p-button 
-        [label]="isEditMode ? 'Aggiorna' : 'Salva'"
+        [label]="isEditMode ? ('timesheet.update' | translate) : ('common.save' | translate)"
         icon="pi pi-check"
         type="submit"
         styleClass="w-full sm:w-auto order-1 sm:order-2">

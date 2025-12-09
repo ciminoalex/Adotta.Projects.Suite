@@ -14,6 +14,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { Cliente } from '../../models/lookup.model';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 
@@ -32,7 +35,8 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
     DialogModule,
     ConfirmDialogModule,
     ToastModule,
-    ToolbarModule
+    ToolbarModule,
+    TranslatePipe
   ],
   providers: [ConfirmationService, MessageService],
   template: `
@@ -45,7 +49,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
         </ng-template>
         <ng-template pTemplate="right">
           <p-iconfield iconPosition="left">
-              <input pInputText type="text" placeholder="Cerca clienti..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+              <input pInputText type="text" [placeholder]="'lookup.searchCustomers' | translate" [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
               <p-inputicon class="pi pi-search" />
           </p-iconfield>
         </ng-template>
@@ -63,7 +67,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
         [rowHover]="true"
         [showGridlines]="false"
         stripedRows
-        currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} clienti"
+        [currentPageReportTemplate]="currentPageReportTemplate"
         [globalFilterFields]="['nome','email','partitaIVA']"
         [loading]="loading"
         styleClass="p-datatable-sm">
@@ -71,23 +75,23 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
         <ng-template pTemplate="header">
           <tr>
             <th pSortableColumn="nome">
-              Nome
+              {{ 'lookup.name' | translate }}
               <p-sortIcon field="nome"></p-sortIcon>
             </th>
             <th pSortableColumn="email">
-              Email
+              {{ 'auth.email' | translate }}
               <p-sortIcon field="email"></p-sortIcon>
             </th>
             <th pSortableColumn="telefono">
-              Telefono
+              {{ 'lookup.phone' | translate }}
               <p-sortIcon field="telefono"></p-sortIcon>
             </th>
             <th pSortableColumn="partitaIVA">
-              Partita IVA
+              {{ 'lookup.vatNumber' | translate }}
               <p-sortIcon field="partitaIVA"></p-sortIcon>
             </th>
             <th pSortableColumn="contatto">
-              Contatto
+              {{ 'lookup.contact' | translate }}
               <p-sortIcon field="contatto"></p-sortIcon>
             </th>
           </tr>
@@ -108,7 +112,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
             <td colspan="6" class="text-center p-4">
               <div class="text-500">
                 <i class="pi pi-info-circle mr-2"></i>
-                Nessun cliente trovato
+                {{ 'lookup.noCustomersFound' | translate }}
               </div>
             </td>
           </tr>
@@ -118,7 +122,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 
     <!-- Dialog Cliente -->
     <p-dialog 
-      [header]="isEdit ? 'Modifica Cliente' : 'Nuovo Cliente'" 
+      [header]="isEdit ? ('lookup.editCustomer' | translate) : ('lookup.newCustomer' | translate)" 
       [(visible)]="showDialog" 
       [modal]="true" 
       [style]="{width: '500px'}"
@@ -127,69 +131,69 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
       <form [formGroup]="clienteForm" (ngSubmit)="saveCliente()">
         <div class="grid grid-cols-12 gap-4">
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Nome *</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.name' | translate }} *</label>
             <input type="text" 
                    pInputText 
                    formControlName="nome"
-                   placeholder="Nome cliente"
+                   [placeholder]="'lookup.customerName' | translate"
                    class="w-full">
             <small *ngIf="clienteForm.get('nome')?.invalid && clienteForm.get('nome')?.touched" 
                    class="text-red-500">
-              Nome obbligatorio
+              {{ 'validation.required' | translate }}
             </small>
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Email</label>
+            <label class="block text-900 font-medium mb-2">{{ 'auth.email' | translate }}</label>
             <input type="email" 
                    pInputText 
                    formControlName="email"
-                   placeholder="email@example.com"
+                   [placeholder]="'auth.email' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Telefono</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.phone' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="telefono"
-                   placeholder="+39 123 456 7890"
+                   [placeholder]="'lookup.phonePlaceholder' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Partita IVA</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.vatNumber' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="partitaIVA"
-                   placeholder="IT12345678901"
+                   [placeholder]="'lookup.vatPlaceholder' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Contatto</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.contact' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="contatto"
-                   placeholder="Nome contatto"
+                   [placeholder]="'lookup.contactName' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Indirizzo Completo</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.fullAddress' | translate }}</label>
             <textarea 
               formControlName="indirizzoCompleto"
-              placeholder="Indirizzo completo"
+              [placeholder]="'lookup.fullAddress' | translate"
               rows="2"
               class="w-full p-3 border-1 surface-border rounded">
             </textarea>
           </div>
 
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Note</label>
+            <label class="block text-900 font-medium mb-2">{{ 'timesheet.notes' | translate }}</label>
             <textarea 
               formControlName="note"
-              placeholder="Note aggiuntive"
+              [placeholder]="'lookup.additionalNotes' | translate"
               rows="3"
               class="w-full p-3 border-1 surface-border rounded">
             </textarea>
@@ -201,13 +205,13 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
         <button type="button" 
                 class="p-button p-button-outlined" 
                 (click)="showDialog = false">
-          Annulla
+          {{ 'common.cancel' | translate }}
         </button>
         <button type="button" 
                 class="p-button p-button-primary" 
                 (click)="saveCliente()"
                 [disabled]="!clienteForm.valid || loading">
-          {{ loading ? 'Salvataggio...' : 'Salva' }}
+          {{ loading ? ('projects.saving' | translate) : ('common.save' | translate) }}
         </button>
       </ng-template>
     </p-dialog>
@@ -232,15 +236,31 @@ export class Clienti implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
 
-  clienteForm: FormGroup;
-  private lookupService: LookupService | any;
+  clienteForm!: FormGroup;
+  private lookupService!: LookupService | any;
+
+  currentPageReportTemplate = '';
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private serviceProvider: ServiceProviderService
+    private serviceProvider: ServiceProviderService,
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {
+    this.updatePageReportTemplate();
+    this.translationService.language$.subscribe(() => {
+      this.updatePageReportTemplate();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private updatePageReportTemplate() {
+    this.currentPageReportTemplate = this.translationService.translate('lookup.showing', { entity: this.translationService.translate('lookup.customers') });
+  }
+
+  ngOnInit() {
     // Use services based on configuration (mock or real API)
     this.lookupService = this.serviceProvider.provideLookupService();
     this.clienteForm = this.fb.group({
@@ -253,9 +273,7 @@ export class Clienti implements OnInit, OnDestroy {
       contatto: [''],
       note: ['']
     });
-  }
 
-  ngOnInit() {
     // Setup ricerca con debounce
     this.searchSubscription = this.searchSubject
       .pipe(
@@ -270,6 +288,7 @@ export class Clienti implements OnInit, OnDestroy {
 
     this.loadClienti();
   }
+
 
   ngOnDestroy() {
     this.searchSubscription?.unsubscribe();
@@ -346,8 +365,8 @@ export class Clienti implements OnInit, OnDestroy {
         next: () => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Successo',
-            detail: `Cliente ${this.isEdit ? 'aggiornato' : 'creato'} con successo`
+            summary: this.translationService.translate('messages.success'),
+            detail: this.translationService.translate(this.isEdit ? 'lookup.customerUpdated' : 'lookup.customerCreated')
           });
           this.showDialog = false;
           this.loadClienti();
@@ -355,8 +374,8 @@ export class Clienti implements OnInit, OnDestroy {
         error: (error: any) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore nel salvataggio del cliente'
+            summary: this.translationService.translate('messages.error'),
+            detail: this.translationService.translate('lookup.customerSaveError')
           });
           this.loading = false;
         }
@@ -366,26 +385,26 @@ export class Clienti implements OnInit, OnDestroy {
 
   deleteCliente(cliente: Cliente) {
     this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il cliente "${cliente.nome}"?`,
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('lookup.confirmDeleteCustomer', { name: cliente.nome }),
+      header: this.translationService.translate('lookup.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         this.lookupService.deleteCliente(String(cliente.id!)).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successo',
-              detail: 'Cliente eliminato con successo'
+              summary: this.translationService.translate('messages.success'),
+              detail: this.translationService.translate('lookup.customerDeleted')
             });
             this.loadClienti();
           },
           error: (error: any) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore nell\'eliminazione del cliente'
+              summary: this.translationService.translate('messages.error'),
+              detail: this.translationService.translate('lookup.customerDeleteError')
             });
           }
         });

@@ -9,6 +9,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { ProjectService } from '../../services/project.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { Project, LivelloProgetto } from '../../models/project.model';
@@ -37,7 +38,8 @@ interface GanttRow {
     DatePickerModule,
     TooltipModule,
     ToastModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    TranslatePipe
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './gantt-view.html',

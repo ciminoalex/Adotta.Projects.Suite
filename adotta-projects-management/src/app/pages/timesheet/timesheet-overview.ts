@@ -11,10 +11,13 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { CardModule } from 'primeng/card';
 import { TimesheetService } from '../../services/timesheet.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 import { ServiceConfigurationService } from '../../services/service-configuration.service';
 import { HttpClient } from '@angular/common/http';
 import { MockTimesheetService } from '../../services/mock/mock-timesheet.service';
@@ -38,7 +41,9 @@ import { Project } from '../../models/project.model';
     ToolbarModule,
     ToastModule,
     ConfirmDialogModule,
-    CardModule
+    CardModule,
+    TranslatePipe,
+    TooltipModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './timesheet-overview.html'
@@ -60,6 +65,8 @@ export class TimesheetOverviewComponent implements OnInit {
 
   private timesheetService: TimesheetService | MockTimesheetService;
 
+  currentPageReportTemplate = '';
+
   constructor(
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
@@ -67,12 +74,23 @@ export class TimesheetOverviewComponent implements OnInit {
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {
     // Usa il servizio mock solo se configurato esplicitamente, altrimenti chiama le API reali
     this.timesheetService = this.serviceConfig.getUseMockServices()
       ? new MockTimesheetService()
       : new TimesheetService(this.http);
+    
+    this.updatePageReportTemplate();
+    this.translationService.language$.subscribe(() => {
+      this.updatePageReportTemplate();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private updatePageReportTemplate() {
+    this.currentPageReportTemplate = this.translationService.translate('timesheet.showing');
   }
 
   ngOnInit() {

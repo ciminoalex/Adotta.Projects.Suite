@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -10,10 +10,15 @@ import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { ProjectManager } from '../../models/lookup.model';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-project-managers',
@@ -30,7 +35,9 @@ import { ProjectManager } from '../../models/lookup.model';
     DialogModule,
     ConfirmDialogModule,
     ToastModule,
-    ToolbarModule
+    ToolbarModule,
+    TranslatePipe,
+    TooltipModule
   ],
   providers: [ConfirmationService, MessageService],
   template: `
@@ -39,13 +46,13 @@ import { ProjectManager } from '../../models/lookup.model';
       <p-toolbar>
         <ng-template pTemplate="left">
           <div class="flex gap-2">
-          <p-button icon="pi pi-plus" label="Nuovo Project Manager" (click)="openDialog()">
+          <p-button icon="pi pi-plus" [label]="'lookup.newProjectManager' | translate" (click)="openDialog()">
             </p-button>
           </div>
         </ng-template>
         <ng-template pTemplate="right">
           <p-iconfield iconPosition="left">
-              <input pInputText type="text" placeholder="Cerca project managers..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+              <input pInputText type="text" [placeholder]="'lookup.searchProjectManagers' | translate" [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
               <p-inputicon class="pi pi-search" />
           </p-iconfield>
         </ng-template>
@@ -60,7 +67,7 @@ import { ProjectManager } from '../../models/lookup.model';
         [showGridlines]="false"
         stripedRows
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} project managers"
+        [currentPageReportTemplate]="currentPageReportTemplate"
         [globalFilterFields]="['nome','email','specializzazione']"
         [loading]="loading"
         styleClass="p-datatable-sm">
@@ -68,26 +75,26 @@ import { ProjectManager } from '../../models/lookup.model';
         <ng-template pTemplate="header">
           <tr>
             <th pSortableColumn="nome">
-              Nome
+              {{ 'lookup.name' | translate }}
               <p-sortIcon field="nome"></p-sortIcon>
             </th>
             <th pSortableColumn="email">
-              Email
+              {{ 'auth.email' | translate }}
               <p-sortIcon field="email"></p-sortIcon>
             </th>
             <th pSortableColumn="telefono">
-              Telefono
+              {{ 'lookup.phone' | translate }}
               <p-sortIcon field="telefono"></p-sortIcon>
             </th>
             <th pSortableColumn="specializzazione">
-              Specializzazione
+              {{ 'lookup.specialization' | translate }}
               <p-sortIcon field="specializzazione"></p-sortIcon>
             </th>
             <th pSortableColumn="esperienza">
-              Esperienza (anni)
+              {{ 'lookup.experience' | translate }}
               <p-sortIcon field="esperienza"></p-sortIcon>
             </th>
-            <th style="width: 120px">Azioni</th>
+            <th style="width: 120px">{{ 'common.actions' | translate }}</th>
           </tr>
         </ng-template>
 
@@ -102,12 +109,12 @@ import { ProjectManager } from '../../models/lookup.model';
               <div class="flex gap-1">
                 <button class="p-button p-button-text p-button-sm" 
                         (click)="editPM(pm)"
-                        pTooltip="Modifica">
+                        [pTooltip]="'common.edit' | translate" tooltipPosition="top">
                   <i class="pi pi-pencil"></i>
                 </button>
                 <button class="p-button p-button-text p-button-sm p-button-danger" 
                         (click)="deletePM(pm)"
-                        pTooltip="Elimina">
+                        [pTooltip]="'common.delete' | translate" tooltipPosition="top">
                   <i class="pi pi-trash"></i>
                 </button>
               </div>
@@ -120,7 +127,7 @@ import { ProjectManager } from '../../models/lookup.model';
             <td colspan="6" class="text-center p-4">
               <div class="text-500">
                 <i class="pi pi-info-circle mr-2"></i>
-                Nessun project manager trovato
+                {{ 'lookup.noProjectManagersFound' | translate }}
               </div>
             </td>
           </tr>
@@ -130,7 +137,7 @@ import { ProjectManager } from '../../models/lookup.model';
 
     <!-- Dialog Project Manager -->
     <p-dialog 
-      [header]="isEdit ? 'Modifica Project Manager' : 'Nuovo Project Manager'" 
+      [header]="isEdit ? ('lookup.editProjectManager' | translate) : ('lookup.newProjectManager' | translate)" 
       [(visible)]="showDialog" 
       [modal]="true" 
       [style]="{width: '500px'}"
@@ -139,59 +146,59 @@ import { ProjectManager } from '../../models/lookup.model';
       <form [formGroup]="pmForm" (ngSubmit)="savePM()">
         <div class="grid grid-cols-12 gap-4">
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Nome *</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.name' | translate }} *</label>
             <input type="text" 
                    pInputText 
                    formControlName="nome"
-                   placeholder="Nome project manager"
+                   [placeholder]="'lookup.projectManagerName' | translate"
                    class="w-full">
             <small *ngIf="pmForm.get('nome')?.invalid && pmForm.get('nome')?.touched" 
                    class="text-red-500">
-              Nome obbligatorio
+              {{ 'validation.required' | translate }}
             </small>
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Email</label>
+            <label class="block text-900 font-medium mb-2">{{ 'auth.email' | translate }}</label>
             <input type="email" 
                    pInputText 
                    formControlName="email"
-                   placeholder="email@example.com"
+                   [placeholder]="'auth.email' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Telefono</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.phone' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="telefono"
-                   placeholder="+39 123 456 7890"
+                   [placeholder]="'lookup.phonePlaceholder' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Specializzazione</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.specialization' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="specializzazione"
-                   placeholder="Es. HVAC, Elettrico"
+                   [placeholder]="'lookup.specialization' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Esperienza (anni)</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.experience' | translate }}</label>
             <input type="number" 
                    pInputText 
                    formControlName="esperienza"
-                   placeholder="5"
+                   [placeholder]="'lookup.experience' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Note</label>
+            <label class="block text-900 font-medium mb-2">{{ 'timesheet.notes' | translate }}</label>
             <textarea 
               formControlName="note"
-              placeholder="Note aggiuntive"
+              [placeholder]="'lookup.additionalNotes' | translate"
               rows="3"
               class="w-full p-3 border-1 surface-border rounded">
             </textarea>
@@ -203,13 +210,13 @@ import { ProjectManager } from '../../models/lookup.model';
         <button type="button" 
                 class="p-button p-button-outlined" 
                 (click)="showDialog = false">
-          Annulla
+          {{ 'common.cancel' | translate }}
         </button>
         <button type="button" 
                 class="p-button p-button-primary" 
                 (click)="savePM()"
                 [disabled]="!pmForm.valid || loading">
-          {{ loading ? 'Salvataggio...' : 'Salva' }}
+          {{ loading ? ('projects.saving' | translate) : ('common.save' | translate) }}
         </button>
       </ng-template>
     </p-dialog>
@@ -219,22 +226,38 @@ import { ProjectManager } from '../../models/lookup.model';
     <p-toast></p-toast>
   `
 })
-export class ProjectManagers implements OnInit {
+export class ProjectManagers implements OnInit, OnDestroy {
   projectManagers: ProjectManager[] = [];
   loading = false;
   showDialog = false;
   isEdit = false;
   globalFilter = '';
+  currentPageReportTemplate = '';
 
-  pmForm: FormGroup;
-  private lookupService: LookupService | any;
+  pmForm!: FormGroup;
+  private lookupService!: LookupService | any;
+  private translationSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private serviceProvider: ServiceProviderService
+    private serviceProvider: ServiceProviderService,
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {
+    this.updatePageReportTemplate();
+    this.translationSubscription = this.translationService.language$.subscribe(() => {
+      this.updatePageReportTemplate();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private updatePageReportTemplate() {
+    this.currentPageReportTemplate = this.translationService.translate('lookup.showing', { entity: this.translationService.translate('lookup.projectManagers') });
+  }
+
+  ngOnInit() {
     // Use services based on configuration (mock or real API)
     this.lookupService = this.serviceProvider.provideLookupService();
     this.pmForm = this.fb.group({
@@ -246,9 +269,6 @@ export class ProjectManagers implements OnInit {
       esperienza: [''],
       note: ['']
     });
-  }
-
-  ngOnInit() {
     this.loadProjectManagers();
   }
 
@@ -293,8 +313,8 @@ export class ProjectManagers implements OnInit {
         next: () => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Successo',
-            detail: `Project Manager ${this.isEdit ? 'aggiornato' : 'creato'} con successo`
+            summary: this.translationService.translate('messages.success'),
+            detail: this.translationService.translate(this.isEdit ? 'lookup.projectManagerUpdated' : 'lookup.projectManagerCreated')
           });
           this.showDialog = false;
           this.loadProjectManagers();
@@ -302,8 +322,8 @@ export class ProjectManagers implements OnInit {
         error: (error: any) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore nel salvataggio del project manager'
+            summary: this.translationService.translate('messages.error'),
+            detail: this.translationService.translate('lookup.projectManagerSaveError')
           });
           this.loading = false;
         }
@@ -313,26 +333,26 @@ export class ProjectManagers implements OnInit {
 
   deletePM(pm: ProjectManager) {
     this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il project manager "${pm.nome}"?`,
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('lookup.confirmDeleteProjectManager', { name: pm.nome }),
+      header: this.translationService.translate('lookup.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         this.lookupService.deleteProjectManager(pm.id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successo',
-              detail: 'Project Manager eliminato con successo'
+              summary: this.translationService.translate('messages.success'),
+              detail: this.translationService.translate('lookup.projectManagerDeleted')
             });
             this.loadProjectManagers();
           },
           error: (error: any) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore nell\'eliminazione del project manager'
+              summary: this.translationService.translate('messages.error'),
+              detail: this.translationService.translate('lookup.projectManagerDeleteError')
             });
           }
         });
@@ -347,5 +367,11 @@ export class ProjectManagers implements OnInit {
   onDialogHide() {
     this.pmForm.reset();
     this.isEdit = false;
+  }
+
+  ngOnDestroy() {
+    if (this.translationSubscription) {
+      this.translationSubscription.unsubscribe();
+    }
   }
 }

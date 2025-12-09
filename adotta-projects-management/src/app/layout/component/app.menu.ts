@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
 import { DbInitStateService } from '../../services/db-init-state.service';
+import { TranslationService } from '../../services/translation.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -20,15 +21,26 @@ import { Subscription } from 'rxjs';
 export class AppMenu implements OnInit, OnDestroy {
     model: MenuItem[] = [];
     private dbInitSubscription?: Subscription;
+    private translationSubscription?: Subscription;
     private isDbInitialized = true; // Default: assume inizializzato
 
-    constructor(private dbInitState: DbInitStateService) {}
+    constructor(
+        private dbInitState: DbInitStateService,
+        private translationService: TranslationService,
+        private cdr: ChangeDetectorRef
+    ) {}
 
     ngOnInit() {
         // Sottoscrivi ai cambiamenti dello stato di inizializzazione
         this.dbInitSubscription = this.dbInitState.initialized$.subscribe(initialized => {
             this.isDbInitialized = initialized;
             this.updateMenuModel();
+        });
+
+        // Sottoscrivi ai cambiamenti di lingua
+        this.translationSubscription = this.translationService.language$.subscribe(() => {
+            this.updateMenuModel();
+            this.cdr.markForCheck();
         });
 
         // Inizializza il menu
@@ -39,56 +51,62 @@ export class AppMenu implements OnInit, OnDestroy {
         if (this.dbInitSubscription) {
             this.dbInitSubscription.unsubscribe();
         }
+        if (this.translationSubscription) {
+            this.translationSubscription.unsubscribe();
+        }
     }
 
     private updateMenuModel() {
+        const t = (key: string) => this.translationService.translate(key);
+        
         const baseModel: MenuItem[] = [
 
             {
-                label: 'Gestione Progetti',
+                label: t('menu.projectManagement'),
                 items: [
-                    { label: 'Lista Progetti', icon: 'pi pi-fw pi-list', routerLink: ['/projects'] },
-                    { label: 'Nuovo Progetto', icon: 'pi pi-fw pi-plus', routerLink: ['/projects/new'] },
-                    { label: 'Gantt View', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/projects/gantt'] }
+                    { label: t('menu.projectList'), icon: 'pi pi-fw pi-list', routerLink: ['/projects'] },
+                    { label: t('menu.newProject'), icon: 'pi pi-fw pi-plus', routerLink: ['/projects/new'] },
+                    { label: t('menu.ganttView'), icon: 'pi pi-fw pi-chart-bar', routerLink: ['/projects/gantt'] }
                 ]
             },
             {
-                label: 'Timesheet',
+                label: t('menu.timesheet'),
                 items: [
-                    { label: 'Overview', icon: 'pi pi-fw pi-clock', routerLink: ['/timesheet'] },
-                    { label: 'Nuova Rendicontazione', icon: 'pi pi-fw pi-plus-circle', routerLink: ['/timesheet/new'] }
+                    { label: t('menu.overview'), icon: 'pi pi-fw pi-clock', routerLink: ['/timesheet'] },
+                    { label: t('menu.newTimesheet'), icon: 'pi pi-fw pi-plus-circle', routerLink: ['/timesheet/new'] }
                 ]
             },
             {
-                label: 'Anagrafiche',
+                label: t('menu.lookups'),
                 items: [
-                    { label: 'Clienti', icon: 'pi pi-fw pi-users', routerLink: ['/lookup/clienti'] },
-                    { label: 'Team Tecnici', icon: 'pi pi-fw pi-wrench', routerLink: ['/lookup/team-tecnici'] },
-                    { label: 'Team APL', icon: 'pi pi-fw pi-cog', routerLink: ['/lookup/team-apl'] },
-                    { label: 'Sales', icon: 'pi pi-fw pi-briefcase', routerLink: ['/lookup/sales'] },
-                    { label: 'Project Managers', icon: 'pi pi-fw pi-user', routerLink: ['/lookup/project-managers'] },
-                    { label: 'Squadre Installazione', icon: 'pi pi-fw pi-truck', routerLink: ['/lookup/squadre-installazione'] },
-                    { label: 'Prodotti Master', icon: 'pi pi-fw pi-box', routerLink: ['/lookup/prodotti-master'] }
+                    { label: t('menu.customers'), icon: 'pi pi-fw pi-users', routerLink: ['/lookup/clienti'] },
+                    { label: t('menu.technicalTeams'), icon: 'pi pi-fw pi-wrench', routerLink: ['/lookup/team-tecnici'] },
+                    { label: t('menu.aplTeams'), icon: 'pi pi-fw pi-cog', routerLink: ['/lookup/team-apl'] },
+                    { label: t('menu.sales'), icon: 'pi pi-fw pi-briefcase', routerLink: ['/lookup/sales'] },
+                    { label: t('menu.projectManagers'), icon: 'pi pi-fw pi-user', routerLink: ['/lookup/project-managers'] },
+                    { label: t('menu.installationTeams'), icon: 'pi pi-fw pi-truck', routerLink: ['/lookup/squadre-installazione'] },
+                    { label: t('menu.masterProducts'), icon: 'pi pi-fw pi-box', routerLink: ['/lookup/prodotti-master'] }
                 ]
             },
             {
-                label: 'Sistema',
+                label: t('menu.system'),
                 items: [
-                    { label: 'Utenti', icon: 'pi pi-fw pi-user', routerLink: ['/system/users'] },
-                    { label: 'Inizializzazione DB', icon: 'pi pi-fw pi-database', routerLink: ['/system/init'] }
+                    { label: t('menu.users'), icon: 'pi pi-fw pi-user', routerLink: ['/system/users'] },
+                    { label: t('menu.dbInit'), icon: 'pi pi-fw pi-database', routerLink: ['/system/init'] }
                 ]
             }
         ];
 
         // Se il DB non è inizializzato, disabilita tutti i menu tranne "Inizializzazione DB"
         if (!this.isDbInitialized) {
+            const dbInitLabel = t('menu.dbInit');
             this.model = baseModel.map(section => {
-                if (section.label === 'Sistema') {
+                if (section.label === t('menu.system')) {
                     // Mantieni solo "Inizializzazione DB" abilitato
                     return {
                         ...section,
                         items: section.items?.map(item => {
-                            if (item.label === 'Inizializzazione DB') {
+                            if (item.label === dbInitLabel) {
                                 return item; // Mantieni abilitato
                             }
                             return { ...item, disabled: true };

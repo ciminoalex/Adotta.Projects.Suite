@@ -11,13 +11,13 @@
           </button>
           <div class="flex gap-2">
             <button class="p-button p-button-outlined" 
-                    [routerLink]="['/projects', project?.numeroProgetto, 'edit']">
+                    [routerLink]="project ? ['/projects', project.numeroProgetto, 'edit'] : null">
               <i class="pi pi-pencil mr-2"></i>
-              Modifica
+              {{ 'projects.modify' | translate }}
             </button>
             <button class="p-button p-button-outlined">
               <i class="pi pi-download mr-2"></i>
-              Export
+              {{ 'common.export' | translate }}
             </button>
           </div>
         </div>
@@ -33,14 +33,14 @@
           </div>
           <div *ngIf="!loading && project">
             <h1 class="text-900 font-bold text-2xl m-0 mb-2">
-              {{ project?.numeroProgetto }} - {{ project?.nomeProgetto }}
+              {{ project.numeroProgetto }} - {{ project.nomeProgetto }}
             </h1>
             <div class="flex items-center gap-4">
-              <p-tag [value]="project?.statoProgetto" 
-                     [severity]="getStatusSeverity(project?.statoProgetto)">
+              <p-tag [value]="project.statoProgetto" 
+                     [severity]="getStatusSeverity(project.statoProgetto)">
               </p-tag>
-              <span class="text-500">{{ project?.cliente }}</span>
-              <span class="text-500">{{ project?.citta }}, {{ project?.stato }}</span>
+              <span class="text-500">{{ project.cliente }}</span>
+              <span class="text-500">{{ project.citta }}, {{ project.stato }}</span>
             </div>
           </div>
         </div>
@@ -49,7 +49,7 @@
 
     <!-- Informazioni Generali -->
     <div class="col-span-12 lg:col-span-6 mb-4">
-    <p-card header="Dati Principali">
+    <p-card [header]="'projects.mainData' | translate">
       <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
         <div>
           <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
@@ -78,39 +78,39 @@
       </div>
       <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
-          <label class="text-500 text-sm">Numero Progetto</label>
-          <div class="font-bold">{{ project?.numeroProgetto }}</div>
+          <label class="text-500 text-sm">{{ 'projects.projectNumber' | translate }}</label>
+          <div class="font-bold">{{ project.numeroProgetto }}</div>
         </div>
         <div>
-          <label class="text-500 text-sm">Cliente</label>
-          <div class="font-bold">{{ project?.cliente }}</div>
+          <label class="text-500 text-sm">{{ 'projects.customer' | translate }}</label>
+          <div class="font-bold">{{ project.cliente }}</div>
         </div>
         <div>
-          <label class="text-500 text-sm">Località</label>
-          <div class="font-bold">{{ project?.citta }}, {{ project?.stato }}</div>
+          <label class="text-500 text-sm">{{ 'projects.location' | translate }}</label>
+          <div class="font-bold">{{ project.citta }}, {{ project.stato }}</div>
         </div>
         <div>
-          <label class="text-500 text-sm">Stato Progetto</label>
+          <label class="text-500 text-sm">{{ 'projects.projectStatus' | translate }}</label>
           <div>
-            <p-tag [value]="project?.statoProgetto" 
-                   [severity]="getStatusSeverity(project?.statoProgetto)">
+            <p-tag [value]="project.statoProgetto" 
+                   [severity]="getStatusSeverity(project.statoProgetto)">
             </p-tag>
           </div>
         </div>
         <div>
-          <label class="text-500 text-sm">Versione WIC</label>
-          <div class="font-bold">{{ project?.versioneWIC || '-' }}</div>
+          <label class="text-500 text-sm">{{ 'projects.versionWIC' | translate }}</label>
+          <div class="font-bold">{{ project.versioneWIC || '-' }}</div>
         </div>
         <div>
-          <label class="text-500 text-sm">Ultima Modifica</label>
-          <div class="font-bold">{{ project?.ultimaModifica ? (project?.ultimaModifica | date:'dd/MM/yyyy') : '-' }}</div>
+          <label class="text-500 text-sm">{{ 'projects.lastModified' | translate }}</label>
+          <div class="font-bold">{{ project.ultimaModifica ? (project.ultimaModifica | date:'dd/MM/yyyy') : '-' }}</div>
         </div>
       </div>
     </p-card>
     </div>
 
     <div class="col-span-12 lg:col-span-6 mb-4">
-      <p-card header="Team e Responsabilità">
+      <p-card [header]="'projects.teamAndResponsibilities' | translate">
       <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
         <div>
           <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
@@ -135,38 +135,38 @@
       </div>
       <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
-          <label class="text-500 text-sm">Project Manager</label>
+          <label class="text-500 text-sm">{{ 'projects.projectManager' | translate }}</label>
           <div class="font-bold">
             <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
-            <span *ngIf="!loadingLookupData">{{ getProjectManagerName(project?.projectManager) }}</span>
+            <span *ngIf="!loadingLookupData">{{ getProjectManagerName(project.projectManager) }}</span>
           </div>
         </div>
         <div>
-          <label class="text-500 text-sm">Team Tecnico</label>
+          <label class="text-500 text-sm">{{ 'projects.technicalTeam' | translate }}</label>
           <div class="font-bold">
             <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
-            <span *ngIf="!loadingLookupData">{{ getTeamTecnicoName(project?.teamTecnico) }}</span>
+            <span *ngIf="!loadingLookupData">{{ getTeamTecnicoName(project.teamTecnico) }}</span>
           </div>
         </div>
         <div>
-          <label class="text-500 text-sm">Team APL</label>
+          <label class="text-500 text-sm">{{ 'projects.aplTeam' | translate }}</label>
           <div class="font-bold">
             <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
-            <span *ngIf="!loadingLookupData">{{ getTeamAPLName(project?.teamAPL) }}</span>
+            <span *ngIf="!loadingLookupData">{{ getTeamAPLName(project.teamAPL) }}</span>
           </div>
         </div>
         <div>
-          <label class="text-500 text-sm">Sales</label>
+          <label class="text-500 text-sm">{{ 'projects.salesRepresentative' | translate }}</label>
           <div class="font-bold">
             <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
-            <span *ngIf="!loadingLookupData">{{ getSalesName(project?.sales) }}</span>
+            <span *ngIf="!loadingLookupData">{{ getSalesName(project.sales) }}</span>
           </div>
         </div>
         <div class="col-span-2">
-          <label class="text-500 text-sm">Team Installazione</label>
+          <label class="text-500 text-sm">{{ 'projects.installationTeam' | translate }}</label>
           <div class="font-bold">
             <p-skeleton *ngIf="loadingLookupData" height="1.5rem" width="100%"></p-skeleton>
-            <span *ngIf="!loadingLookupData">{{ getTeamInstallazioneName(project?.teamInstallazione) }}</span>
+            <span *ngIf="!loadingLookupData">{{ getTeamInstallazioneName(project.teamInstallazione) }}</span>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@
     </div>
 
     <div class="col-span-12 lg:col-span-6 mb-4">
-      <p-card header="Pianificazione">
+      <p-card [header]="'projects.planning' | translate">
       <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
         <div>
           <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
@@ -195,29 +195,29 @@
       </div>
       <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
-          <label class="text-500 text-sm">Data Creazione</label>
-          <div class="font-bold">{{ project?.dataCreazione | date:'dd/MM/yyyy' }}</div>
+          <label class="text-500 text-sm">{{ 'projects.creationDate' | translate }}</label>
+          <div class="font-bold">{{ project.dataCreazione | date:'dd/MM/yyyy' }}</div>
         </div>
         <div>
-          <label class="text-500 text-sm">Data Inizio Installazione</label>
-          <div class="font-bold" [ngClass]="getDateClass(project?.dataInizioInstallazione)">
-            {{ project?.dataInizioInstallazione ? (project?.dataInizioInstallazione | date:'dd/MM/yyyy') : '-' }}
+          <label class="text-500 text-sm">{{ 'projects.installationStartDate' | translate }}</label>
+          <div class="font-bold" [ngClass]="getDateClass(project.dataInizioInstallazione)">
+            {{ project.dataInizioInstallazione ? (project.dataInizioInstallazione | date:'dd/MM/yyyy') : '-' }}
           </div>
         </div>
         <div>
-          <label class="text-500 text-sm">Data Fine Installazione</label>
-          <div class="font-bold">{{ project?.dataFineInstallazione ? (project?.dataFineInstallazione | date:'dd/MM/yyyy') : '-' }}</div>
+          <label class="text-500 text-sm">{{ 'projects.installationEndDate' | translate }}</label>
+          <div class="font-bold">{{ project.dataFineInstallazione ? (project.dataFineInstallazione | date:'dd/MM/yyyy') : '-' }}</div>
         </div>
         <div>
-          <label class="text-500 text-sm">In Ritardo</label>
-          <div class="font-bold">{{ project?.isInRitardo ? 'Sì' : 'No' }}</div>
+          <label class="text-500 text-sm">{{ 'projects.inDelay' | translate }}</label>
+          <div class="font-bold">{{ project.isInRitardo ? ('common.yes' | translate) : ('common.no' | translate) }}</div>
         </div>
       </div>
     </p-card>
     </div>
 
     <div class="col-span-12 lg:col-span-6 mb-4">
-      <p-card header="Ore Rendicontate">
+      <p-card [header]="'projects.reportedHours' | translate">
       <div *ngIf="loading || !project" class="grid grid-cols-2 gap-4">
         <div>
           <p-skeleton height="0.875rem" width="60%" class="mb-2"></p-skeleton>
@@ -234,17 +234,17 @@
       </div>
       <div *ngIf="!loading && project" class="grid grid-cols-2 gap-4">
         <div>
-          <label class="text-500 text-sm">Totale Ore</label>
+          <label class="text-500 text-sm">{{ 'projects.totalHours' | translate }}</label>
           <div class="font-bold text-2xl">{{ totaleOreRendicontate }} h</div>
         </div>
         <div>
-          <label class="text-500 text-sm">Numero Rendicontazioni</label>
+          <label class="text-500 text-sm">{{ 'projects.numberOfReports' | translate }}</label>
           <div class="font-bold">{{ numeroRendicontazioni }}</div>
         </div>
         <div class="col-span-2">
-          <label class="text-500 text-sm">Ultima Rendicontazione</label>
+          <label class="text-500 text-sm">{{ 'projects.lastReport' | translate }}</label>
           <div class="font-bold">
-            {{ timesheetOverview?.ultimaRendicontazione ? (timesheetOverview?.ultimaRendicontazione | date:'dd/MM/yyyy') : 'Nessuna rendicontazione' }}
+            {{ timesheetOverview?.ultimaRendicontazione ? (timesheetOverview?.ultimaRendicontazione | date:'dd/MM/yyyy') : ('projects.noReports' | translate) }}
           </div>
         </div>
       </div>
@@ -255,8 +255,8 @@
     <div class="col-span-12 mb-4">
     <p-card>
       <div class="flex justify-between items-center mb-4">
-        <h4 class="text-900 font-bold">Livelli del Progetto</h4>
-        <span *ngIf="!loading && project" class="p-tag p-tag-info">{{ livelli.length }} livelli</span>
+        <h4 class="text-900 font-bold">{{ 'projects.projectLevels' | translate }}</h4>
+        <span *ngIf="!loading && project" class="p-tag p-tag-info">{{ 'projects.projectLevelsCount' | translate: { count: livelli.length } }}</span>
         <p-skeleton *ngIf="loading || !project" height="1.5rem" width="80px"></p-skeleton>
       </div>
 
@@ -271,11 +271,11 @@
           <tr>
             <th style="width: 40px"></th>
             <th>#</th>
-            <th>Nome</th>
-            <th>Descrizione</th>
-            <th style="text-align: right">Inizio Installazione</th>
-            <th style="text-align: right">Fine Installazione</th>
-            <th style="text-align: right">Prodotti</th>
+            <th>{{ 'projects.levelName' | translate }}</th>
+            <th>{{ 'projects.description' | translate }}</th>
+            <th style="text-align: right">{{ 'projects.installationStartDate' | translate }}</th>
+            <th style="text-align: right">{{ 'projects.installationEndDate' | translate }}</th>
+            <th style="text-align: right">{{ 'projects.levelProducts' | translate }}</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-livello>
@@ -294,21 +294,21 @@
             <td style="text-align: right">{{ livello.dataInizioInstallazione ? (livello.dataInizioInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
             <td style="text-align: right">{{ livello.dataFineInstallazione ? (livello.dataFineInstallazione | date:'dd/MM/yyyy') : '-' }}</td>
             <td style="text-align: right">
-              <span class="p-tag p-tag-info">{{ (livello.prodotti || []).length }} prodotti</span>
+              <span class="p-tag p-tag-info">{{ 'projects.productsCount' | translate: { count: (livello.prodotti || []).length } }}</span>
             </td>
           </tr>
           <!-- Righe prodotti espandibili -->
           <tr *ngIf="livello.expanded && livello.prodotti && livello.prodotti.length > 0">
             <td colspan="7" class="p-0">
               <div class="border-l-4 border-primary ml-4 p-4 bg-gray-25">
-                <h5 class="text-900 font-semibold mb-3">Prodotti del Livello</h5>
+                <h5 class="text-900 font-semibold mb-3">{{ 'projects.levelProducts' | translate }}</h5>
                 <p-table [value]="livello.prodotti" styleClass="p-datatable-sm">
                   <ng-template pTemplate="header">
                     <tr>
-                      <th>Tipo</th>
-                      <th>Variante</th>
-                      <th style="text-align: right">Quantità (m²)</th>
-                      <th style="text-align: right">Quantità (ft)</th>
+                      <th>{{ 'projects.productType' | translate }}</th>
+                      <th>{{ 'projects.variant' | translate }}</th>
+                      <th style="text-align: right">{{ 'projects.quantityMq' | translate }}</th>
+                      <th style="text-align: right">{{ 'projects.quantityFt' | translate }}</th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-prodotto>
@@ -326,7 +326,7 @@
                   <ng-template pTemplate="emptymessage">
                     <tr>
                       <td colspan="4" class="text-center p-4 text-500">
-                        Nessun prodotto definito per questo livello
+                        {{ 'projects.noProducts' | translate }}
                       </td>
                     </tr>
                   </ng-template>
@@ -338,7 +338,7 @@
         <ng-template pTemplate="emptymessage">
           <tr>
             <td colspan="7" class="text-center p-4 text-500">
-              Nessun livello definito
+              {{ 'projects.noLevelsFound' | translate }}
             </td>
           </tr>
         </ng-template>
@@ -350,11 +350,11 @@
     <div class="col-span-12 mb-4">
       <p-card>
         <div class="flex justify-between items-center mb-4">
-          <h4 class="text-900 font-bold">Registro Modifiche Progetto</h4>
+          <h4 class="text-900 font-bold">{{ 'projects.changeLog' | translate }}</h4>
           <div *ngIf="!loading && project" class="flex items-center gap-3">
-            <span class="p-tag p-tag-info">{{ modificheRaggruppate.length }} istanze</span>
+            <span class="p-tag p-tag-info">{{ 'projects.instances' | translate: { count: modificheRaggruppate.length } }}</span>
             <div class="flex items-center gap-2">
-              <label class="text-sm text-500">Visualizza:</label>
+              <label class="text-sm text-500">{{ 'projects.view' | translate }}:</label>
               <p-select 
                 [(ngModel)]="filtroModifiche" 
                 [options]="opzioniFiltroModifiche"
@@ -383,8 +383,8 @@
               <th style="width: 40px"></th>
               <th style="width: 120px">Data/Ora</th>
               <th style="width: 150px">Utente</th>
-              <th style="width: 100px">Campi Modificati</th>
-              <th>Dettagli Modifiche</th>
+              <th style="width: 100px">{{ 'projects.modifiedFields' | translate }}</th>
+              <th>{{ 'projects.changeDetails' | translate }}</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-istanza>
@@ -412,13 +412,13 @@
                 </div>
               </td>
               <td>
-                <span class="p-tag p-tag-info text-xs">{{ istanza.modifiche.length }} campi</span>
+                <span class="p-tag p-tag-info text-xs">{{ 'projects.fields' | translate: { count: istanza.modifiche.length } }}</span>
               </td>
               <td>
                 <div class="text-sm text-500">
                   <span>
                     {{ istanza.modifiche[0]?.campoModificato }}
-                    <span *ngIf="istanza.modifiche.length > 1"> e altri {{ istanza.modifiche.length - 1 }} campi</span>
+                    <span *ngIf="istanza.modifiche.length > 1"> {{ 'projects.andOthers' | translate: { count: istanza.modifiche.length - 1 } }}</span>
                   </span>
                 </div>
               </td>
@@ -439,7 +439,7 @@
                       </div>
                       <div class="flex-1 flex items-center gap-4">
                         <div class="w-40">
-                          <span class="text-xs text-500">Da:</span>
+                          <span class="text-xs text-500">{{ 'projects.from' | translate }}:</span>
                           <span class="text-sm font-medium" *ngIf="modifica.valorePrecedente; else noValue">
                             {{ modifica.valorePrecedente }}
                           </span>
@@ -448,7 +448,7 @@
                           </ng-template>
                         </div>
                         <div class="w-40">
-                          <span class="text-xs text-500">A:</span>
+                          <span class="text-xs text-500">{{ 'projects.to' | translate }}:</span>
                           <span class="text-sm font-medium" *ngIf="modifica.nuovoValore; else noValueNew">
                             {{ modifica.nuovoValore }}
                           </span>
@@ -467,8 +467,8 @@
             <tr>
               <td colspan="5" class="text-center p-4 text-500">
                 <i class="pi pi-history text-2xl mb-2 block"></i>
-                <p>Nessuna modifica registrata</p>
-                <p class="text-sm">Le modifiche all'anagrafica del progetto verranno mostrate qui</p>
+                <p>{{ 'projects.noChanges' | translate }}</p>
+                <p class="text-sm">{{ 'projects.changeLogDescription' | translate }}</p>
               </td>
             </tr>
           </ng-template>
@@ -482,8 +482,8 @@
     <div class="sticky top-20">
       <p-card>
         <div class="flex justify-between items-center mb-4">
-          <h4 class="text-900 font-bold">Commenti Progetto</h4>
-          <span class="p-tag p-tag-info">{{ chatMessages.length }} messaggi</span>
+          <h4 class="text-900 font-bold">{{ 'projects.projectComments' | translate }}</h4>
+          <span class="p-tag p-tag-info">{{ 'projects.messages' | translate: { count: chatMessages.length } }}</span>
         </div>
 
         <!-- Message Input -->
@@ -492,7 +492,7 @@
             <textarea 
               pTextarea 
               [(ngModel)]="newMessage"
-              placeholder="Scrivi un messaggio..."
+              [placeholder]="'projects.writeMessage' | translate"
               rows="2"
               class="flex-1"
               (keydown.enter)="sendMessage($event)"
@@ -508,7 +508,7 @@
             </button>
           </div>
           <div class="text-xs text-500 mt-2">
-            Premi Invio per inviare, Shift+Invio per nuova riga
+            {{ 'projects.pressEnter' | translate }}
           </div>
         </div>
 
@@ -540,8 +540,8 @@
             
             <div *ngIf="chatMessages.length === 0" class="text-center text-500 py-8">
               <i class="pi pi-comments text-4xl mb-2 block"></i>
-              <p>Nessun messaggio ancora</p>
-              <p class="text-sm">Inizia la conversazione!</p>
+              <p>{{ 'projects.noMessages' | translate }}</p>
+              <p class="text-sm">{{ 'projects.startConversation' | translate }}</p>
             </div>
           </div>
         </div>

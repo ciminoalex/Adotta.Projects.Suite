@@ -1,18 +1,18 @@
 <div class="card">
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-900 font-bold text-2xl">
-      {{ isEdit ? 'Modifica Progetto' : 'Nuovo Progetto' }}
+      {{ isEdit ? ('projects.editProject' | translate) : ('projects.newProject' | translate) }}
     </h2>
     <div class="flex gap-2">
       <p-button [outlined]="true" routerLink="/projects">
         <i class="pi pi-times mr-2"></i>
-        Annulla
+        {{ 'common.cancel' | translate }}
       </p-button>
       <p-button severity="primary"
               (click)="saveProject()" 
               [disabled]="!projectForm.valid || loading">
         <i class="pi pi-save mr-2"></i>
-        {{ loading ? 'Salvataggio...' : 'Salva' }}
+        {{ loading ? ('projects.saving' | translate) : ('common.save' | translate) }}
       </p-button>
     </div>
   </div>
@@ -20,7 +20,7 @@
   <form [formGroup]="projectForm" (ngSubmit)="saveProject()">
     <!-- Informazioni Base -->
     <div class="card mb-4">
-      <h3 class="text-900 font-bold text-xl mb-4">Informazioni Base</h3>
+      <h3 class="text-900 font-bold text-xl mb-4">{{ 'projects.basicInfo' | translate }}</h3>
       
       <!-- Skeleton loader for project data -->
       <div *ngIf="loadingProject" class="grid grid-cols-12 gap-4">
@@ -69,11 +69,11 @@
       <!-- Actual form fields -->
       <div *ngIf="!loadingProject" class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Numero Progetto *</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.projectNumber' | translate }} *</label>
           <input type="text" 
                  pInputText 
                  formControlName="numeroProgetto"
-                 placeholder="es. 25.087"
+                 [placeholder]="'projects.projectNumber' | translate"
                  class="w-full">
           <small *ngIf="projectForm.get('numeroProgetto')?.invalid && projectForm.get('numeroProgetto')?.touched" 
                  class="text-red-500">
@@ -82,20 +82,20 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Nome Progetto *</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.projectName' | translate }} *</label>
           <input type="text" 
                  pInputText 
                  formControlName="nomeProgetto"
-                 placeholder="Nome del progetto"
+                 [placeholder]="'projects.projectNamePlaceholder' | translate"
                  class="w-full">
           <small *ngIf="projectForm.get('nomeProgetto')?.invalid && projectForm.get('nomeProgetto')?.touched" 
                  class="text-red-500">
-            Nome progetto obbligatorio
+            {{ 'validation.required' | translate }}
           </small>
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Cliente *</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.customer' | translate }} *</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <p-autoComplete 
             *ngIf="!loadingLookupData"
@@ -103,7 +103,7 @@
             [suggestions]="filteredClienti"
             (completeMethod)="filterClienti($event)"
             (onSelect)="onClienteSelected($event)"
-            placeholder="Cerca cliente..."
+            [placeholder]="'projects.customer' | translate"
             optionLabel="nome"
             [minLength]="1" 
             class="w-full"
@@ -112,13 +112,13 @@
         </div>
 
         <div class="col-span-12 md:col-span-3">
-          <label class="block text-900 font-medium mb-2">Stato</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.state' | translate }}</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <p-select 
             *ngIf="!loadingLookupData"
             [options]="stati" 
             formControlName="stato"
-            placeholder="Seleziona stato"
+            [placeholder]="'common.select' | translate"
             optionLabel="nome"
             optionValue="id"
             [showClear]="true"
@@ -128,32 +128,32 @@
         </div>
 
         <div class="col-span-12 md:col-span-3">
-          <label class="block text-900 font-medium mb-2">Città</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.city' | translate }}</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <input 
             *ngIf="!loadingLookupData"
             type="text" 
             pInputText 
             formControlName="citta"
-            placeholder="Inserisci città"
+            [placeholder]="'projects.cityPlaceholder' | translate"
             class="w-full">
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Codice SAP</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.sapCode' | translate }}</label>
           <input type="text" 
                  pInputText 
                  formControlName="codiceSAP"
-                 placeholder="Codice SAP"
+                 [placeholder]="'projects.sapCodePlaceholder' | translate"
                  class="w-full">
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Stato Progetto</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.projectStatus' | translate }}</label>
           <p-select 
             [options]="statusOptions" 
             formControlName="statoProgetto"
-            placeholder="Seleziona stato"
+            [placeholder]="'common.select' | translate"
             optionLabel="label"
             optionValue="value"
             class="w-full"
@@ -162,7 +162,7 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Data Inizio Installazione</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.installationStartDate' | translate }}</label>
           <input type="date" 
                  pInputText 
                  formControlName="dataInizioInstallazione"
@@ -170,7 +170,7 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Data Fine Installazione</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.installationEndDate' | translate }}</label>
           <input type="date" 
                  pInputText 
                  formControlName="dataFineInstallazione"
@@ -178,10 +178,10 @@
         </div>
 
         <div class="col-span-12">
-          <label class="block text-900 font-medium mb-2">Note</label>
+          <label class="block text-900 font-medium mb-2">{{ 'timesheet.notes' | translate }}</label>
           <textarea 
             formControlName="note"
-            placeholder="Note generali sul progetto"
+            [placeholder]="'projects.notesPlaceholder' | translate"
             rows="3"
             class="w-full p-3 border-1 surface-border rounded">
           </textarea>
@@ -191,7 +191,7 @@
 
     <!-- Team e Responsabilità -->
     <div class="card mb-4">
-      <h3 class="text-900 font-bold text-xl mb-4">Team e Responsabilità</h3>
+      <h3 class="text-900 font-bold text-xl mb-4">{{ 'projects.teamAndResponsibilities' | translate }}</h3>
       
       <!-- Skeleton loader for team data -->
       <div *ngIf="loadingProject" class="grid grid-cols-12 gap-4">
@@ -220,13 +220,13 @@
       <!-- Actual team fields -->
       <div *ngIf="!loadingProject" class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Team Tecnico</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.technicalTeam' | translate }}</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <p-select 
             *ngIf="!loadingLookupData"
             [options]="teamTecnici" 
             formControlName="teamTecnico"
-            placeholder="Seleziona team tecnico"
+            [placeholder]="'common.select' | translate"
             optionLabel="nome"
             optionValue="id"
             [showClear]="true"
@@ -236,13 +236,13 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Team APL</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.aplTeam' | translate }}</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <p-select 
             *ngIf="!loadingLookupData"
             [options]="teamAPL" 
             formControlName="teamAPL"
-            placeholder="Seleziona team APL"
+            [placeholder]="'common.select' | translate"
             optionLabel="nome"
             optionValue="id"
             [showClear]="true"
@@ -252,13 +252,13 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Rappresentante Vendite</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.salesRepresentative' | translate }}</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <p-select 
             *ngIf="!loadingLookupData"
             [options]="sales" 
             formControlName="sales"
-            placeholder="Seleziona sales"
+            [placeholder]="'common.select' | translate"
             optionLabel="nome"
             optionValue="id"
             [showClear]="true"
@@ -268,13 +268,13 @@
         </div>
 
         <div class="col-span-12 md:col-span-6">
-          <label class="block text-900 font-medium mb-2">Project Manager</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.projectManager' | translate }}</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <p-select 
             *ngIf="!loadingLookupData"
             [options]="projectManagers" 
             formControlName="projectManager"
-            placeholder="Seleziona PM"
+            [placeholder]="'common.select' | translate"
             optionLabel="nome"
             optionValue="id"
             [showClear]="true"
@@ -284,13 +284,13 @@
         </div>
 
         <div class="col-span-12">
-          <label class="block text-900 font-medium mb-2">Team Installazione</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.installationTeam' | translate }}</label>
           <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
           <p-select 
             *ngIf="!loadingLookupData"
             [options]="squadreInstallazione" 
             formControlName="teamInstallazione"
-            placeholder="Seleziona squadra installazione"
+            [placeholder]="'common.select' | translate"
             optionLabel="nome"
             optionValue="id"
             [showClear]="true"
@@ -303,7 +303,7 @@
 
     <!-- Dati Finanziari -->
     <div class="card mb-4">
-      <h3 class="text-900 font-bold text-xl mb-4">Dati Finanziari</h3>
+      <h3 class="text-900 font-bold text-xl mb-4">{{ 'projects.financialData' | translate }}</h3>
       
       <!-- Skeleton loader for financial data -->
       <div *ngIf="loadingProject" class="grid grid-cols-12 gap-4">
@@ -324,35 +324,35 @@
       <!-- Actual financial fields -->
       <div *ngIf="!loadingProject" class="grid grid-cols-12 gap-4">
         <div class="col-span-12 md:col-span-4">
-          <label class="block text-900 font-medium mb-2">Valore Progetto</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.projectValue' | translate }}</label>
           <p-inputNumber 
             formControlName="valoreProgetto"
             mode="currency"
             currency="EUR"
             locale="it-IT"
-            placeholder="Valore progetto"
+            [placeholder]="'projects.projectValuePlaceholder' | translate"
             class="w-full">
           </p-inputNumber>
         </div>
 
         <div class="col-span-12 md:col-span-4">
-          <label class="block text-900 font-medium mb-2">Margine Previsto (%)</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.expectedMargin' | translate }}</label>
           <p-inputNumber 
             formControlName="marginePrevisto"
             suffix="%"
-            placeholder="Margine previsto"
+            [placeholder]="'projects.expectedMarginPlaceholder' | translate"
             class="w-full">
           </p-inputNumber>
         </div>
 
         <div class="col-span-12 md:col-span-4">
-          <label class="block text-900 font-medium mb-2">Costi Sostenuti</label>
+          <label class="block text-900 font-medium mb-2">{{ 'projects.costsIncurred' | translate }}</label>
           <p-inputNumber 
             formControlName="costiSostenuti"
             mode="currency"
             currency="EUR"
             locale="it-IT"
-            placeholder="Costi sostenuti"
+            [placeholder]="'projects.costsIncurredPlaceholder' | translate"
             [readonly]="true"
             class="w-full">
           </p-inputNumber>
@@ -363,10 +363,10 @@
     <!-- Livelli Progetto -->
     <div class="card mb-4">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-900 font-bold text-xl">Livelli Progetto</h3>
+        <h3 class="text-900 font-bold text-xl">{{ 'projects.projectLevels' | translate }}</h3>
         <p-button *ngIf="!loadingProject" [outlined]="true" (click)="addLevel()">
           <i class="pi pi-plus mr-2"></i>
-          Aggiungi Livello
+          {{ 'projects.addLevel' | translate }}
         </p-button>
       </div>
       
@@ -384,11 +384,11 @@
         <ng-template pTemplate="header">
           <tr>
             <th style="width: 40px"></th>
-            <th>Nome</th>
-            <th>Ordine</th>
-            <th>Descrizione</th>
-            <th>Data Inizio</th>
-            <th>Data Fine</th>
+            <th>{{ 'projects.levelName' | translate }}</th>
+            <th>{{ 'projects.order' | translate }}</th>
+            <th>{{ 'projects.description' | translate }}</th>
+            <th>{{ 'projects.installationStartDate' | translate }}</th>
+            <th>{{ 'projects.installationEndDate' | translate }}</th>
             <th style="text-align: right">Prodotti</th>
             <th style="width: 180px">Azioni</th>
           </tr>
@@ -414,13 +414,13 @@
             </td>
             <td>
               <div class="flex gap-1">
-                <p-button [text]="true" size="small" (click)="editLevel(livello)" pTooltip="Modifica Livello">
+                <p-button [text]="true" size="small" (click)="editLevel(livello)" [pTooltip]="'projects.editLevel' | translate" tooltipPosition="top">
                   <i class="pi pi-pencil"></i>
                 </p-button>
-                <p-button [text]="true" size="small" (click)="addProduct(livello)" pTooltip="Aggiungi Prodotto">
+                <p-button [text]="true" size="small" (click)="addProduct(livello)" [pTooltip]="'projects.addProduct' | translate" tooltipPosition="top">
                   <i class="pi pi-plus"></i>
                 </p-button>
-                <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteLevel(livello)" pTooltip="Elimina Livello">
+                <p-button [text]="true" [severity]="'danger'" size="small" (click)="deleteLevel(livello)" [pTooltip]="'common.delete' | translate" tooltipPosition="top">
                   <i class="pi pi-trash"></i>
                 </p-button>
               </div>
@@ -431,19 +431,19 @@
             <td colspan="8" class="p-0">
               <div class="border-l-4 border-primary ml-4 p-4 bg-gray-25">
                 <div class="flex items-center justify-between mb-3">
-                  <h5 class="text-900 font-semibold m-0">Prodotti del Livello</h5>
+                  <h5 class="text-900 font-semibold m-0">{{ 'projects.levelProducts' | translate }}</h5>
                   <p-button [text]="true" size="small" (click)="addProduct(livello)">
                     <i class="pi pi-plus mr-2"></i>
-                    Aggiungi Prodotto
+                    {{ 'projects.addProduct' | translate }}
                   </p-button>
                 </div>
                 <p-table [value]="livello.prodotti" [paginator]="false" styleClass="p-datatable-sm">
                   <ng-template pTemplate="header">
                     <tr>
-                      <th>Tipo Prodotto</th>
-                      <th>Variante</th>
-                      <th>Quantità (m²)</th>
-                      <th>Quantità (ft)</th>
+                      <th>{{ 'projects.productType' | translate }}</th>
+                      <th>{{ 'projects.variant' | translate }}</th>
+                      <th>{{ 'projects.quantityMq' | translate }}</th>
+                      <th>{{ 'projects.quantityFt' | translate }}</th>
                       <th style="width: 120px">Azioni</th>
                     </tr>
                   </ng-template>
@@ -467,7 +467,7 @@
                   </ng-template>
                   <ng-template pTemplate="emptymessage">
                     <tr>
-                      <td colspan="5" class="text-center text-500">Nessun prodotto aggiunto a questo livello</td>
+                      <td colspan="5" class="text-center text-500">{{ 'projects.noProducts' | translate }}</td>
                     </tr>
                   </ng-template>
                 </p-table>
@@ -477,7 +477,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="8" class="text-center text-500">Nessun livello aggiunto</td>
+            <td colspan="8" class="text-center text-500">{{ 'projects.noLevels' | translate }}</td>
           </tr>
         </ng-template>
       </p-table>
@@ -486,7 +486,7 @@
 </div>
 
 <!-- Dialog per Livello -->
-<p-dialog header="{{ editingLevel ? 'Modifica Livello' : 'Nuovo Livello' }}" 
+<p-dialog [header]="editingLevel ? ('projects.editLevel' | translate) : ('projects.newLevel' | translate)" 
           [(visible)]="showLevelDialog" 
           [modal]="true" 
           [style]="{width: '600px'}"
@@ -494,35 +494,35 @@
   <form [formGroup]="levelForm" *ngIf="levelForm">
     <div class="grid grid-cols-12 gap-4">
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Nome Livello *</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.levelName' | translate }} *</label>
         <input type="text" 
                pInputText 
                formControlName="nome"
-               placeholder="Nome del livello"
+               [placeholder]="'projects.levelName' | translate"
                class="w-full">
       </div>
       
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Ordine *</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.order' | translate }} *</label>
         <p-inputNumber 
           formControlName="ordine"
-          placeholder="Ordine"
+          [placeholder]="'projects.order' | translate"
           class="w-full">
         </p-inputNumber>
       </div>
       
       <div class="col-span-12">
-        <label class="block text-900 font-medium mb-2">Descrizione</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.description' | translate }}</label>
         <textarea 
           formControlName="descrizione"
-          placeholder="Descrizione del livello"
+          [placeholder]="'projects.description' | translate"
           rows="3"
           class="w-full p-3 border-1 surface-border rounded">
         </textarea>
       </div>
       
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Data Inizio Installazione</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.installationStartDate' | translate }}</label>
         <input type="date" 
                pInputText 
                formControlName="dataInizioInstallazione"
@@ -530,7 +530,7 @@
       </div>
       
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Data Fine Installazione</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.installationEndDate' | translate }}</label>
         <input type="date" 
                pInputText 
                formControlName="dataFineInstallazione"
@@ -541,16 +541,16 @@
   
   <ng-template pTemplate="footer">
     <button type="button" class="p-button p-button-text" (click)="cancelLevelEdit()">
-      Annulla
+      {{ 'common.cancel' | translate }}
     </button>
     <button type="button" class="p-button p-button-primary" (click)="saveLevel()" [disabled]="!levelForm?.valid">
-      Salva
+      {{ 'common.save' | translate }}
     </button>
   </ng-template>
 </p-dialog>
 
 <!-- Dialog per Prodotto -->
-<p-dialog header="{{ editingProduct ? 'Modifica Prodotto' : 'Nuovo Prodotto' }}" 
+<p-dialog [header]="editingProduct ? ('projects.editProduct' | translate) : ('projects.newProduct' | translate)" 
           [(visible)]="showProductDialog" 
           [modal]="true" 
           [style]="{width: '600px'}"
@@ -561,19 +561,19 @@
         <div class="p-3 bg-blue-50 border border-blue-200 rounded mb-3">
           <p class="text-sm text-blue-800 m-0">
             <i class="pi pi-info-circle mr-2"></i>
-            Il prodotto verrà aggiunto al livello selezionato
+            {{ 'projects.productWillBeAdded' | translate }}
           </p>
         </div>
       </div>
       
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Tipo Prodotto *</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.productType' | translate }} *</label>
         <p-skeleton *ngIf="loadingLookupData" height="3rem"></p-skeleton>
         <p-select 
           *ngIf="!loadingLookupData"
           [options]="prodottiMaster" 
           formControlName="tipoProdotto"
-          placeholder="Seleziona tipo prodotto"
+          [placeholder]="'common.select' | translate"
           optionLabel="nome"
           optionValue="nome"
           [showClear]="true"
@@ -582,41 +582,41 @@
       </div>
       
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Variante</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.variant' | translate }}</label>
         <input type="text" 
                pInputText 
                formControlName="variante"
-               placeholder="Variante del prodotto"
+               [placeholder]="'projects.variant' | translate"
                class="w-full">
       </div>
       
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Quantità (m²) *</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.quantityMq' | translate }} *</label>
         <p-inputNumber 
           formControlName="qMq"
-          placeholder="Metri quadri"
+          [placeholder]="'projects.squareMeters' | translate"
           [min]="0"
           [step]="0.01"
           class="w-full">
         </p-inputNumber>
-        <small class="text-500">Compila almeno una quantità tra m² o ft</small>
+        <small class="text-500">{{ 'projects.fillAtLeastOneQuantity' | translate }}</small>
       </div>
       
       <div class="col-span-12 md:col-span-6">
-        <label class="block text-900 font-medium mb-2">Quantità (ft) *</label>
+        <label class="block text-900 font-medium mb-2">{{ 'projects.quantityFt' | translate }} *</label>
         <p-inputNumber 
           formControlName="qFt"
-          placeholder="Piedi quadri"
+          [placeholder]="'projects.squareFeet' | translate"
           [min]="0"
           [step]="0.01"
           class="w-full">
         </p-inputNumber>
-        <small class="text-500">Compila almeno una quantità tra m² o ft</small>
+        <small class="text-500">{{ 'projects.fillAtLeastOneQuantity' | translate }}</small>
       </div>
       <div class="col-span-12" *ngIf="productForm?.hasError('quantityRequired') && productForm?.touched">
         <small class="text-red-500">
           <i class="pi pi-exclamation-circle mr-1"></i>
-          È obbligatorio compilare almeno una quantità tra m² o ft
+          {{ 'projects.quantityRequired' | translate }}
         </small>
       </div>
     </div>
@@ -624,10 +624,10 @@
   
   <ng-template pTemplate="footer">
     <button type="button" class="p-button p-button-text" (click)="cancelProductEdit()">
-      Annulla
+      {{ 'common.cancel' | translate }}
     </button>
     <button type="button" class="p-button p-button-primary" (click)="saveProduct()" [disabled]="!productForm?.valid || productForm?.hasError('quantityRequired')">
-      Salva
+      {{ 'common.save' | translate }}
     </button>
   </ng-template>
 </p-dialog>

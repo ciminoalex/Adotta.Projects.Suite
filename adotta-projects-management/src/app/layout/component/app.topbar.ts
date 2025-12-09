@@ -7,12 +7,14 @@ import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
 import { LayoutService } from '../service/layout.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService, SupportedLanguage } from '../../services/translation.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { filter } from 'rxjs/operators';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, StyleClassModule, AvatarModule, MenuModule],
+    imports: [RouterModule, CommonModule, StyleClassModule, AvatarModule, MenuModule, TranslatePipe],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -20,12 +22,16 @@ import { filter } from 'rxjs/operators';
             </button>
             <a class="layout-topbar-logo" routerLink="/">
 
-                <span>ADOTTA ITALIA</span>
+                <span>{{ 'auth.branding' | translate }}</span>
             </a>
         </div>
 
         <div class="layout-topbar-actions">
             <div class="layout-config-menu">
+                <button type="button" class="layout-topbar-action" (click)="languageMenu.toggle($event)" #languageMenuButton>
+                    <i class="pi pi-globe"></i>
+                </button>
+                <p-menu #languageMenu [model]="languageMenuItems" [popup]="true"></p-menu>
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
@@ -81,13 +87,16 @@ import { filter } from 'rxjs/operators';
 export class AppTopbar implements OnInit {
     items!: MenuItem[];
     userMenuItems: MenuItem[] = [];
+    languageMenuItems: MenuItem[] = [];
     userInitials: string = '';
+    currentLanguage: SupportedLanguage = 'en';
 
     constructor(
         public layoutService: LayoutService,
         public authService: AuthService,
         private router: Router,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private translationService: TranslationService
     ) {
         // Listen to navigation events to update user info
         this.router.events
@@ -99,12 +108,51 @@ export class AppTopbar implements OnInit {
 
     ngOnInit() {
         this.updateUserInfo();
+        this.initLanguageMenu();
+        this.currentLanguage = this.translationService.getCurrentLanguage();
+        
+        // Subscribe to language changes
+        this.translationService.language$.subscribe(lang => {
+            this.currentLanguage = lang;
+            this.initLanguageMenu();
+            this.initUserMenu();
+        });
+    }
+
+    initLanguageMenu() {
+        this.languageMenuItems = [
+            {
+                label: 'English',
+                icon: this.currentLanguage === 'en' ? 'pi pi-check' : '',
+                command: () => this.setLanguage('en')
+            },
+            {
+                label: 'Italiano',
+                icon: this.currentLanguage === 'it' ? 'pi pi-check' : '',
+                command: () => this.setLanguage('it')
+            }
+        ];
+    }
+
+    setLanguage(lang: SupportedLanguage) {
+        this.translationService.setLanguage(lang).subscribe({
+            next: () => {
+                this.currentLanguage = lang;
+                this.initLanguageMenu();
+                this.initUserMenu();
+                // Forza il change detection per aggiornare tutti i componenti
+                this.cdr.markForCheck();
+            },
+            error: (error) => {
+                console.error('Error changing language:', error);
+            }
+        });
     }
 
     updateUserInfo() {
         this.userInitials = this.authService.getUserInitials();
         this.initUserMenu();
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
     }
 
     initUserMenu() {
@@ -120,7 +168,7 @@ export class AppTopbar implements OnInit {
                     separator: true
                 },
                 {
-                    label: 'Logout',
+                    label: this.translationService.translate('common.logout') || 'Logout',
                     icon: 'pi pi-sign-out',
                     command: () => this.logout()
                 }

@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { MockProjectService } from '../../services/mock/mock-project.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { Project, ProjectStatus } from '../../models/project.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ButtonModule],
+  imports: [CommonModule, RouterModule, ButtonModule, TranslatePipe],
   templateUrl: './dashboard.html'
 })
 export class Dashboard implements OnInit {

@@ -5,7 +5,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
       <div class="flex justify-between gap-4">
         <div class="flex flex-col gap-2">
-          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Totale Ore</span>
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'timesheet.totalHours' | translate }}</span>
           <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.totaleOre }}h</div>
         </div>
         <div class="flex items-center justify-center bg-linear-to-b from-blue-400 dark:from-blue-300 to-blue-600 dark:to-blue-500 rounded-lg w-10 h-10">
@@ -13,7 +13,7 @@
         </div>
       </div>
       <div class="mt-4">
-        <span class="text-surface-500 dark:text-surface-300 leading-tight">Totali rendicontate</span>
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">{{ 'timesheet.totalHoursReported' | translate }}</span>
       </div>
     </div>
 
@@ -21,7 +21,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
       <div class="flex justify-between gap-4">
         <div class="flex flex-col gap-2">
-          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Rendicontazioni</span>
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'timesheet.reports' | translate }}</span>
           <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.totaleRendicontazioni }}</div>
         </div>
         <div class="flex items-center justify-center bg-linear-to-b from-orange-400 dark:from-orange-300 to-orange-600 dark:to-orange-500 rounded-lg w-10 h-10">
@@ -29,7 +29,7 @@
         </div>
       </div>
       <div class="mt-4">
-        <span class="text-surface-500 dark:text-surface-300 leading-tight">Timesheet totali</span>
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">{{ 'timesheet.totalTimesheets' | translate }}</span>
       </div>
     </div>
 
@@ -37,7 +37,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
       <div class="flex justify-between gap-4">
         <div class="flex flex-col gap-2">
-          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Progetti</span>
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'projects.title' | translate }}</span>
           <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.progettiRendicontati }}</div>
         </div>
         <div class="flex items-center justify-center bg-linear-to-b from-green-400 dark:from-green-300 to-green-600 dark:to-green-500 rounded-lg w-10 h-10">
@@ -45,7 +45,7 @@
         </div>
       </div>
       <div class="mt-4">
-        <span class="text-surface-500 dark:text-surface-300 leading-tight">Con timesheet attivi</span>
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">{{ 'timesheet.projectsWithTimesheets' | translate }}</span>
       </div>
     </div>
 
@@ -53,7 +53,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm p-5 rounded-2xl">
       <div class="flex justify-between gap-4">
         <div class="flex flex-col gap-2">
-          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">Media Ore/Progetto</span>
+          <span class="text-surface-700 dark:text-surface-300 font-normal leading-tight">{{ 'timesheet.averageHoursPerProject' | translate }}</span>
           <div class="text-surface-900 dark:text-surface-0 font-semibold text-2xl! leading-tight!">{{ summary.mediaOrePerProgetto }}h</div>
         </div>
         <div class="flex items-center justify-center bg-linear-to-b from-purple-400 dark:from-purple-300 to-purple-600 dark:to-purple-500 rounded-lg w-10 h-10">
@@ -61,14 +61,14 @@
         </div>
       </div>
       <div class="mt-4">
-        <span class="text-surface-500 dark:text-surface-300 leading-tight">Media per progetto</span>
+        <span class="text-surface-500 dark:text-surface-300 leading-tight">{{ 'timesheet.averageHoursPerProject' | translate }}</span>
       </div>
     </div>
   </div>
   <!-- Toolbar -->
   <div class="card mb-4">
     <div class="flex align-items-center gap-2">
-      <p-button label="Nuova Rendicontazione" icon="pi pi-plus" severity="primary" routerLink="/timesheet/new"></p-button>
+      <p-button [label]="'timesheet.newReport' | translate" icon="pi pi-plus" severity="primary" routerLink="/timesheet/new"></p-button>
       
       <div class="flex align-items-center gap-2 ml-auto">
         <p-iconfield iconPosition="left" [style]="{'width': '200px'}">
@@ -84,14 +84,14 @@
           [(ngModel)]="dateRange" 
           selectionMode="range" 
           [showIcon]="true"
-          placeholder="Filtra per data"
+          [placeholder]="'timesheet.filterByDate' | translate"
           [showButtonBar]="true"
           (onSelect)="applyDateFilter()"
           [showClear]="true"
           [style]="{'width': '200px'}"
           inputStyleClass="w-full">
         </p-datepicker>
-        <p-button label="Export" icon="pi pi-upload" severity="secondary" (click)="exportExcel()"></p-button>
+        <p-button [label]="'common.export' | translate" icon="pi pi-upload" severity="secondary" (click)="exportExcel()"></p-button>
       </div>
     </div>
   </div>
@@ -103,7 +103,7 @@
       [paginator]="true" 
       [rows]="25"
       [showCurrentPageReport]="true"
-      currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} progetti"
+      [currentPageReportTemplate]="currentPageReportTemplate"
       [loading]="loading"
       [scrollable]="true" 
       [scrollHeight]="tableHeight"
@@ -114,23 +114,23 @@
       
       <ng-template #caption>
         <div class="flex align-items-center justify-content-between">
-          <h5 class="m-0" style="margin-bottom: 0px;">Timesheet Overview</h5>
+          <h5 class="m-0" style="margin-bottom: 0px;">{{ 'timesheet.overview' | translate }}</h5>
           <div *ngIf="isDetailMode()" class="flex align-items-center gap-2 ml-auto">
-            <p-tag value="Dettaglio" severity="info"></p-tag>
-            <p-button [text]="true" icon="pi pi-arrow-left" label="Torna all'overview" (click)="backToOverview()"></p-button>
+            <p-tag [value]="'timesheet.detailMode' | translate" severity="info"></p-tag>
+            <p-button [text]="true" icon="pi pi-arrow-left" [label]="'timesheet.backToOverview' | translate" (click)="backToOverview()"></p-button>
           </div>
         </div>
       </ng-template>
 
     <ng-template #header>
       <tr>
-        <th style="width: 150px"># Progetto</th>
-        <th>Nome Progetto</th>
-        <th class="hidden md:table-cell">Cliente</th>
-        <th style="width: 120px">Totale Ore</th>
-        <th class="hidden lg:table-cell" style="width: 150px">Rendicontazioni</th>
-        <th class="hidden lg:table-cell" style="width: 180px">Ultima Rendicontazione</th>
-        <th style="width: 80px">Azioni</th>
+        <th style="width: 150px">{{ 'timesheet.projectNumber' | translate }}</th>
+        <th>{{ 'projects.projectName' | translate }}</th>
+        <th class="hidden md:table-cell">{{ 'projects.customer' | translate }}</th>
+        <th style="width: 120px">{{ 'timesheet.totalHours' | translate }}</th>
+        <th class="hidden lg:table-cell" style="width: 150px">{{ 'timesheet.reports' | translate }}</th>
+        <th class="hidden lg:table-cell" style="width: 180px">{{ 'timesheet.lastReport' | translate }}</th>
+        <th style="width: 80px">{{ 'common.actions' | translate }}</th>
       </tr>
     </ng-template>
 
@@ -155,7 +155,7 @@
             icon="pi pi-eye" 
             [text]="true" 
             severity="secondary"
-            pTooltip="Visualizza dettagli"
+            [pTooltip]="'timesheet.viewDetails' | translate"
             [routerLink]="['/timesheet/project', item.numeroProgetto]">
           </p-button>
         </td>
@@ -167,7 +167,7 @@
         <td colspan="7" class="text-center p-4">
           <div class="text-500">
             <i class="pi pi-info-circle mr-2"></i>
-            Nessun timesheet trovato
+            {{ 'timesheet.noTimesheetsFound' | translate }}
           </div>
         </td>
       </tr>
@@ -178,16 +178,16 @@
   <!-- Detail section -->
   <div class="card mt-4" *ngIf="isDetailMode() && selectedProject">
     <div class="flex align-items-center justify-content-between mb-3">
-      <h5 class="m-0">Dettaglio rendicontazioni - {{ selectedProject.numeroProgetto }} | {{ selectedProject.nomeProgetto }}</h5>
+      <h5 class="m-0">{{ 'timesheet.reportDetails' | translate: { projectNumber: selectedProject.numeroProgetto, projectName: selectedProject.nomeProgetto } }}</h5>
     </div>
 
     <p-table [value]="selectedProject.rendicontazioni || []" styleClass="p-datatable-sm">
       <ng-template pTemplate="header">
         <tr>
-          <th style="width: 140px">Data</th>
-          <th style="width: 120px">Ore</th>
-          <th class="hidden md:table-cell">Utente</th>
-          <th>Note</th>
+          <th style="width: 140px">{{ 'timesheet.date' | translate }}</th>
+          <th style="width: 120px">{{ 'timesheet.hours' | translate }}</th>
+          <th class="hidden md:table-cell">{{ 'timesheet.user' | translate }}</th>
+          <th>{{ 'timesheet.notes' | translate }}</th>
           <th style="width: 60px"></th>
         </tr>
       </ng-template>
@@ -201,7 +201,7 @@
             <button 
               class="p-button p-button-text p-button-sm p-button-danger" 
               (click)="deleteTimesheetEntry(r)"
-              pTooltip="Elimina rendicontazione">
+              [pTooltip]="'timesheet.deleteReport' | translate" tooltipPosition="top">
               <i class="pi pi-trash"></i>
             </button>
           </td>
@@ -209,7 +209,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="5" class="text-center p-4 text-500">Nessuna rendicontazione presente</td>
+          <td colspan="5" class="text-center p-4 text-500">{{ 'timesheet.noReportsPresent' | translate }}</td>
         </tr>
       </ng-template>
     </p-table>

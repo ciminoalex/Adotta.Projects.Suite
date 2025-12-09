@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -10,10 +10,15 @@ import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { ProdottoMaster } from '../../models/lookup.model';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-prodotti-master',
@@ -30,7 +35,9 @@ import { ProdottoMaster } from '../../models/lookup.model';
     DialogModule,
     ConfirmDialogModule,
     ToastModule,
-    ToolbarModule
+    ToolbarModule,
+    TranslatePipe,
+    TooltipModule
   ],
   providers: [ConfirmationService, MessageService],
   template: `
@@ -39,13 +46,13 @@ import { ProdottoMaster } from '../../models/lookup.model';
       <p-toolbar>
         <ng-template pTemplate="left">
           <div class="flex gap-2">
-            <p-button icon="pi pi-plus" label="Nuovo Prodotto Master" (click)="openDialog()">
+            <p-button icon="pi pi-plus" [label]="'lookup.newMasterProduct' | translate" (click)="openDialog()">
             </p-button>
           </div>
         </ng-template>
         <ng-template pTemplate="right">
           <p-iconfield iconPosition="left">
-              <input pInputText type="text" placeholder="Cerca prodotti master..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+              <input pInputText type="text" [placeholder]="'lookup.searchMasterProducts' | translate" [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
               <p-inputicon class="pi pi-search" />
           </p-iconfield>
         </ng-template>
@@ -60,7 +67,7 @@ import { ProdottoMaster } from '../../models/lookup.model';
         [showGridlines]="false"
         stripedRows
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} prodotti master"
+        [currentPageReportTemplate]="currentPageReportTemplate"
         [globalFilterFields]="['nome','categoria','codiceSAP','unitaMisura']"
         [loading]="loading"
         styleClass="p-datatable-sm">
@@ -68,23 +75,23 @@ import { ProdottoMaster } from '../../models/lookup.model';
         <ng-template pTemplate="header">
           <tr>
             <th pSortableColumn="nome">
-              Nome Prodotto
+              {{ 'lookup.productName' | translate }}
               <p-sortIcon field="nome"></p-sortIcon>
             </th>
             <th pSortableColumn="codiceSAP">
-              Codice SAP
+              {{ 'projects.sapCode' | translate }}
               <p-sortIcon field="codiceSAP"></p-sortIcon>
             </th>
             <th pSortableColumn="categoria">
-              Categoria
+              {{ 'lookup.category' | translate }}
               <p-sortIcon field="categoria"></p-sortIcon>
             </th>
             <th pSortableColumn="unitaMisura">
-              Unità Misura
+              {{ 'lookup.unitOfMeasure' | translate }}
               <p-sortIcon field="unitaMisura"></p-sortIcon>
             </th>
-            <th>Descrizione</th>
-            <th style="width: 120px">Azioni</th>
+            <th>{{ 'projects.description' | translate }}</th>
+            <th style="width: 120px">{{ 'common.actions' | translate }}</th>
           </tr>
         </ng-template>
 
@@ -99,12 +106,12 @@ import { ProdottoMaster } from '../../models/lookup.model';
               <div class="flex gap-1">
                 <button class="p-button p-button-text p-button-sm" 
                         (click)="editProdotto(prodotto)"
-                        pTooltip="Modifica">
+                        [pTooltip]="'common.edit' | translate" tooltipPosition="top">
                   <i class="pi pi-pencil"></i>
                 </button>
                 <button class="p-button p-button-text p-button-sm p-button-danger" 
                         (click)="deleteProdotto(prodotto)"
-                        pTooltip="Elimina">
+                        [pTooltip]="'common.delete' | translate" tooltipPosition="top">
                   <i class="pi pi-trash"></i>
                 </button>
               </div>
@@ -117,7 +124,7 @@ import { ProdottoMaster } from '../../models/lookup.model';
             <td colspan="6" class="text-center p-4">
               <div class="text-500">
                 <i class="pi pi-info-circle mr-2"></i>
-                Nessun prodotto master trovato
+                {{ 'lookup.noMasterProductsFound' | translate }}
               </div>
             </td>
           </tr>
@@ -127,7 +134,7 @@ import { ProdottoMaster } from '../../models/lookup.model';
 
     <!-- Dialog Prodotto Master -->
     <p-dialog 
-      [header]="isEdit ? 'Modifica Prodotto Master' : 'Nuovo Prodotto Master'" 
+      [header]="isEdit ? ('lookup.editMasterProduct' | translate) : ('lookup.newMasterProduct' | translate)" 
       [(visible)]="showDialog" 
       [modal]="true" 
       [style]="{width: '500px'}"
@@ -136,58 +143,58 @@ import { ProdottoMaster } from '../../models/lookup.model';
       <form [formGroup]="prodottoForm" (ngSubmit)="saveProdotto()">
         <div class="grid grid-cols-12 gap-4">
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Nome Prodotto *</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.productName' | translate }} *</label>
             <input type="text" 
                    pInputText 
                    formControlName="nome"
-                   placeholder="Nome prodotto"
+                   [placeholder]="'lookup.productNamePlaceholder' | translate"
                    class="w-full">
             <small *ngIf="prodottoForm.get('nome')?.invalid && prodottoForm.get('nome')?.touched" 
                    class="text-red-500">
-              Nome obbligatorio
+              {{ 'validation.required' | translate }}
             </small>
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Codice SAP</label>
+            <label class="block text-900 font-medium mb-2">{{ 'projects.sapCode' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="codiceSAP"
-                   placeholder="Codice SAP"
+                   [placeholder]="'projects.sapCodePlaceholder' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Categoria *</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.category' | translate }} *</label>
             <input type="text" 
                    pInputText 
                    formControlName="categoria"
-                   placeholder="Es. Metafora, Wallen, Armonica"
+                   [placeholder]="'lookup.categoryPlaceholder' | translate"
                    class="w-full">
             <small *ngIf="prodottoForm.get('categoria')?.invalid && prodottoForm.get('categoria')?.touched" 
                    class="text-red-500">
-              Categoria obbligatoria
+              {{ 'lookup.categoryRequired' | translate }}
             </small>
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Unità Misura *</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.unitOfMeasure' | translate }} *</label>
             <input type="text" 
                    pInputText 
                    formControlName="unitaMisura"
-                   placeholder="Es. pz, mq, ml"
+                   [placeholder]="'lookup.unitOfMeasurePlaceholder' | translate"
                    class="w-full">
             <small *ngIf="prodottoForm.get('unitaMisura')?.invalid && prodottoForm.get('unitaMisura')?.touched" 
                    class="text-red-500">
-              Unità di misura obbligatoria
+              {{ 'lookup.unitOfMeasureRequired' | translate }}
             </small>
           </div>
 
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Descrizione</label>
+            <label class="block text-900 font-medium mb-2">{{ 'projects.description' | translate }}</label>
             <textarea 
               formControlName="descrizione"
-              placeholder="Descrizione prodotto"
+              [placeholder]="'lookup.productDescription' | translate"
               rows="3"
               class="w-full p-3 border-1 surface-border rounded">
             </textarea>
@@ -199,13 +206,13 @@ import { ProdottoMaster } from '../../models/lookup.model';
         <button type="button" 
                 class="p-button p-button-outlined" 
                 (click)="showDialog = false">
-          Annulla
+          {{ 'common.cancel' | translate }}
         </button>
         <button type="button" 
                 class="p-button p-button-primary" 
                 (click)="saveProdotto()"
                 [disabled]="!prodottoForm.valid || loading">
-          {{ loading ? 'Salvataggio...' : 'Salva' }}
+          {{ loading ? ('projects.saving' | translate) : ('common.save' | translate) }}
         </button>
       </ng-template>
     </p-dialog>
@@ -215,22 +222,38 @@ import { ProdottoMaster } from '../../models/lookup.model';
     <p-toast></p-toast>
   `
 })
-export class ProdottiMaster implements OnInit {
+export class ProdottiMaster implements OnInit, OnDestroy {
   prodottiMaster: ProdottoMaster[] = [];
   loading = false;
   showDialog = false;
   isEdit = false;
   globalFilter = '';
+  currentPageReportTemplate = '';
 
-  prodottoForm: FormGroup;
-  private lookupService: LookupService | any;
+  prodottoForm!: FormGroup;
+  private lookupService!: LookupService | any;
+  private translationSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private serviceProvider: ServiceProviderService
+    private serviceProvider: ServiceProviderService,
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {
+    this.updatePageReportTemplate();
+    this.translationSubscription = this.translationService.language$.subscribe(() => {
+      this.updatePageReportTemplate();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private updatePageReportTemplate() {
+    this.currentPageReportTemplate = this.translationService.translate('lookup.showing', { entity: this.translationService.translate('lookup.masterProducts') });
+  }
+
+  ngOnInit() {
     // Use services based on configuration (mock or real API)
     this.lookupService = this.serviceProvider.provideLookupService();
     this.prodottoForm = this.fb.group({
@@ -242,9 +265,6 @@ export class ProdottiMaster implements OnInit {
       descrizione: [''],
       variantiDisponibili: [[]]
     });
-  }
-
-  ngOnInit() {
     this.loadProdottiMaster();
   }
 
@@ -317,8 +337,8 @@ export class ProdottiMaster implements OnInit {
           this.loading = false;
           this.messageService.add({
             severity: 'error',
-            summary: 'Errore',
-            detail: 'ID prodotto mancante per l\'aggiornamento'
+            summary: this.translationService.translate('messages.error'),
+            detail: this.translationService.translate('lookup.masterProductSaveError')
           });
           return;
         }
@@ -336,8 +356,8 @@ export class ProdottiMaster implements OnInit {
         next: () => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Successo',
-            detail: `Prodotto master ${this.isEdit ? 'aggiornato' : 'creato'} con successo`
+            summary: this.translationService.translate('messages.success'),
+            detail: this.translationService.translate(this.isEdit ? 'lookup.masterProductUpdated' : 'lookup.masterProductCreated')
           });
           this.showDialog = false;
           this.loadProdottiMaster();
@@ -379,8 +399,8 @@ export class ProdottiMaster implements OnInit {
           
           this.messageService.add({
             severity: 'error',
-            summary: 'Errore',
-            detail: errorDetail,
+            summary: this.translationService.translate('messages.error'),
+            detail: errorDetail || this.translationService.translate('lookup.masterProductSaveError'),
             life: 10000
           });
           this.loading = false;
@@ -391,26 +411,26 @@ export class ProdottiMaster implements OnInit {
 
   deleteProdotto(prodotto: ProdottoMaster) {
     this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il prodotto master "${prodotto.nome}"?`,
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('lookup.confirmDeleteMasterProduct', { name: prodotto.nome }),
+      header: this.translationService.translate('lookup.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         this.lookupService.deleteProdottoMaster(prodotto.id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successo',
-              detail: 'Prodotto master eliminato con successo'
+              summary: this.translationService.translate('messages.success'),
+              detail: this.translationService.translate('lookup.masterProductDeleted')
             });
             this.loadProdottiMaster();
           },
           error: (error: any) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore nell\'eliminazione del prodotto master'
+              summary: this.translationService.translate('messages.error'),
+              detail: this.translationService.translate('lookup.masterProductDeleteError')
             });
           }
         });
@@ -425,5 +445,11 @@ export class ProdottiMaster implements OnInit {
   onDialogHide() {
     this.prodottoForm.reset();
     this.isEdit = false;
+  }
+
+  ngOnDestroy() {
+    if (this.translationSubscription) {
+      this.translationSubscription.unsubscribe();
+    }
   }
 }

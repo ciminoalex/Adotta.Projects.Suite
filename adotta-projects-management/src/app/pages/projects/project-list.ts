@@ -24,6 +24,8 @@ import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { Project, ProjectStatus } from '../../models/project.model';
 import { Cliente, ProjectManager, TeamTecnico, TeamAPL, Sales, SquadraInstallazione } from '../../models/lookup.model';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 
 interface Column {
   field: string;
@@ -52,7 +54,8 @@ interface Column {
     TooltipModule,
     ToggleSwitchModule,
     SkeletonModule,
-    DragDropModule
+    DragDropModule,
+    TranslatePipe
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './project-list.html'
@@ -93,15 +96,31 @@ export class ProjectList implements OnInit {
   private projectService: ProjectService | any;
   private lookupService: LookupService | any;
 
+  currentPageReportTemplate = '';
+
   constructor(
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private cdr: ChangeDetectorRef,
-    private serviceProvider: ServiceProviderService
+    private serviceProvider: ServiceProviderService,
+    private translationService: TranslationService
   ) {
     // Use services based on configuration (mock or real API)
     this.projectService = this.serviceProvider.provideProjectService();
     this.lookupService = this.serviceProvider.provideLookupService();
+    
+    // Inizializza il template della paginazione
+    this.updatePageReportTemplate();
+    
+    // Aggiorna quando cambia la lingua
+    this.translationService.language$.subscribe(() => {
+      this.updatePageReportTemplate();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private updatePageReportTemplate() {
+    this.currentPageReportTemplate = this.translationService.translate('projects.showing');
   }
 
   ngOnInit() {

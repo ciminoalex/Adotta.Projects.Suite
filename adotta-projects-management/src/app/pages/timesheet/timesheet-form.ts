@@ -12,6 +12,8 @@ import { ToastModule } from 'primeng/toast';
 import { CardModule } from 'primeng/card';
 import { FieldsetModule } from 'primeng/fieldset';
 import { MessageService } from 'primeng/api';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 import { TimesheetService } from '../../services/timesheet.service';
 import { ProjectService } from '../../services/project.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
@@ -38,7 +40,8 @@ import { Project, LivelloProgetto } from '../../models/project.model';
     SelectModule,
     ToastModule,
     CardModule,
-    FieldsetModule
+    FieldsetModule,
+    TranslatePipe
   ],
   providers: [MessageService],
   templateUrl: './timesheet-form.html'
@@ -66,7 +69,8 @@ export class TimesheetFormComponent implements OnInit {
     private serviceProvider: ServiceProviderService,
     private serviceConfig: ServiceConfigurationService,
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private translationService: TranslationService
   ) {
     // ProjectService: usa il provider centralizzato (mock o API reali)
     this.projectService = this.serviceProvider.provideProjectService() as ProjectService;

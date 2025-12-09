@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -10,10 +10,15 @@ import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { SquadraInstallazione } from '../../models/lookup.model';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-squadre-installazione',
@@ -30,7 +35,9 @@ import { SquadraInstallazione } from '../../models/lookup.model';
     DialogModule,
     ConfirmDialogModule,
     ToastModule,
-    ToolbarModule
+    ToolbarModule,
+    TranslatePipe,
+    TooltipModule
   ],
   providers: [ConfirmationService, MessageService],
   template: `
@@ -39,13 +46,13 @@ import { SquadraInstallazione } from '../../models/lookup.model';
       <p-toolbar>
         <ng-template pTemplate="left">
           <div class="flex gap-2">
-          <p-button icon="pi pi-plus" label="Nuova Squadra Installazione" (click)="openDialog()">
+          <p-button icon="pi pi-plus" [label]="'lookup.newInstallationTeam' | translate" (click)="openDialog()">
             </p-button>
           </div>
         </ng-template>
         <ng-template pTemplate="right">
           <p-iconfield iconPosition="left">
-              <input pInputText type="text" placeholder="Cerca squadre installazione..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+              <input pInputText type="text" [placeholder]="'lookup.searchInstallationTeams' | translate" [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
               <p-inputicon class="pi pi-search" />
           </p-iconfield>
         </ng-template>
@@ -60,7 +67,7 @@ import { SquadraInstallazione } from '../../models/lookup.model';
         [showGridlines]="false"
         stripedRows
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} squadre installazione"
+        [currentPageReportTemplate]="currentPageReportTemplate"
         [globalFilterFields]="['nome','capoSquadra','specializzazione']"
         [loading]="loading"
         styleClass="p-datatable-sm">
@@ -68,26 +75,26 @@ import { SquadraInstallazione } from '../../models/lookup.model';
         <ng-template pTemplate="header">
           <tr>
             <th pSortableColumn="nome">
-              Nome Squadra
+              {{ 'lookup.teamName' | translate }}
               <p-sortIcon field="nome"></p-sortIcon>
             </th>
             <th pSortableColumn="capoSquadra">
-              Capo Squadra
+              {{ 'lookup.teamLeader' | translate }}
               <p-sortIcon field="capoSquadra"></p-sortIcon>
             </th>
             <th pSortableColumn="specializzazione">
-              Specializzazione
+              {{ 'lookup.specialization' | translate }}
               <p-sortIcon field="specializzazione"></p-sortIcon>
             </th>
             <th pSortableColumn="numeroMembri">
-              Numero Membri
+              {{ 'lookup.numberOfMembers' | translate }}
               <p-sortIcon field="numeroMembri"></p-sortIcon>
             </th>
             <th pSortableColumn="zonaOperativa">
-              Zona Operativa
+              {{ 'lookup.operationalZone' | translate }}
               <p-sortIcon field="zonaOperativa"></p-sortIcon>
             </th>
-            <th style="width: 120px">Azioni</th>
+            <th style="width: 120px">{{ 'common.actions' | translate }}</th>
           </tr>
         </ng-template>
 
@@ -102,12 +109,12 @@ import { SquadraInstallazione } from '../../models/lookup.model';
               <div class="flex gap-1">
                 <button class="p-button p-button-text p-button-sm" 
                         (click)="editSquadra(squadra)"
-                        pTooltip="Modifica">
+                        [pTooltip]="'common.edit' | translate" tooltipPosition="top">
                   <i class="pi pi-pencil"></i>
                 </button>
                 <button class="p-button p-button-text p-button-sm p-button-danger" 
                         (click)="deleteSquadra(squadra)"
-                        pTooltip="Elimina">
+                        [pTooltip]="'common.delete' | translate" tooltipPosition="top">
                   <i class="pi pi-trash"></i>
                 </button>
               </div>
@@ -120,7 +127,7 @@ import { SquadraInstallazione } from '../../models/lookup.model';
             <td colspan="6" class="text-center p-4">
               <div class="text-500">
                 <i class="pi pi-info-circle mr-2"></i>
-                Nessuna squadra installazione trovata
+                {{ 'lookup.noInstallationTeamsFound' | translate }}
               </div>
             </td>
           </tr>
@@ -130,7 +137,7 @@ import { SquadraInstallazione } from '../../models/lookup.model';
 
     <!-- Dialog Squadra Installazione -->
     <p-dialog 
-      [header]="isEdit ? 'Modifica Squadra Installazione' : 'Nuova Squadra Installazione'" 
+      [header]="isEdit ? ('lookup.editInstallationTeam' | translate) : ('lookup.newInstallationTeam' | translate)" 
       [(visible)]="showDialog" 
       [modal]="true" 
       [style]="{width: '500px'}"
@@ -139,59 +146,59 @@ import { SquadraInstallazione } from '../../models/lookup.model';
       <form [formGroup]="squadraForm" (ngSubmit)="saveSquadra()">
         <div class="grid grid-cols-12 gap-4">
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Nome Squadra *</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.teamName' | translate }} *</label>
             <input type="text" 
                    pInputText 
                    formControlName="nome"
-                   placeholder="Nome squadra installazione"
+                   [placeholder]="'lookup.installationTeamName' | translate"
                    class="w-full">
             <small *ngIf="squadraForm.get('nome')?.invalid && squadraForm.get('nome')?.touched" 
                    class="text-red-500">
-              Nome obbligatorio
+              {{ 'validation.required' | translate }}
             </small>
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Capo Squadra</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.teamLeader' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="capoSquadra"
-                   placeholder="Nome capo squadra"
+                   [placeholder]="'lookup.teamLeaderName' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Numero Membri</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.numberOfMembers' | translate }}</label>
             <input type="number" 
                    pInputText 
                    formControlName="numeroMembri"
-                   placeholder="3"
+                   [placeholder]="'lookup.numberOfMembers' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Specializzazione</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.specialization' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="specializzazione"
-                   placeholder="Es. HVAC, Elettrico"
+                   [placeholder]="'lookup.specialization' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Zona Operativa</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.operationalZone' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="zonaOperativa"
-                   placeholder="Es. Nord Italia, Centro"
+                   [placeholder]="'lookup.operationalZone' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Note</label>
+            <label class="block text-900 font-medium mb-2">{{ 'timesheet.notes' | translate }}</label>
             <textarea 
               formControlName="note"
-              placeholder="Note aggiuntive"
+              [placeholder]="'lookup.additionalNotes' | translate"
               rows="3"
               class="w-full p-3 border-1 surface-border rounded">
             </textarea>
@@ -203,13 +210,13 @@ import { SquadraInstallazione } from '../../models/lookup.model';
         <button type="button" 
                 class="p-button p-button-outlined" 
                 (click)="showDialog = false">
-          Annulla
+          {{ 'common.cancel' | translate }}
         </button>
         <button type="button" 
                 class="p-button p-button-primary" 
                 (click)="saveSquadra()"
                 [disabled]="!squadraForm.valid || loading">
-          {{ loading ? 'Salvataggio...' : 'Salva' }}
+          {{ loading ? ('projects.saving' | translate) : ('common.save' | translate) }}
         </button>
       </ng-template>
     </p-dialog>
@@ -219,22 +226,38 @@ import { SquadraInstallazione } from '../../models/lookup.model';
     <p-toast></p-toast>
   `
 })
-export class SquadreInstallazione implements OnInit {
+export class SquadreInstallazione implements OnInit, OnDestroy {
   squadreInstallazione: SquadraInstallazione[] = [];
   loading = false;
   showDialog = false;
   isEdit = false;
   globalFilter = '';
+  currentPageReportTemplate = '';
 
-  squadraForm: FormGroup;
-  private lookupService: LookupService | any;
+  squadraForm!: FormGroup;
+  private lookupService!: LookupService | any;
+  private translationSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private serviceProvider: ServiceProviderService
+    private serviceProvider: ServiceProviderService,
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {
+    this.updatePageReportTemplate();
+    this.translationSubscription = this.translationService.language$.subscribe(() => {
+      this.updatePageReportTemplate();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private updatePageReportTemplate() {
+    this.currentPageReportTemplate = this.translationService.translate('lookup.showing', { entity: this.translationService.translate('lookup.installationTeams') });
+  }
+
+  ngOnInit() {
     // Use services based on configuration (mock or real API)
     this.lookupService = this.serviceProvider.provideLookupService();
     this.squadraForm = this.fb.group({
@@ -246,9 +269,6 @@ export class SquadreInstallazione implements OnInit {
       zonaOperativa: [''],
       note: ['']
     });
-  }
-
-  ngOnInit() {
     this.loadSquadreInstallazione();
   }
 
@@ -291,8 +311,8 @@ export class SquadreInstallazione implements OnInit {
         next: () => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Successo',
-            detail: `Squadra installazione ${this.isEdit ? 'aggiornata' : 'creata'} con successo`
+            summary: this.translationService.translate('messages.success'),
+            detail: this.translationService.translate(this.isEdit ? 'lookup.installationTeamUpdated' : 'lookup.installationTeamCreated')
           });
           this.showDialog = false;
           this.loadSquadreInstallazione();
@@ -300,8 +320,8 @@ export class SquadreInstallazione implements OnInit {
         error: (error: any) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore nel salvataggio della squadra installazione'
+            summary: this.translationService.translate('messages.error'),
+            detail: this.translationService.translate('lookup.installationTeamSaveError')
           });
           this.loading = false;
         }
@@ -311,18 +331,18 @@ export class SquadreInstallazione implements OnInit {
 
   deleteSquadra(squadra: SquadraInstallazione) {
     this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare la squadra installazione "${squadra.nome}"?`,
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('lookup.confirmDeleteInstallationTeam', { name: squadra.nome }),
+      header: this.translationService.translate('lookup.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         this.lookupService.deleteSquadraInstallazione(squadra.id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successo',
-              detail: 'Squadra installazione eliminata con successo'
+              summary: this.translationService.translate('messages.success'),
+              detail: this.translationService.translate('lookup.installationTeamDeleted')
             });
             this.loadSquadreInstallazione();
           },
@@ -345,5 +365,11 @@ export class SquadreInstallazione implements OnInit {
   onDialogHide() {
     this.squadraForm.reset();
     this.isEdit = false;
+  }
+
+  ngOnDestroy() {
+    if (this.translationSubscription) {
+      this.translationSubscription.unsubscribe();
+    }
   }
 }

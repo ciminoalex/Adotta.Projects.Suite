@@ -4,12 +4,12 @@
     <ng-template #start>
       <p-button severity="primary" routerLink="/projects/new">
         <i class="pi pi-plus mr-2"></i>
-        Nuovo Progetto
+        {{ 'projects.newProject' | translate }}
       </p-button>
     </ng-template>
 
     <ng-template #end>
-        <p-button label="Export" icon="pi pi-upload" severity="secondary" (click)="exportExcel()" />
+        <p-button [label]="'common.export' | translate" icon="pi pi-upload" severity="secondary" (click)="exportExcel()" />
     </ng-template>
 </p-toolbar>
   <!-- Tabella Progetti -->
@@ -18,7 +18,7 @@
     [paginator]="true" 
     [rows]="25"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} progetti"
+    [currentPageReportTemplate]="currentPageReportTemplate"
     [loading]="loading"
     [rowGroupMode]="groupByStatus ? 'subheader' : undefined"
     [groupRowsBy]="groupByStatus ? 'statoProgetto' : undefined"
@@ -31,18 +31,18 @@
     
     <ng-template #caption>
       <div class="flex items-center justify-between">
-        <h5 class="m-0 flex-1 text-left" style="margin-bottom: 0px;">Project list</h5>
+        <h5 class="m-0 flex-1 text-left" style="margin-bottom: 0px;">{{ 'projects.projectList' | translate }}</h5>
         <div class="flex items-center gap-2">
           <div class="flex items-center gap-2">
-            <label for="groupByStatus" class="text-sm font-medium">Raggruppa per Stato</label>
+            <label for="groupByStatus" class="text-sm font-medium">{{ 'projects.groupByStatus' | translate }}</label>
             <p-toggleswitch [(ngModel)]="groupByStatus" inputId="groupByStatus" />
           </div>
           <p-iconfield iconPosition="left">
-            <input pInputText type="text" placeholder="Cerca progetti..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+            <input pInputText type="text" [placeholder]="'projects.searchProjects' | translate" [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
             <p-inputicon class="pi pi-search" />
           </p-iconfield>
           <p-multiselect display="chip" [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header" selectedItemsLabel="{0} columns selected" [style]="{ 'min-width': '200px' }" placeholder="Choose Columns" (onChange)="onColumnsChange()" />
-          <p-button icon="pi pi-sort-alt" [text]="true" [rounded]="true" severity="secondary" pTooltip="Ordina colonne" tooltipPosition="left" (click)="openColumnOrderDialog()" />
+          <p-button icon="pi pi-sort-alt" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'projects.sortColumns' | translate" tooltipPosition="left" (click)="openColumnOrderDialog()" />
         </div>
       </div>
   </ng-template>
@@ -194,7 +194,7 @@
         <td colspan="15" class="text-center p-4">
           <div class="text-500">
             <i class="pi pi-info-circle mr-2"></i>
-            Nessun progetto trovato
+            {{ 'projects.noProjectsFound' | translate }}
           </div>
         </td>
       </tr>
@@ -211,12 +211,12 @@
   [(visible)]="showColumnOrderDialog" 
   [style]="{ width: '450px' }" 
   [modal]="true"
-  header="Ordina Colonne"
+  [header]="'projects.sortColumns' | translate"
   [draggable]="false"
   [resizable]="false">
   <div class="flex flex-column gap-3">
     <p class="m-0 text-sm text-600 mb-4">
-      Trascina le colonne per riordinarle. L'ordine verrà salvato automaticamente.
+      {{ 'projects.sortColumnsDescription' | translate }}
     </p>
   </div>
   <div cdkDropList class="column-list mt-2" (cdkDropListDropped)="dropColumn($event)">
@@ -234,7 +234,7 @@
   </div>
 <ng-template pTemplate="footer">
     <p-button 
-      label="Chiudi" 
+      [label]="'common.close' | translate" 
       icon="pi pi-check" 
       (click)="closeColumnOrderDialog()"
       [style]="{ width: '100%' }">

@@ -14,7 +14,10 @@ import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
@@ -40,7 +43,9 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
     DialogModule,
     ToastModule,
     ConfirmDialogModule,
-    SkeletonModule
+    SkeletonModule,
+    TranslatePipe,
+    TooltipModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './project-form.html'

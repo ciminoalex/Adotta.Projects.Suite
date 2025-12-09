@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -10,10 +10,15 @@ import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { Sales } from '../../models/lookup.model';
+import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-sales',
@@ -30,7 +35,9 @@ import { Sales } from '../../models/lookup.model';
     DialogModule,
     ConfirmDialogModule,
     ToastModule,
-    ToolbarModule
+    ToolbarModule,
+    TranslatePipe,
+    TooltipModule
   ],
   providers: [ConfirmationService, MessageService],
   template: `
@@ -39,13 +46,13 @@ import { Sales } from '../../models/lookup.model';
       <p-toolbar>
         <ng-template pTemplate="left">
           <div class="flex gap-2">
-          <p-button icon="pi pi-plus" label="Nuovo Sales" (click)="openDialog()">
+          <p-button icon="pi pi-plus" [label]="'lookup.newSales' | translate" (click)="openDialog()">
             </p-button>
           </div>
         </ng-template>
         <ng-template pTemplate="right">
           <p-iconfield iconPosition="left">
-              <input pInputText type="text" placeholder="Cerca sales..." [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
+              <input pInputText type="text" [placeholder]="'lookup.searchSales' | translate" [(ngModel)]="globalFilter" (input)="filterGlobal($event)" />
               <p-inputicon class="pi pi-search" />
           </p-iconfield>
         </ng-template>
@@ -60,7 +67,7 @@ import { Sales } from '../../models/lookup.model';
         [showGridlines]="false"
         stripedRows
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} di {totalRecords} sales"
+        [currentPageReportTemplate]="currentPageReportTemplate"
         [globalFilterFields]="['nome','email','area']"
         [loading]="loading"
         styleClass="p-datatable-sm">
@@ -68,26 +75,26 @@ import { Sales } from '../../models/lookup.model';
         <ng-template pTemplate="header">
           <tr>
             <th pSortableColumn="nome">
-              Nome
+              {{ 'lookup.name' | translate }}
               <p-sortIcon field="nome"></p-sortIcon>
             </th>
             <th pSortableColumn="email">
-              Email
+              {{ 'auth.email' | translate }}
               <p-sortIcon field="email"></p-sortIcon>
             </th>
             <th pSortableColumn="telefono">
-              Telefono
+              {{ 'lookup.phone' | translate }}
               <p-sortIcon field="telefono"></p-sortIcon>
             </th>
             <th pSortableColumn="area">
-              Area
+              {{ 'lookup.area' | translate }}
               <p-sortIcon field="area"></p-sortIcon>
             </th>
             <th pSortableColumn="livello">
-              Livello
+              {{ 'lookup.level' | translate }}
               <p-sortIcon field="livello"></p-sortIcon>
             </th>
-            <th style="width: 120px">Azioni</th>
+            <th style="width: 120px">{{ 'common.actions' | translate }}</th>
           </tr>
         </ng-template>
 
@@ -102,12 +109,12 @@ import { Sales } from '../../models/lookup.model';
               <div class="flex gap-1">
                 <button class="p-button p-button-text p-button-sm" 
                         (click)="editSales(salesItem)"
-                        pTooltip="Modifica">
+                        [pTooltip]="'common.edit' | translate" tooltipPosition="top">
                   <i class="pi pi-pencil"></i>
                 </button>
                 <button class="p-button p-button-text p-button-sm p-button-danger" 
                         (click)="deleteSales(salesItem)"
-                        pTooltip="Elimina">
+                        [pTooltip]="'common.delete' | translate" tooltipPosition="top">
                   <i class="pi pi-trash"></i>
                 </button>
               </div>
@@ -120,7 +127,7 @@ import { Sales } from '../../models/lookup.model';
             <td colspan="6" class="text-center p-4">
               <div class="text-500">
                 <i class="pi pi-info-circle mr-2"></i>
-                Nessun sales trovato
+                {{ 'lookup.noSalesFound' | translate }}
               </div>
             </td>
           </tr>
@@ -130,7 +137,7 @@ import { Sales } from '../../models/lookup.model';
 
     <!-- Dialog Sales -->
     <p-dialog 
-      [header]="isEdit ? 'Modifica Sales' : 'Nuovo Sales'" 
+      [header]="isEdit ? ('lookup.editSales' | translate) : ('lookup.newSales' | translate)" 
       [(visible)]="showDialog" 
       [modal]="true" 
       [style]="{width: '500px'}"
@@ -139,59 +146,59 @@ import { Sales } from '../../models/lookup.model';
       <form [formGroup]="salesForm" (ngSubmit)="saveSales()">
         <div class="grid grid-cols-12 gap-4">
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Nome *</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.name' | translate }} *</label>
             <input type="text" 
                    pInputText 
                    formControlName="nome"
-                   placeholder="Nome sales"
+                   [placeholder]="'lookup.salesName' | translate"
                    class="w-full">
             <small *ngIf="salesForm.get('nome')?.invalid && salesForm.get('nome')?.touched" 
                    class="text-red-500">
-              Nome obbligatorio
+              {{ 'validation.required' | translate }}
             </small>
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Email</label>
+            <label class="block text-900 font-medium mb-2">{{ 'auth.email' | translate }}</label>
             <input type="email" 
                    pInputText 
                    formControlName="email"
-                   placeholder="email@example.com"
+                   [placeholder]="'auth.email' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Telefono</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.phone' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="telefono"
-                   placeholder="+39 123 456 7890"
+                   [placeholder]="'lookup.phonePlaceholder' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Area</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.area' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="area"
-                   placeholder="Es. Nord Italia, Centro"
+                   [placeholder]="'lookup.area' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12 md:col-span-6">
-            <label class="block text-900 font-medium mb-2">Livello</label>
+            <label class="block text-900 font-medium mb-2">{{ 'lookup.level' | translate }}</label>
             <input type="text" 
                    pInputText 
                    formControlName="livello"
-                   placeholder="Es. Junior, Senior"
+                   [placeholder]="'lookup.level' | translate"
                    class="w-full">
           </div>
 
           <div class="col-span-12">
-            <label class="block text-900 font-medium mb-2">Note</label>
+            <label class="block text-900 font-medium mb-2">{{ 'timesheet.notes' | translate }}</label>
             <textarea 
               formControlName="note"
-              placeholder="Note aggiuntive"
+              [placeholder]="'lookup.additionalNotes' | translate"
               rows="3"
               class="w-full p-3 border-1 surface-border rounded">
             </textarea>
@@ -203,13 +210,13 @@ import { Sales } from '../../models/lookup.model';
         <button type="button" 
                 class="p-button p-button-outlined" 
                 (click)="showDialog = false">
-          Annulla
+          {{ 'common.cancel' | translate }}
         </button>
         <button type="button" 
                 class="p-button p-button-primary" 
                 (click)="saveSales()"
                 [disabled]="!salesForm.valid || loading">
-          {{ loading ? 'Salvataggio...' : 'Salva' }}
+          {{ loading ? ('projects.saving' | translate) : ('common.save' | translate) }}
         </button>
       </ng-template>
     </p-dialog>
@@ -219,22 +226,38 @@ import { Sales } from '../../models/lookup.model';
     <p-toast></p-toast>
   `
 })
-export class SalesComponent implements OnInit {
+export class SalesComponent implements OnInit, OnDestroy {
   sales: Sales[] = [];
   loading = false;
   showDialog = false;
   isEdit = false;
   globalFilter = '';
+  currentPageReportTemplate = '';
 
-  salesForm: FormGroup;
-  private lookupService: LookupService | any;
+  salesForm!: FormGroup;
+  private lookupService!: LookupService | any;
+  private translationSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private serviceProvider: ServiceProviderService
+    private serviceProvider: ServiceProviderService,
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) {
+    this.updatePageReportTemplate();
+    this.translationSubscription = this.translationService.language$.subscribe(() => {
+      this.updatePageReportTemplate();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private updatePageReportTemplate() {
+    this.currentPageReportTemplate = this.translationService.translate('lookup.showing', { entity: this.translationService.translate('lookup.sales') });
+  }
+
+  ngOnInit() {
     // Use services based on configuration (mock or real API)
     this.lookupService = this.serviceProvider.provideLookupService();
     this.salesForm = this.fb.group({
@@ -246,9 +269,6 @@ export class SalesComponent implements OnInit {
       livello: [''],
       note: ['']
     });
-  }
-
-  ngOnInit() {
     this.loadSales();
   }
 
@@ -291,8 +311,8 @@ export class SalesComponent implements OnInit {
         next: () => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Successo',
-            detail: `Sales ${this.isEdit ? 'aggiornato' : 'creato'} con successo`
+            summary: this.translationService.translate('messages.success'),
+            detail: this.translationService.translate(this.isEdit ? 'lookup.salesUpdated' : 'lookup.salesCreated')
           });
           this.showDialog = false;
           this.loadSales();
@@ -300,8 +320,8 @@ export class SalesComponent implements OnInit {
         error: (error: any) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Errore',
-            detail: 'Errore nel salvataggio del sales'
+            summary: this.translationService.translate('messages.error'),
+            detail: this.translationService.translate('lookup.salesSaveError')
           });
           this.loading = false;
         }
@@ -311,26 +331,26 @@ export class SalesComponent implements OnInit {
 
   deleteSales(salesItem: Sales) {
     this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il sales "${salesItem.nome}"?`,
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('lookup.confirmDeleteSales', { name: salesItem.nome }),
+      header: this.translationService.translate('lookup.confirmDelete'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         this.lookupService.deleteSales(salesItem.id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successo',
-              detail: 'Sales eliminato con successo'
+              summary: this.translationService.translate('messages.success'),
+              detail: this.translationService.translate('lookup.salesDeleted')
             });
             this.loadSales();
           },
           error: (error: any) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore nell\'eliminazione del sales'
+              summary: this.translationService.translate('messages.error'),
+              detail: this.translationService.translate('lookup.salesDeleteError')
             });
           }
         });
@@ -345,5 +365,11 @@ export class SalesComponent implements OnInit {
   onDialogHide() {
     this.salesForm.reset();
     this.isEdit = false;
+  }
+
+  ngOnDestroy() {
+    if (this.translationSubscription) {
+      this.translationSubscription.unsubscribe();
+    }
   }
 }
