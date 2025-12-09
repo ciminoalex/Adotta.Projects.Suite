@@ -386,26 +386,26 @@ export class ProjectList implements OnInit {
 
   deleteProject(project: Project) {
     this.confirmationService.confirm({
-      message: `Sei sicuro di voler eliminare il progetto ${project.numeroProgetto}?`,
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('projects.confirmDeleteProjectMessage', { projectNumber: project.numeroProgetto }),
+      header: this.translationService.translate('projects.confirmDeleteProject'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         this.projectService.deleteProject(project.numeroProgetto).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successo',
-              detail: 'Progetto eliminato con successo'
+              summary: this.translationService.translate('messages.success'),
+              detail: this.translationService.translate('projects.projectDeleted')
             });
             this.loadProjects();
           },
           error: (error: any) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore nell\'eliminazione del progetto'
+              summary: this.translationService.translate('messages.error'),
+              detail: this.translationService.translate('projects.projectDeleteError')
             });
           }
         });
@@ -417,8 +417,8 @@ export class ProjectList implements OnInit {
     if (!this.filteredProjects || this.filteredProjects.length === 0) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Attenzione',
-        detail: 'Nessun dato da esportare'
+        summary: this.translationService.translate('messages.warning'),
+        detail: this.translationService.translate('projects.noDataToExport')
       });
       return;
     }
@@ -490,8 +490,8 @@ export class ProjectList implements OnInit {
 
     this.messageService.add({
       severity: 'success',
-      summary: 'Successo',
-      detail: 'Export completato'
+      summary: this.translationService.translate('messages.success'),
+      detail: this.translationService.translate('projects.exportCompleted')
     });
   }
 

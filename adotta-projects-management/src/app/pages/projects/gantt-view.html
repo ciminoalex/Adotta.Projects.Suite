@@ -65,7 +65,7 @@
                [style.width.px]="dayWidth">
             <div class="day-label">{{ day.getDate() }}</div>
             <div class="day-month-label" *ngIf="i === 0 || day.getDate() === 1">
-              {{ day.toLocaleDateString('it-IT', { month: 'short' }) }}
+              {{ getMonthLabel(day) }}
             </div>
           </div>
           <!-- Linee di divisione principali (ogni settimana o ogni giorno se range piccolo) -->

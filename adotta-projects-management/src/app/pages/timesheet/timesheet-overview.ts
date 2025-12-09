@@ -256,25 +256,25 @@ export class TimesheetOverviewComponent implements OnInit {
     if (!entry || entry.id == null) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Impossibile eliminare',
-        detail: 'ID rendicontazione non valido'
+        summary: this.translationService.translate('messages.warning'),
+        detail: this.translationService.translate('projects.invalidTimesheetId')
       });
       return;
     }
 
     this.confirmationService.confirm({
-      message: 'Sei sicuro di voler eliminare questa rendicontazione?',
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('projects.confirmDeleteTimesheetMessage'),
+      header: this.translationService.translate('projects.confirmDeleteTimesheet'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         this.timesheetService.deleteTimesheetEntry(entry.id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Eliminata',
-              detail: 'Rendicontazione eliminata con successo'
+              summary: this.translationService.translate('messages.deleteSuccess'),
+              detail: this.translationService.translate('projects.timesheetDeleted')
             });
             // Ricarica dati overview e dettaglio
             this.loadData();
@@ -283,8 +283,8 @@ export class TimesheetOverviewComponent implements OnInit {
             console.error('Errore nell\'eliminazione timesheet:', error);
             this.messageService.add({
               severity: 'error',
-              summary: 'Errore',
-              detail: 'Errore durante l\'eliminazione della rendicontazione'
+              summary: this.translationService.translate('messages.error'),
+              detail: this.translationService.translate('projects.timesheetDeleteError')
             });
           }
         });

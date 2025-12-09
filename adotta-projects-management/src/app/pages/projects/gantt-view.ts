@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 import { ProjectService } from '../../services/project.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
 import { Project, LivelloProgetto } from '../../models/project.model';
@@ -74,7 +75,8 @@ export class GanttView implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {
     this.projectService = this.serviceProvider.provideProjectService();
     
@@ -89,6 +91,11 @@ export class GanttView implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.loadProjects();
+    
+    // Sottoscrivi ai cambiamenti di lingua per aggiornare i giorni della settimana
+    this.translationService.language$.subscribe(() => {
+      this.cdr.markForCheck();
+    });
   }
 
   // Carica le date salvate dal localStorage
@@ -212,7 +219,7 @@ export class GanttView implements OnInit, AfterViewInit {
           this.ganttRows.push({
             numeroProgetto: project.numeroProgetto,
             nomeProgetto: project.nomeProgetto,
-            nomeLivello: 'Progetto completo',
+            nomeLivello: this.translationService.translate('projects.fullProject'),
             teamTecnico: project.teamTecnico,
             teamInstallazione: project.teamInstallazione,
             dataInizio: project.dataInizioInstallazione ? new Date(project.dataInizioInstallazione) : undefined,
@@ -378,8 +385,8 @@ export class GanttView implements OnInit, AfterViewInit {
       
       this.messageService.add({
         severity: 'warn',
-        summary: 'Intervallo limitato',
-        detail: 'L\'intervallo massimo consentito è di 6 mesi. La data fine è stata impostata a 6 mesi dopo la data di inizio.',
+        summary: this.translationService.translate('projects.rangeLimited'),
+        detail: this.translationService.translate('projects.maxRange6Months'),
         life: 5000
       });
     }
@@ -412,8 +419,8 @@ export class GanttView implements OnInit, AfterViewInit {
         
         this.messageService.add({
           severity: 'warn',
-          summary: 'Intervallo limitato',
-          detail: 'La data fine è stata impostata automaticamente a 6 mesi dopo la data di inizio.',
+          summary: this.translationService.translate('projects.rangeLimited'),
+          detail: this.translationService.translate('projects.endDateAutoSet'),
           life: 5000
         });
       }
@@ -449,8 +456,8 @@ export class GanttView implements OnInit, AfterViewInit {
         
         this.messageService.add({
           severity: 'warn',
-          summary: 'Intervallo limitato',
-          detail: 'La data inizio è stata impostata automaticamente a 6 mesi prima della data di fine.',
+          summary: this.translationService.translate('projects.rangeLimited'),
+          detail: this.translationService.translate('projects.startDateAutoSet'),
           life: 5000
         });
       }
@@ -521,11 +528,39 @@ export class GanttView implements OnInit, AfterViewInit {
     return days;
   }
 
-  // Ottiene l'etichetta del giorno della settimana (M, T, W, T, F, S, S)
+  // Ottiene l'etichetta del giorno della settimana (tradotto)
   getWeekdayLabel(date: Date): string {
     const dayOfWeek = date.getDay();
-    const labels = ['D', 'L', 'M', 'M', 'G', 'V', 'S']; // Domenica, Lunedì, Martedì, Mercoledì, Giovedì, Venerdì, Sabato
-    return labels[dayOfWeek];
+    const dayKeys = [
+      'projects.weekdaySunday',
+      'projects.weekdayMonday',
+      'projects.weekdayTuesday',
+      'projects.weekdayWednesday',
+      'projects.weekdayThursday',
+      'projects.weekdayFriday',
+      'projects.weekdaySaturday'
+    ];
+    return this.translationService.translate(dayKeys[dayOfWeek]);
+  }
+
+  // Ottiene l'etichetta del mese abbreviato (tradotto)
+  getMonthLabel(date: Date): string {
+    const month = date.getMonth(); // 0-11
+    const monthKeys = [
+      'projects.monthJanuary',
+      'projects.monthFebruary',
+      'projects.monthMarch',
+      'projects.monthApril',
+      'projects.monthMay',
+      'projects.monthJune',
+      'projects.monthJuly',
+      'projects.monthAugust',
+      'projects.monthSeptember',
+      'projects.monthOctober',
+      'projects.monthNovember',
+      'projects.monthDecember'
+    ];
+    return this.translationService.translate(monthKeys[month]);
   }
 
   // Ottiene le etichette principali per la timeline (ogni settimana o ogni giorno se range piccolo)
@@ -593,12 +628,17 @@ export class GanttView implements OnInit, AfterViewInit {
       return;
     }
 
+    const header = this.translationService.translate('projects.navigationDialogTitle');
+    const message = this.translationService.translate('projects.navigationDialogMessage', { projectNumber: row.numeroProgetto });
+    const acceptLabel = this.translationService.translate('common.yes') || 'Yes';
+    const rejectLabel = this.translationService.translate('common.no') || 'No';
+
     this.confirmationService.confirm({
-      message: `Vuoi accedere all'anagrafica del progetto ${row.numeroProgetto}?`,
-      header: 'Navigazione Progetto',
+      message,
+      header,
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sì',
-      rejectLabel: 'No',
+      acceptLabel,
+      rejectLabel,
       accept: () => {
         this.router.navigate(['/projects', row.numeroProgetto]);
       }

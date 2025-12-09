@@ -480,11 +480,11 @@ export class ProjectDetail implements OnInit, OnDestroy {
     const numeroProgetto = this.project.numeroProgetto;
 
     this.confirmationService.confirm({
-      message: 'Sei sicuro di eliminare il messaggio?',
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('projects.confirmDeleteMessageText'),
+      header: this.translationService.translate('projects.confirmDeleteMessage'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Elimina',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         // L'API backend costruisce la chiave come `${numeroProgetto}-MSG${idNumerico}`.
         // L'ID che leggiamo dal backend è del tipo "250001-MSG1602981324".

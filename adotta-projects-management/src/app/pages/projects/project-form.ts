@@ -161,7 +161,8 @@ export class ProjectForm implements OnInit {
     private router: Router,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private serviceProvider: ServiceProviderService
+    private serviceProvider: ServiceProviderService,
+    private translationService: TranslationService
   ) {
     // Use services based on configuration (mock or real API)
     this.projectService = this.serviceProvider.provideProjectService();
@@ -778,13 +779,15 @@ export class ProjectForm implements OnInit {
   deleteLevel(livello: LivelloProgetto) {
     const numProdotti = (livello.prodotti || []).length;
     const message = numProdotti > 0 
-      ? `Sei sicuro di voler eliminare questo livello? Verranno eliminati anche ${numProdotti} prodotti associati.`
-      : 'Sei sicuro di voler eliminare questo livello?';
+      ? this.translationService.translate('projects.confirmDeleteLevelWithProducts', { count: numProdotti })
+      : this.translationService.translate('projects.confirmDeleteLevelMessage');
     
     this.confirmationService.confirm({
       message: message,
-      header: 'Conferma Eliminazione',
+      header: this.translationService.translate('projects.confirmDeleteLevel'),
       icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         // Elimina anche i prodotti associati al livello
         if (livello.id) {
@@ -793,10 +796,10 @@ export class ProjectForm implements OnInit {
         this.livelli = this.livelli.filter(l => l !== livello);
         this.messageService.add({
           severity: 'success',
-          summary: 'Successo',
+          summary: this.translationService.translate('messages.success'),
           detail: numProdotti > 0 
-            ? `Livello eliminato con ${numProdotti} prodotti associati`
-            : 'Livello eliminato con successo'
+            ? this.translationService.translate('projects.levelDeletedWithProducts', { count: numProdotti })
+            : this.translationService.translate('projects.levelDeleted')
         });
       }
     });
@@ -808,8 +811,8 @@ export class ProjectForm implements OnInit {
     if (!livello && this.livelli.length === 0) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Attenzione',
-        detail: 'Devi prima creare un livello per aggiungere prodotti'
+        summary: this.translationService.translate('messages.warning'),
+        detail: this.translationService.translate('projects.mustCreateLevelFirst')
       });
       return;
     }
@@ -843,8 +846,8 @@ export class ProjectForm implements OnInit {
     if (!targetLivello) {
       this.messageService.add({
         severity: 'error',
-        summary: 'Errore',
-        detail: 'Livello non trovato'
+        summary: this.translationService.translate('messages.error'),
+        detail: this.translationService.translate('projects.levelNotFound')
       });
       return;
     }
@@ -908,8 +911,8 @@ export class ProjectForm implements OnInit {
       if (qMq <= 0 && qFt <= 0) {
         this.messageService.add({
           severity: 'warn',
-          summary: 'Attenzione',
-          detail: 'È obbligatorio compilare almeno una quantità tra m² o ft'
+          summary: this.translationService.translate('messages.warning'),
+          detail: this.translationService.translate('projects.fillAtLeastOneQuantity')
         });
         return;
       }
@@ -924,8 +927,8 @@ export class ProjectForm implements OnInit {
       if (!targetLivello) {
         this.messageService.add({
           severity: 'error',
-          summary: 'Errore',
-          detail: 'Livello non trovato. Assicurati di aver selezionato un livello valido.'
+          summary: this.translationService.translate('messages.error'),
+          detail: this.translationService.translate('projects.levelNotFoundDetail')
         });
         return;
       }
@@ -933,8 +936,8 @@ export class ProjectForm implements OnInit {
       if (productData.livelloId === undefined || productData.livelloId === null || productData.livelloId === '') {
         this.messageService.add({
           severity: 'error',
-          summary: 'Errore',
-          detail: 'ID livello non specificato nel form'
+          summary: this.translationService.translate('messages.error'),
+          detail: this.translationService.translate('projects.levelIdNotSpecified')
         });
         return;
       }
@@ -1002,8 +1005,8 @@ export class ProjectForm implements OnInit {
       
       this.messageService.add({
         severity: 'success',
-        summary: 'Successo',
-        detail: 'Prodotto salvato con successo'
+        summary: this.translationService.translate('messages.success'),
+        detail: this.translationService.translate('projects.productSaved')
       });
     }
   }
@@ -1016,9 +1019,11 @@ export class ProjectForm implements OnInit {
 
   deleteProduct(prodotto: ProdottoProgetto) {
     this.confirmationService.confirm({
-      message: 'Sei sicuro di voler eliminare questo prodotto?',
-      header: 'Conferma Eliminazione',
+      message: this.translationService.translate('projects.confirmDeleteProductMessage'),
+      header: this.translationService.translate('projects.confirmDeleteProduct'),
       icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.translationService.translate('common.delete'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         // Trova il livello e rimuovi il prodotto
         if (prodotto.livelloId) {
@@ -1033,8 +1038,8 @@ export class ProjectForm implements OnInit {
         
         this.messageService.add({
           severity: 'success',
-          summary: 'Successo',
-          detail: 'Prodotto eliminato con successo'
+          summary: this.translationService.translate('messages.success'),
+          detail: this.translationService.translate('projects.productDeleted')
         });
       }
     });

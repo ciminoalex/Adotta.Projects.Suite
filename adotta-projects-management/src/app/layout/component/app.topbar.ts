@@ -1,15 +1,18 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { MenuItem } from 'primeng/api';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
+import { Menu } from 'primeng/menu';
 import { LayoutService } from '../service/layout.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService, SupportedLanguage } from '../../services/translation.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { filter } from 'rxjs/operators';
+
+type LanguageMenuItem = MenuItem & { flag: 'us' | 'it'; lang: SupportedLanguage; selected?: boolean };
 
 @Component({
     selector: 'app-topbar',
@@ -29,9 +32,29 @@ import { filter } from 'rxjs/operators';
         <div class="layout-topbar-actions">
             <div class="layout-config-menu">
                 <button type="button" class="layout-topbar-action" (click)="languageMenu.toggle($event)" #languageMenuButton>
-                    <i class="pi pi-globe"></i>
+                    <img
+                        [src]="flagPlaceholderSrc"
+                        [class]="'flag flag-' + getFlagCode(currentLanguage)"
+                        alt="Flag"
+                        style="width: 24px"
+                    />
                 </button>
-                <p-menu #languageMenu [model]="languageMenuItems" [popup]="true"></p-menu>
+                <p-menu #languageMenu [model]="languageMenuItems" [popup]="true">
+                    <ng-template let-item pTemplate="item">
+                        <a class="p-menuitem-link flex align-items-center gap-2 px-3 py-2" (click)="onLanguageItemClick($event, item)">
+                            <span class="p-menuitem-icon">
+                                <img
+                                    [src]="flagPlaceholderSrc"
+                                    [class]="'flag flag-' + item.flag"
+                                    alt="Flag"
+                                    style="width: 20px"
+                                />
+                            </span>
+                            <span class="p-menuitem-text flex-1">{{ item.label }}</span>
+                            <i *ngIf="item.selected" class="pi pi-check text-primary"></i>
+                        </a>
+                    </ng-template>
+                </p-menu>
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
@@ -85,11 +108,13 @@ import { filter } from 'rxjs/operators';
     </div>`
 })
 export class AppTopbar implements OnInit {
+    @ViewChild('languageMenu') languageMenu?: Menu;
     items!: MenuItem[];
     userMenuItems: MenuItem[] = [];
-    languageMenuItems: MenuItem[] = [];
+    languageMenuItems: LanguageMenuItem[] = [];
     userInitials: string = '';
     currentLanguage: SupportedLanguage = 'en';
+    flagPlaceholderSrc = 'https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png';
 
     constructor(
         public layoutService: LayoutService,
@@ -108,8 +133,8 @@ export class AppTopbar implements OnInit {
 
     ngOnInit() {
         this.updateUserInfo();
-        this.initLanguageMenu();
         this.currentLanguage = this.translationService.getCurrentLanguage();
+        this.initLanguageMenu();
         
         // Subscribe to language changes
         this.translationService.language$.subscribe(lang => {
@@ -123,12 +148,16 @@ export class AppTopbar implements OnInit {
         this.languageMenuItems = [
             {
                 label: 'English',
-                icon: this.currentLanguage === 'en' ? 'pi pi-check' : '',
+                flag: 'us',
+                lang: 'en',
+                selected: this.currentLanguage === 'en',
                 command: () => this.setLanguage('en')
             },
             {
                 label: 'Italiano',
-                icon: this.currentLanguage === 'it' ? 'pi pi-check' : '',
+                flag: 'it',
+                lang: 'it',
+                selected: this.currentLanguage === 'it',
                 command: () => this.setLanguage('it')
             }
         ];
@@ -147,6 +176,21 @@ export class AppTopbar implements OnInit {
                 console.error('Error changing language:', error);
             }
         });
+    }
+
+    getFlagCode(lang: SupportedLanguage): 'us' | 'it' {
+        return lang === 'it' ? 'it' : 'us';
+    }
+
+    onLanguageItemClick(event: Event, item: LanguageMenuItem) {
+        event.preventDefault();
+
+        if (item.command) {
+            const commandEvent: MenuItemCommandEvent = { originalEvent: event, item };
+            item.command(commandEvent);
+        }
+
+        this.languageMenu?.hide();
     }
 
     updateUserInfo() {
