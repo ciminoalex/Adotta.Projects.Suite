@@ -8,12 +8,15 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
 import { ProjectService } from '../../services/project.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
-import { Project, LivelloProgetto } from '../../models/project.model';
+import { LookupService } from '../../services/lookup.service';
+import { Project, LivelloProgetto, ProjectStatus } from '../../models/project.model';
+import { SquadraInstallazione, TeamTecnico } from '../../models/lookup.model';
 
 interface GanttRow {
   numeroProgetto: string;
@@ -25,6 +28,43 @@ interface GanttRow {
   dataFine?: Date;
   progetto?: Project;
   livello?: LivelloProgetto;
+}
+
+interface GanttTask {
+  id: string;
+  name: string;
+  assignee: string;
+  assigneeCode: string; // Codice originale del team
+  assigneeName: string | null; // Nome del team (null durante il caricamento)
+  assigneeLoading: boolean; // Indica se il nome è in caricamento
+  start: Date | null;
+  end: Date | null;
+  duration: number; // Giorni
+  color: string;
+  row: GanttRow;
+}
+
+interface GanttProject {
+  id: string;
+  code: string;
+  name: string;
+  status: ProjectStatus | string;
+  statusColor: string;
+  tasks: GanttTask[];
+}
+
+interface MonthData {
+  name: string; // Es: "Dicembre 2025"
+  year: number;
+  daysCount: number;
+  width: number; // pixels
+}
+
+interface DayData {
+  dayNum: number;
+  date: Date;
+  isWeekend: boolean;
+  dayLetter: string;
 }
 
 @Component({
@@ -40,6 +80,7 @@ interface GanttRow {
     TooltipModule,
     ToastModule,
     ConfirmDialogModule,
+    SkeletonModule,
     TranslatePipe
   ],
   providers: [MessageService, ConfirmationService],
@@ -50,9 +91,13 @@ export class GanttView implements OnInit, AfterViewInit {
   @ViewChild('timelineScroll') timelineScroll?: ElementRef;
   @ViewChild('rowsScroll') rowsScroll?: ElementRef;
 
+  // Espone l'enum per uso nel template
+  ProjectStatus = ProjectStatus;
+
   projects: Project[] = [];
   ganttRows: GanttRow[] = [];
   filteredRows: GanttRow[] = [];
+  ganttProjects: GanttProject[] = [];
   loading = false;
 
   // Filtri periodo
@@ -63,10 +108,20 @@ export class GanttView implements OnInit, AfterViewInit {
   minDate: Date = new Date();
   maxDate: Date = new Date();
   daysInRange: number = 0;
-  dayWidth: number = 25; // pixel minimi per giorno (larghezza colonna)
+  dayWidth: number = 36; // pixel per giorno (larghezza colonna) - aumentato per migliore visualizzazione
+  colWidth: number = 36; // alias per dayWidth
+  
+  // Dati timeline
+  months: MonthData[] = [];
+  allDays: DayData[] = [];
   
   // Mappa dei colori per team
   private teamColors: Map<string, string> = new Map();
+  
+  // Dati lookup per team
+  squadreInstallazione: SquadraInstallazione[] = [];
+  teamTecnici: TeamTecnico[] = [];
+  teamNamesMap: Map<string, string> = new Map(); // Mappa codice -> nome
 
   private projectService: ProjectService | any;
 
@@ -76,7 +131,8 @@ export class GanttView implements OnInit, AfterViewInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private lookupService: LookupService
   ) {
     this.projectService = this.serviceProvider.provideProjectService();
     
@@ -90,12 +146,91 @@ export class GanttView implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    // Carica prima i dati lookup (team), poi i progetti
+    this.loadLookupData();
     this.loadProjects();
     
-    // Sottoscrivi ai cambiamenti di lingua per aggiornare i giorni della settimana
+    // Sottoscrivi ai cambiamenti di lingua per aggiornare i giorni della settimana e i mesi
     this.translationService.language$.subscribe(() => {
+      // Rigenera la timeline quando cambia la lingua per aggiornare traduzioni
+      if (this.allDays.length > 0 || this.months.length > 0) {
+        this.generateTimeline();
+      }
       this.cdr.markForCheck();
     });
+  }
+
+  loadLookupData() {
+    // Carica squadre installazione
+    this.lookupService.getSquadreInstallazione().subscribe({
+      next: (squadre: SquadraInstallazione[]) => {
+        this.squadreInstallazione = squadre;
+        // Popola la mappa codice -> nome
+        squadre.forEach(squadra => {
+          if (squadra.id) {
+            this.teamNamesMap.set(squadra.id, squadra.nome);
+          }
+        });
+        // Aggiorna i nomi dei task esistenti
+        this.updateTaskTeamNames();
+      },
+      error: (error: any) => {
+        console.error('Errore nel caricamento squadre installazione:', error);
+      }
+    });
+
+    // Carica team tecnici
+    this.lookupService.getTeamTecnici().subscribe({
+      next: (teams: TeamTecnico[]) => {
+        this.teamTecnici = teams;
+        // Popola la mappa codice -> nome
+        teams.forEach(team => {
+          if (team.id) {
+            this.teamNamesMap.set(team.id, team.nome);
+          }
+        });
+        // Aggiorna i nomi dei task esistenti
+        this.updateTaskTeamNames();
+      },
+      error: (error: any) => {
+        console.error('Errore nel caricamento team tecnici:', error);
+      }
+    });
+  }
+
+  // Aggiorna i nomi dei team nei task dopo il caricamento
+  updateTaskTeamNames() {
+    for (const project of this.ganttProjects) {
+      for (const task of project.tasks) {
+        if (task.assigneeLoading && task.assigneeCode) {
+          const teamName = this.teamNamesMap.get(task.assigneeCode);
+          if (teamName) {
+            task.assigneeName = teamName;
+            task.assignee = teamName; // Aggiorna anche la proprietà assignee
+            task.assigneeLoading = false;
+          } else {
+            // Se non si trova, usa il codice originale
+            task.assigneeName = task.assigneeCode;
+            task.assignee = task.assigneeCode; // Aggiorna anche la proprietà assignee
+            task.assigneeLoading = false;
+          }
+        } else if (!task.assigneeName && task.assigneeCode && task.assigneeCode !== 'N/A') {
+          // Se il nome non è ancora stato caricato ma abbiamo il codice, prova a recuperarlo
+          const teamName = this.teamNamesMap.get(task.assigneeCode);
+          if (teamName) {
+            task.assigneeName = teamName;
+            task.assignee = teamName;
+            task.assigneeLoading = false;
+          } else if (this.squadreInstallazione.length > 0 || this.teamTecnici.length > 0) {
+            // Se i dati sono stati caricati ma non si trova, usa il codice
+            task.assigneeName = task.assigneeCode;
+            task.assignee = task.assigneeCode;
+            task.assigneeLoading = false;
+          }
+        }
+      }
+    }
+    this.cdr.markForCheck();
   }
 
   // Carica le date salvate dal localStorage
@@ -237,6 +372,186 @@ export class GanttView implements OnInit, AfterViewInit {
       }
       return (a.nomeLivello || '').localeCompare(b.nomeLivello || '');
     });
+
+    // Costruisci la struttura raggruppata per progetti
+    this.buildGanttProjects();
+  }
+
+  buildGanttProjects() {
+    const projectsMap = new Map<string, GanttProject>();
+    
+    for (const row of this.filteredRows) {
+      const projectKey = row.numeroProgetto;
+      
+      if (!projectsMap.has(projectKey)) {
+        // Determina lo stato del progetto dal progetto stesso
+        const projectStatus = this.getProjectStatus(row.progetto);
+        const statusColor = this.getStatusColor(projectStatus, row.teamInstallazione);
+        
+        projectsMap.set(projectKey, {
+          id: projectKey,
+          code: row.numeroProgetto,
+          name: row.nomeProgetto || row.numeroProgetto,
+          status: projectStatus,
+          statusColor: statusColor,
+          tasks: []
+        });
+      }
+      
+      const project = projectsMap.get(projectKey)!;
+      const assigneeCode = row.teamInstallazione || row.teamTecnico || 'N/A';
+      
+      // Cerca il nome del team nella mappa
+      let assigneeName: string | null = null;
+      let assigneeLoading = false;
+      
+      if (assigneeCode && assigneeCode !== 'N/A') {
+        assigneeName = this.teamNamesMap.get(assigneeCode) || null;
+        // Se non è nella mappa e i dati lookup non sono ancora caricati, mostra loading
+        if (!assigneeName && (this.squadreInstallazione.length === 0 && this.teamTecnici.length === 0)) {
+          assigneeLoading = true;
+        } else if (!assigneeName) {
+          // Se i dati sono caricati ma non si trova, usa il codice
+          assigneeName = assigneeCode;
+        }
+      } else {
+        assigneeName = 'N/A';
+      }
+      
+      // Calcola la durata
+      let duration = 0;
+      if (row.dataInizio && row.dataFine) {
+        const diffTime = new Date(row.dataFine).getTime() - new Date(row.dataInizio).getTime();
+        duration = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      } else if (row.dataInizio) {
+        duration = 1; // Durata minima se manca la data fine
+      } else if (row.dataFine) {
+        duration = 1;
+      }
+      
+      // Determina il colore basato sullo stato del progetto (tutti i task ereditano lo stesso colore)
+      const color = project.statusColor;
+      
+      project.tasks.push({
+        id: `${row.numeroProgetto}-${row.nomeLivello}`,
+        name: row.nomeLivello,
+        assignee: assigneeName || assigneeCode, // Usa il nome se disponibile, altrimenti il codice
+        assigneeCode: assigneeCode,
+        assigneeName: assigneeName,
+        assigneeLoading: assigneeLoading,
+        start: row.dataInizio ? new Date(row.dataInizio) : null,
+        end: row.dataFine ? new Date(row.dataFine) : null,
+        duration: duration,
+        color: color,
+        row: row
+      });
+    }
+    
+    this.ganttProjects = Array.from(projectsMap.values());
+  }
+
+  // Restituisce direttamente lo statoProgetto del progetto (enum ProjectStatus)
+  getProjectStatus(project: Project | undefined): ProjectStatus | string {
+    if (!project || !project.statoProgetto) {
+      return ProjectStatus.UPCOMING; // Default se non c'è stato
+    }
+    
+    // Restituisce direttamente lo stato del progetto
+    return project.statoProgetto;
+  }
+
+  getInitials(name: string): string {
+    if (!name || name === 'N/A') return 'N/A';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  determineTaskStatus(row: GanttRow): 'completed' | 'progress' | 'delayed' | 'planned' {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (!row.dataInizio && !row.dataFine) {
+      return 'planned';
+    }
+    
+    // Se ha data fine e è passata
+    if (row.dataFine) {
+      const endDate = new Date(row.dataFine);
+      endDate.setHours(0, 0, 0, 0);
+      
+      if (endDate < today) {
+        // Se ha anche data inizio e è passata, è completato
+        if (row.dataInizio) {
+          const startDate = new Date(row.dataInizio);
+          startDate.setHours(0, 0, 0, 0);
+          if (startDate <= today) {
+            return 'completed';
+          }
+        }
+        // Altrimenti è in ritardo
+        return 'delayed';
+      }
+    }
+    
+    // Se ha data inizio e siamo nel periodo
+    if (row.dataInizio) {
+      const startDate = new Date(row.dataInizio);
+      startDate.setHours(0, 0, 0, 0);
+      
+      if (startDate <= today) {
+        // Se ha data fine futura, è in progress
+        if (row.dataFine) {
+          const endDate = new Date(row.dataFine);
+          endDate.setHours(0, 0, 0, 0);
+          if (endDate >= today) {
+            return 'progress';
+          }
+        } else {
+          return 'progress';
+        }
+      }
+    }
+    
+    return 'planned';
+  }
+
+  getStatusColor(status: ProjectStatus | string, team?: string): string {
+    const statusStr = status.toString().toUpperCase();
+    
+    switch (statusStr) {
+      case ProjectStatus.COMPLETED:
+        return 'bg-emerald-500';
+      case ProjectStatus.ON_GOING:
+      case ProjectStatus.RUSH:
+        // Per questi stati, usa il colore del team se disponibile, altrimenti blu
+        if (team) {
+          return 'bg-team-color';
+        }
+        return 'bg-blue-500';
+      case ProjectStatus.CRITICAL:
+      case ProjectStatus.PUSHED_OUT:
+        return 'bg-rose-500';
+      case ProjectStatus.HOLD_ON:
+      case ProjectStatus.ON_HOLD:
+        return 'bg-amber-500';
+      case ProjectStatus.UPCOMING:
+      case ProjectStatus.TO_BE_ASSIGNED:
+      case ProjectStatus.TO_CHECK:
+        return 'bg-slate-400';
+      default:
+        return 'bg-slate-400';
+    }
+  }
+
+  // Ottiene il colore del team come stringa CSS (per uso inline)
+  getTeamColorString(team: string | undefined): string {
+    if (!team) {
+      return '#3b82f6'; // blue-500 default
+    }
+    return this.getTeamColor(team);
   }
 
   // Genera un colore random ma determinato per un team (basato su hash del nome)
@@ -279,80 +594,159 @@ export class GanttView implements OnInit, AfterViewInit {
   }
 
   updateTimeline() {
-    // Calcola il range minimo e massimo dalle date dei progetti
-    let minDate = this.dataInizio ? new Date(this.dataInizio) : new Date();
-    let maxDate = this.dataFine ? new Date(this.dataFine) : new Date();
+    // Usa direttamente le date selezionate dall'utente come inizio e fine della timeline
+    if (!this.dataInizio || !this.dataFine) {
+      // Se non ci sono date selezionate, usa le date dei progetti
+      let minDate = new Date();
+      let maxDate = new Date();
 
-    // Se ci sono date nei progetti, espandi il range
-    for (const row of this.ganttRows) {
-      if (row.dataInizio) {
-        const date = new Date(row.dataInizio);
-        if (date < minDate) minDate = date;
-        if (date > maxDate) maxDate = date;
+      for (const row of this.ganttRows) {
+        if (row.dataInizio) {
+          const date = new Date(row.dataInizio);
+          if (date < minDate) minDate = date;
+        }
+        if (row.dataFine) {
+          const date = new Date(row.dataFine);
+          if (date > maxDate) maxDate = date;
+        }
       }
-      if (row.dataFine) {
-        const date = new Date(row.dataFine);
-        if (date < minDate) minDate = date;
-        if (date > maxDate) maxDate = date;
-      }
-    }
 
-    // Assicurati che il range includa almeno il periodo selezionato
-    if (this.dataInizio && this.dataInizio < minDate) {
-      minDate = new Date(this.dataInizio);
+      this.minDate = minDate;
+      this.maxDate = maxDate;
+    } else {
+      // Usa esattamente le date selezionate, senza padding
+      this.minDate = new Date(this.dataInizio);
+      this.minDate.setHours(0, 0, 0, 0);
+      
+      this.maxDate = new Date(this.dataFine);
+      this.maxDate.setHours(23, 59, 59, 999);
     }
-    if (this.dataFine && this.dataFine > maxDate) {
-      maxDate = new Date(this.dataFine);
-    }
-
-    // Aggiungi un po' di padding
-    minDate.setDate(minDate.getDate() - 7);
-    maxDate.setDate(maxDate.getDate() + 7);
-
-    this.minDate = minDate;
-    this.maxDate = maxDate;
     
     // Calcola giorni nel range
-    const diffTime = maxDate.getTime() - minDate.getTime();
-    this.daysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffTime = this.maxDate.getTime() - this.minDate.getTime();
+    this.daysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 per includere anche l'ultimo giorno
+    
+    // Genera i dati per mesi e giorni
+    this.generateTimeline();
+  }
+
+  generateTimeline() {
+    const monthsData: MonthData[] = [];
+    const daysData: DayData[] = [];
+    
+    // Inizia dal primo giorno del mese che contiene minDate
+    const startDate = new Date(this.minDate);
+    startDate.setDate(1); // Primo giorno del mese
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Termina all'ultimo giorno del mese che contiene maxDate
+    const endDate = new Date(this.maxDate);
+    endDate.setDate(new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).getDate()); // Ultimo giorno del mese
+    endDate.setHours(23, 59, 59, 999);
+    
+    let current = new Date(startDate);
+    const monthsMap = new Map<string, { days: DayData[], width: number }>();
+
+    // Genera tutti i giorni dal minDate al maxDate
+    while (current <= endDate) {
+      const year = current.getFullYear();
+      const monthIndex = current.getMonth();
+      const dayNum = current.getDate();
+      
+      // Controlla se il giorno è nel range
+      const dateObj = new Date(year, monthIndex, dayNum);
+      dateObj.setHours(0, 0, 0, 0);
+      const minDateNormalized = new Date(this.minDate);
+      minDateNormalized.setHours(0, 0, 0, 0);
+      const maxDateNormalized = new Date(this.maxDate);
+      maxDateNormalized.setHours(0, 0, 0, 0);
+      
+      if (dateObj >= minDateNormalized && dateObj <= maxDateNormalized) {
+        const dayOfWeek = dateObj.getDay();
+        // Usa il servizio di traduzione per ottenere la lettera del giorno
+        const dayLetter = this.getWeekdayLabel(dateObj);
+        
+        const dayData: DayData = {
+          dayNum: dayNum,
+          date: new Date(dateObj),
+          isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+          dayLetter: dayLetter
+        };
+        
+        daysData.push(dayData);
+        
+        // Raggruppa per mese per calcolare la larghezza
+        const monthKey = `${year}-${monthIndex}`;
+        if (!monthsMap.has(monthKey)) {
+          monthsMap.set(monthKey, { days: [], width: 0 });
+        }
+        monthsMap.get(monthKey)!.days.push(dayData);
+      }
+      
+      // Passa al giorno successivo
+      current.setDate(current.getDate() + 1);
+    }
+
+    // Genera i dati dei mesi basandosi sui giorni effettivamente inclusi
+    monthsMap.forEach((value, monthKey) => {
+      const [year, monthIndex] = monthKey.split('-').map(Number);
+      // Usa il servizio di traduzione per ottenere il nome del mese
+      const monthDate = new Date(year, monthIndex, 1);
+      const monthNameTranslated = this.getMonthLabel(monthDate);
+      // Aggiungi l'anno al nome del mese tradotto
+      const monthName = `${monthNameTranslated} ${year}`;
+      
+      // Conta solo i giorni inclusi nel range per questo mese
+      const daysInRange = value.days.length;
+      
+      monthsData.push({
+        name: monthName,
+        year,
+        daysCount: daysInRange,
+        width: daysInRange * this.colWidth
+      });
+    });
+
+    this.months = monthsData;
+    this.allDays = daysData;
   }
 
   applyFilters() {
     if (!this.dataInizio || !this.dataFine) {
       this.filteredRows = [...this.ganttRows];
-      return;
+    } else {
+      this.filteredRows = this.ganttRows.filter(row => {
+        // Mostra il livello se:
+        // 1. Ha una data inizio/fine nel range
+        // 2. Il periodo del livello si sovrappone al range selezionato
+        if (row.dataInizio && row.dataFine) {
+          const rowStart = new Date(row.dataInizio);
+          const rowEnd = new Date(row.dataFine);
+          const filterStart = new Date(this.dataInizio!);
+          const filterEnd = new Date(this.dataFine!);
+          
+          // Sovrapposizione: rowStart <= filterEnd && rowEnd >= filterStart
+          return rowStart <= filterEnd && rowEnd >= filterStart;
+        }
+        
+        // Se ha solo data inizio, mostra se è nel range
+        if (row.dataInizio) {
+          const rowStart = new Date(row.dataInizio);
+          return rowStart >= new Date(this.dataInizio!) && rowStart <= new Date(this.dataFine!);
+        }
+        
+        // Se ha solo data fine, mostra se è nel range
+        if (row.dataFine) {
+          const rowEnd = new Date(row.dataFine);
+          return rowEnd >= new Date(this.dataInizio!) && rowEnd <= new Date(this.dataFine!);
+        }
+        
+        return false;
+      });
     }
 
-    this.filteredRows = this.ganttRows.filter(row => {
-      // Mostra il livello se:
-      // 1. Ha una data inizio/fine nel range
-      // 2. Il periodo del livello si sovrappone al range selezionato
-      if (row.dataInizio && row.dataFine) {
-        const rowStart = new Date(row.dataInizio);
-        const rowEnd = new Date(row.dataFine);
-        const filterStart = new Date(this.dataInizio!);
-        const filterEnd = new Date(this.dataFine!);
-        
-        // Sovrapposizione: rowStart <= filterEnd && rowEnd >= filterStart
-        return rowStart <= filterEnd && rowEnd >= filterStart;
-      }
-      
-      // Se ha solo data inizio, mostra se è nel range
-      if (row.dataInizio) {
-        const rowStart = new Date(row.dataInizio);
-        return rowStart >= new Date(this.dataInizio!) && rowStart <= new Date(this.dataFine!);
-      }
-      
-      // Se ha solo data fine, mostra se è nel range
-      if (row.dataFine) {
-        const rowEnd = new Date(row.dataFine);
-        return rowEnd >= new Date(this.dataInizio!) && rowEnd <= new Date(this.dataFine!);
-      }
-      
-      return false;
-    });
-
     this.updateTimeline();
+    this.buildGanttProjects();
   }
 
   onPeriodChange() {
@@ -492,6 +886,32 @@ export class GanttView implements OnInit, AfterViewInit {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     
     return Math.max(this.dayWidth, diffDays * this.dayWidth); // Minimo dayWidth pixel
+  }
+
+  // Helper per posizionare i task nella timeline
+  getTaskLeft(startDate: Date | null): number {
+    if (!startDate) return 0;
+    const diffTime = startDate.getTime() - this.minDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays * this.colWidth);
+  }
+
+  getTaskWidth(duration: number): number {
+    return duration * this.colWidth;
+  }
+
+  formatDateForDisplay(date: Date | null): string {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  getDateRangeLabel(): string {
+    if (!this.dataInizio || !this.dataFine) {
+      return '';
+    }
+    const start = this.dataInizio.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+    const end = this.dataFine.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+    return `${start} - ${end}`;
   }
 
   // Calcola la larghezza totale della timeline in pixel
@@ -643,6 +1063,45 @@ export class GanttView implements OnInit, AfterViewInit {
         this.router.navigate(['/projects', row.numeroProgetto]);
       }
     });
+  }
+
+  // Track by functions per performance
+  trackByProject(index: number, project: GanttProject): string {
+    return project.id;
+  }
+
+  trackByTask(index: number, task: GanttTask): string {
+    return task.id;
+  }
+
+  trackByMonth(index: number, month: MonthData): string {
+    return `${month.year}-${month.name}`;
+  }
+
+  trackByDay(index: number, day: DayData): number {
+    return day.date.getTime();
+  }
+
+  // Helper per etichette stato - restituisce direttamente il valore come stringa
+  getStatusLabel(status: ProjectStatus | string): string {
+    return status.toString();
+  }
+
+  // Tooltip per le barre
+  getTaskTooltip(task: GanttTask): string {
+    const start = task.start ? this.formatDateForDisplay(task.start) : '-';
+    const end = task.end ? this.formatDateForDisplay(task.end) : '-';
+    return `${task.name}\nInizio: ${start}\nDurata: ${task.duration} giorni`;
+  }
+
+  // Navigazione timeline
+  navigateTimeline(direction: number) {
+    // Implementazione base - può essere estesa
+    if (direction < 0) {
+      // Naviga indietro
+    } else {
+      // Naviga avanti
+    }
   }
 }
 

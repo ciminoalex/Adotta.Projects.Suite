@@ -38,112 +38,137 @@
     <p class="mt-2 text-500">{{ 'projects.loadingProjects' | translate }}</p>
   </div>
 
-  <!-- GANTT Chart -->
-  <div *ngIf="!loading" class="gantt-container">
-    <!-- Timeline Header -->
-    <div class="gantt-timeline-header">
-      <div class="gantt-row-header" style="width: 300px;">
-        <div class="font-bold text-sm p-2">{{ 'projects.information' | translate }}</div>
-      </div>
-      <div class="gantt-timeline-scroll" #timelineScroll (scroll)="onTimelineScroll($event)">
-        <div class="gantt-timeline-labels" [style.width.px]="getTimelineWidth()" [style.min-width.px]="getTimelineWidth()">
-          <!-- Header giorni settimana -->
-          <div class="gantt-weekday-header" [style.width.px]="getTimelineWidth()" [style.min-width.px]="getTimelineWidth()">
-            <div *ngFor="let day of getTimelineDays(); let i = index" 
-                 class="gantt-weekday-cell"
-                 [class.weekend]="day.getDay() === 0 || day.getDay() === 6"
-                 [style.left.px]="i * dayWidth"
-                 [style.width.px]="dayWidth">
-              <div class="weekday-label">{{ getWeekdayLabel(day) }}</div>
-            </div>
-          </div>
-          <!-- Celle giornaliere -->
-          <div *ngFor="let day of getTimelineDays(); let i = index" 
-               class="gantt-day-cell"
-               [class.weekend]="day.getDay() === 0 || day.getDay() === 6"
-               [style.left.px]="i * dayWidth"
-               [style.width.px]="dayWidth">
-            <div class="day-label">{{ day.getDate() }}</div>
-            <div class="day-month-label" *ngIf="i === 0 || day.getDate() === 1">
-              {{ getMonthLabel(day) }}
-            </div>
-          </div>
-          <!-- Linee di divisione principali (ogni settimana o ogni giorno se range piccolo) -->
-          <div *ngFor="let label of getTimelineLabels()" 
-               class="gantt-timeline-label"
-               [style.left.px]="getDateLeft(label.date)">
-            <div class="timeline-label-text" *ngIf="daysInRange <= 60">{{ label.label }}</div>
-            <div class="timeline-label-line"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- GANTT Rows -->
-    <div class="gantt-rows-container" #rowsScroll (scroll)="onRowsScroll($event)">
-      <div *ngFor="let row of filteredRows; let i = index" class="gantt-row" [class.odd-row]="i % 2 === 0">
-        <!-- Row Header -->
-        <div class="gantt-row-header" style="width: 300px;">
-          <div class="p-2">
-            <div class="font-bold text-sm">{{ row.numeroProgetto }}{{ row.nomeProgetto ? ' - ' + row.nomeProgetto : '' }}</div>
-            <div class="text-xs text-500 mt-1">{{ row.nomeLivello }}</div>
-            <div class="text-xs text-600 mt-1" *ngIf="row.teamInstallazione">
-              <i class="pi pi-users mr-1"></i>{{ row.teamInstallazione }}
-            </div>
-          </div>
-        </div>
-
-        <!-- GANTT Bar Area -->
-        <div class="gantt-bar-area" [style.width.px]="getTimelineWidth()" [style.min-width.px]="getTimelineWidth()">
-          <!-- Griglia giornaliera -->
-          <div class="gantt-grid">
-            <!-- Linee verticali per ogni giorno -->
-            <div *ngFor="let day of getTimelineDays(); let i = index" 
-                 class="gantt-grid-line"
-                 [class.weekend-line]="day.getDay() === 0 || day.getDay() === 6"
-                 [style.left.px]="i * dayWidth">
-            </div>
-          </div>
-
-          <!-- GANTT Bar -->
-          <div class="gantt-bar-wrapper"
-               *ngIf="row.dataInizio && row.dataFine">
-            <div class="gantt-bar"
-                 [class.overdue]="isOverdue(row)"
-                 [style.left.px]="getBarLeft(row)"
-                 [style.width.px]="getBarWidth(row)"
-                 [style.background-color]="getTeamColor(row.teamInstallazione)"
-                 [pTooltip]="row.numeroProgetto + ' - ' + row.nomeLivello + ': ' + formatDate(row.dataInizio) + ' / ' + formatDate(row.dataFine)"
-                 tooltipPosition="top"
-                 (click)="onBarClick(row, $event)">
-              <div class="gantt-bar-content">
-                <span class="gantt-bar-text">{{ formatDate(row.dataInizio) }} - {{ formatDate(row.dataFine) }}</span>
-              </div>
-            </div>
-          </div>
+  <!-- GANTT Chart Moderno -->
+  <div *ngIf="!loading" class="gantt-container-modern">
+    
+    <!-- Main Scrollable Area -->
+    <div class="gantt-main-scroll">
+      <div class="gantt-content-wrapper">
+        
+        <!-- Timeline Header Group (Sticky Top) -->
+        <div class="gantt-timeline-header-modern">
           
-          <!-- Barra parziale se manca una data -->
-          <div class="gantt-bar-wrapper"
-               *ngIf="(row.dataInizio && !row.dataFine) || (!row.dataInizio && row.dataFine)">
-            <div class="gantt-bar gantt-bar-partial"
-                 [class.overdue]="isOverdue(row)"
-                 [style.left.px]="getBarLeft(row)"
-                 [style.width.px]="getBarWidth(row)"
-                 [style.background-color]="getTeamColor(row.teamInstallazione)"
-                 [pTooltip]="row.numeroProgetto + ' - ' + row.nomeLivello + ': ' + formatDate(row.dataInizio || row.dataFine)"
-                 tooltipPosition="top"
-                 (click)="onBarClick(row, $event)">
-              <div class="gantt-bar-content">
-                <span class="gantt-bar-text">{{ formatDate(row.dataInizio || row.dataFine) }}</span>
-              </div>
+          <!-- ROW 1: MONTHS -->
+          <div class="gantt-months-row">
+            <!-- Corner Piece Placeholder -->
+            <div class="gantt-corner-sticky"></div>
+            
+            <div *ngFor="let month of months; trackBy: trackByMonth" 
+                 class="gantt-month-cell"
+                 [style.width.px]="month.width">
+              {{ month.name }}
+            </div>
+          </div>
+
+          <!-- ROW 2: DAYS -->
+          <div class="gantt-days-row">
+            <!-- Corner Piece (Project & Task Label) -->
+            <div class="gantt-corner-sticky gantt-corner-label">
+              <span>Project & Task</span>
+            </div>
+
+            <div *ngFor="let day of allDays; trackBy: trackByDay" 
+                 class="gantt-day-cell-modern"
+                 [style.width.px]="colWidth"
+                 [class.weekend]="day.isWeekend">
+              <span class="gantt-day-letter" 
+                    [class.weekend-text]="day.isWeekend">
+                {{ day.dayLetter }}
+              </span>
+              <span class="gantt-day-number"
+                    [class.weekend-number]="day.isWeekend">
+                {{ day.dayNum }}
+              </span>
             </div>
           </div>
         </div>
+
+        <!-- Body Content -->
+        <div class="gantt-body-content">
+          <div *ngFor="let project of ganttProjects; trackBy: trackByProject" class="gantt-project-group">
+            
+            <!-- PROJECT ROW HEADER -->
+            <div class="gantt-project-row">
+              <!-- Sticky Sidebar Cell -->
+              <div class="gantt-corner-sticky gantt-project-header">
+                <div class="gantt-project-info">
+                  <div class="gantt-project-name-row">
+                    <span class="gantt-project-dot"></span>
+                    <h3 class="gantt-project-name">{{ project.name }}</h3>
+                    <span class="gantt-project-code">#{{ project.code }}</span>
+                  </div>
+                  <div class="gantt-project-status-row">
+                    <!-- Status Icon -->
+                    <span *ngIf="project.status === ProjectStatus.COMPLETED" class="gantt-status-icon completed">
+                      <i class="pi pi-check"></i>
+                    </span>
+                    <span *ngIf="project.status === ProjectStatus.CRITICAL || project.status === ProjectStatus.PUSHED_OUT" class="gantt-status-icon delayed">
+                      <i class="pi pi-clock"></i>
+                    </span>
+                    <span *ngIf="project.status === ProjectStatus.ON_GOING || project.status === ProjectStatus.RUSH" class="gantt-status-icon progress">
+                      <div class="gantt-status-dot"></div>
+                    </span>
+                    <span *ngIf="project.status === ProjectStatus.UPCOMING || project.status === ProjectStatus.TO_BE_ASSIGNED || project.status === ProjectStatus.TO_CHECK || project.status === ProjectStatus.HOLD_ON || project.status === ProjectStatus.ON_HOLD" class="gantt-status-icon planned">
+                      <div class="gantt-status-dot"></div>
+                    </span>
+                    <span class="gantt-project-status-text">{{ getStatusLabel(project.status) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TASKS -->
+            <div *ngFor="let task of project.tasks; trackBy: trackByTask" class="gantt-task-row">
+              
+              <!-- Sticky Sidebar Cell (Task Info) -->
+              <div class="gantt-corner-sticky gantt-task-header">
+                <div class="gantt-task-info">
+                  <span class="gantt-task-name" [title]="task.name">{{ task.name }}</span>
+                </div>
+                <div class="gantt-assignee-avatar" [title]="task.assigneeName || task.assigneeCode">
+                  <p-skeleton *ngIf="task.assigneeLoading" width="2rem" height="1.5rem" styleClass="mb-0"></p-skeleton>
+                  <span *ngIf="!task.assigneeLoading">{{ task.assigneeName || task.assigneeCode }}</span>
+                </div>
+              </div>
+
+              <!-- Chart Cell (The Bar) -->
+              <div class="gantt-task-chart">
+                <!-- Grid Lines -->
+                <div class="gantt-grid-modern">
+                  <div *ngFor="let day of allDays; trackBy: trackByDay" 
+                       class="gantt-grid-line-modern"
+                       [style.width.px]="colWidth"
+                       [class.weekend-line]="day.isWeekend">
+                  </div>
+                </div>
+
+                <!-- The Bar Element -->
+                <div *ngIf="task.start" 
+                     class="gantt-bar-modern"
+                     [ngClass]="task.color === 'bg-team-color' ? '' : task.color"
+                     [style.left.px]="getTaskLeft(task.start)"
+                     [style.width.px]="getTaskWidth(task.duration)"
+                     [style.background-color]="task.color === 'bg-team-color' ? getTeamColorString(task.row.teamInstallazione) : undefined"
+                     [pTooltip]="getTaskTooltip(task)"
+                     tooltipPosition="top"
+                     (click)="onBarClick(task.row, $event)">
+                  
+                  <!-- Show text only if enough space -->
+                  <span *ngIf="getTaskWidth(task.duration) > 40" class="gantt-bar-text-modern">
+                    {{ task.duration }}gg
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!loading && filteredRows.length === 0" class="text-center p-8">
+    <div *ngIf="!loading && ganttProjects.length === 0" class="gantt-empty-state">
       <i class="pi pi-info-circle text-4xl text-500 mb-3"></i>
       <p class="text-500 text-lg">{{ 'projects.noLevelsInPeriod' | translate }}</p>
       <p class="text-500 text-sm mt-2">{{ 'projects.modifyFilters' | translate }}</p>
@@ -151,7 +176,7 @@
   </div>
 
   <!-- Summary -->
-  <div *ngIf="!loading && filteredRows.length > 0" class="mt-4 p-3 bg-gray-50 border-round">
+  <div *ngIf="!loading && ganttProjects.length > 0" class="mt-4 p-3 bg-gray-50 border-round">
     <div class="flex flex-wrap gap-4">
       <div class="flex align-items-center gap-2">
         <span class="text-sm text-600">{{ 'projects.totalLevelsDisplayed' | translate }}:</span>
@@ -167,4 +192,3 @@
 
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
-
