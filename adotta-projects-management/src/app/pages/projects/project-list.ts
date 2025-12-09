@@ -22,7 +22,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
-import { Project, ProjectStatus } from '../../models/project.model';
+import { Project, ProjectStatus, LivelloProgetto } from '../../models/project.model';
 import { Cliente, ProjectManager, TeamTecnico, TeamAPL, Sales, SquadraInstallazione } from '../../models/lookup.model';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
@@ -321,7 +321,32 @@ export class ProjectList implements OnInit {
     const projectIndex = this.filteredProjects.findIndex(p => p.numeroProgetto === project.numeroProgetto);
     if (projectIndex !== -1) {
       const currentExpanded = this.filteredProjects[projectIndex].expanded || false;
-      this.filteredProjects[projectIndex].expanded = !currentExpanded;
+      const newExpanded = !currentExpanded;
+      this.filteredProjects[projectIndex].expanded = newExpanded;
+      
+      // Se si sta espandendo e i livelli non hanno i prodotti caricati, caricali
+      if (newExpanded && this.filteredProjects[projectIndex].livelli) {
+        const projectToExpand = this.filteredProjects[projectIndex];
+        // Carica i livelli con i prodotti per questo progetto
+        this.projectService.getLivelliProgetto(projectToExpand.numeroProgetto).subscribe({
+          next: (livelli: LivelloProgetto[]) => {
+            // Aggiorna i livelli del progetto con i prodotti inclusi
+            projectToExpand.livelli = livelli.map(livello => ({
+              ...livello,
+              prodotti: livello.prodotti || []
+            }));
+            // Aggiorna anche nell'array principale
+            const mainProjectIndex = this.projects.findIndex(p => p.numeroProgetto === projectToExpand.numeroProgetto);
+            if (mainProjectIndex !== -1) {
+              this.projects[mainProjectIndex].livelli = projectToExpand.livelli;
+            }
+            this.cdr.markForCheck();
+          },
+          error: (error: any) => {
+            console.error('Errore nel caricamento livelli con prodotti:', error);
+          }
+        });
+      }
     }
   }
 

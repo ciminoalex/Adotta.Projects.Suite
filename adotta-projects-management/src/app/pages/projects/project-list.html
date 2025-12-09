@@ -154,17 +154,17 @@
           <div class="bg-gray-50 border-l-4 border-primary p-4">
             <h6 class="text-900 font-semibold mb-3 m-0">
               <i class="pi pi-list mr-2"></i>
-              Livelli del Progetto ({{ project.livelli.length }})
+              {{ 'projects.projectLevelsCount' | translate: { count: project.livelli.length } }}
             </h6>
             <p-table [value]="project.livelli" [paginator]="false" styleClass="p-datatable-sm">
               <ng-template pTemplate="header">
                 <tr>
-                  <th>Nome Livello</th>
-                  <th>Ordine</th>
-                  <th>Descrizione</th>
-                  <th>Data Inizio</th>
-                  <th>Data Fine</th>
-                  <th>Prodotti</th>
+                  <th>{{ 'projects.levelName' | translate }}</th>
+                  <th>{{ 'projects.order' | translate }}</th>
+                  <th>{{ 'projects.description' | translate }}</th>
+                  <th>{{ 'projects.startDate' | translate }}</th>
+                  <th>{{ 'projects.endDate' | translate }}</th>
+                  <th>{{ 'projects.levelProducts' | translate }}</th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-livello>
@@ -181,7 +181,7 @@
               </ng-template>
               <ng-template pTemplate="emptymessage">
                 <tr>
-                  <td colspan="6" class="text-center text-500 p-3">Nessun livello trovato</td>
+                  <td colspan="6" class="text-center text-500 p-3">{{ 'projects.noLevelsFound' | translate }}</td>
                 </tr>
               </ng-template>
             </p-table>

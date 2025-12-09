@@ -1,0 +1,4 @@
+// Regole di progetto per gli agenti AI in Cursor
+- Per ogni modifica grafica del portale utilizzare le specifiche in `@specs/primeng.md`.
+- Non implementare componenti custom già disponibili in PrimeNG; attenersi agli standard PrimeNG.
+- Quando mi proponi le descrizioni dei commit tramite la funzionalità "Generate Commit Message" usa la lingua italiana
