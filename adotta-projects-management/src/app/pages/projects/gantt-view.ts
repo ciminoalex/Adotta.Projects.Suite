@@ -200,37 +200,68 @@ export class GanttView implements OnInit, AfterViewInit {
 
   // Aggiorna i nomi dei team nei task dopo il caricamento
   updateTaskTeamNames() {
+    let hasChanges = false;
+    
     for (const project of this.ganttProjects) {
       for (const task of project.tasks) {
-        if (task.assigneeLoading && task.assigneeCode) {
+        // Se il task ha un codice assignee valido
+        if (task.assigneeCode && task.assigneeCode !== 'N/A') {
+          // Cerca il nome nella mappa
           const teamName = this.teamNamesMap.get(task.assigneeCode);
+          
           if (teamName) {
-            task.assigneeName = teamName;
-            task.assignee = teamName; // Aggiorna anche la proprietà assignee
-            task.assigneeLoading = false;
+            // Se troviamo il nome nella mappa, aggiorniamo sempre se:
+            // 1. assigneeName è null (non ancora impostato)
+            // 2. assigneeName è diverso dal nome trovato (potrebbe essere il codice)
+            // 3. assigneeLoading è true (in attesa del caricamento)
+            if (task.assigneeName === null || 
+                task.assigneeName !== teamName || 
+                task.assigneeLoading) {
+              task.assigneeName = teamName;
+              task.assignee = teamName;
+              task.assigneeLoading = false;
+              hasChanges = true;
+            }
           } else {
-            // Se non si trova, usa il codice originale
-            task.assigneeName = task.assigneeCode;
-            task.assignee = task.assigneeCode; // Aggiorna anche la proprietà assignee
-            task.assigneeLoading = false;
+            // Se non troviamo il nome nella mappa
+            // Controlla se i dati lookup sono stati caricati
+            const lookupLoaded = this.squadreInstallazione.length > 0 || this.teamTecnici.length > 0;
+            
+            if (lookupLoaded) {
+              // I dati sono stati caricati ma il team non è stato trovato
+              // Usa il codice come fallback
+              if (task.assigneeName !== task.assigneeCode) {
+                task.assigneeName = task.assigneeCode;
+                task.assignee = task.assigneeCode;
+                task.assigneeLoading = false;
+                hasChanges = true;
+              } else if (task.assigneeLoading) {
+                task.assigneeLoading = false;
+                hasChanges = true;
+              }
+            } else {
+              // I dati lookup non sono ancora stati caricati, mantieni il loading
+              if (!task.assigneeLoading) {
+                task.assigneeLoading = true;
+                hasChanges = true;
+              }
+            }
           }
-        } else if (!task.assigneeName && task.assigneeCode && task.assigneeCode !== 'N/A') {
-          // Se il nome non è ancora stato caricato ma abbiamo il codice, prova a recuperarlo
-          const teamName = this.teamNamesMap.get(task.assigneeCode);
-          if (teamName) {
-            task.assigneeName = teamName;
-            task.assignee = teamName;
+        } else {
+          // Se non c'è codice assignee valido
+          if (task.assigneeLoading || task.assigneeName !== 'N/A') {
+            task.assigneeName = 'N/A';
+            task.assignee = 'N/A';
             task.assigneeLoading = false;
-          } else if (this.squadreInstallazione.length > 0 || this.teamTecnici.length > 0) {
-            // Se i dati sono stati caricati ma non si trova, usa il codice
-            task.assigneeName = task.assigneeCode;
-            task.assignee = task.assigneeCode;
-            task.assigneeLoading = false;
+            hasChanges = true;
           }
         }
       }
     }
-    this.cdr.markForCheck();
+    
+    if (hasChanges) {
+      this.cdr.markForCheck();
+    }
   }
 
   // Carica le date salvate dal localStorage
@@ -521,29 +552,22 @@ export class GanttView implements OnInit, AfterViewInit {
   getStatusColor(status: ProjectStatus | string, team?: string): string {
     const statusStr = status.toString().toUpperCase();
     
-    switch (statusStr) {
-      case ProjectStatus.COMPLETED:
-        return 'bg-emerald-500';
-      case ProjectStatus.ON_GOING:
-      case ProjectStatus.RUSH:
-        // Per questi stati, usa il colore del team se disponibile, altrimenti blu
-        if (team) {
-          return 'bg-team-color';
-        }
-        return 'bg-blue-500';
-      case ProjectStatus.CRITICAL:
-      case ProjectStatus.PUSHED_OUT:
-        return 'bg-rose-500';
-      case ProjectStatus.HOLD_ON:
-      case ProjectStatus.ON_HOLD:
-        return 'bg-amber-500';
-      case ProjectStatus.UPCOMING:
-      case ProjectStatus.TO_BE_ASSIGNED:
-      case ProjectStatus.TO_CHECK:
-        return 'bg-slate-400';
-      default:
-        return 'bg-slate-400';
-    }
+    // Usa la stessa mappatura colori di getStatusColorClass per coerenza
+    // Ignora i colori del team, usa solo i colori degli stati
+    const colors: Record<string, string> = {
+      'ON_GOING': 'bg-blue-600',
+      'CRITICAL': 'bg-rose-600',
+      'RUSH': 'bg-red-700',
+      'HOLD_ON': 'bg-amber-500',
+      'ON_HOLD': 'bg-amber-600',
+      'TO_CHECK': 'bg-violet-600',
+      'UPCOMING': 'bg-slate-500',
+      'PUSHED_OUT': 'bg-zinc-400',
+      'TO_BE_ASSIGNED': 'bg-slate-400',
+      'COMPLETED': 'bg-emerald-600'
+    };
+    
+    return colors[statusStr] || 'bg-slate-500';
   }
 
   // Ottiene il colore del team come stringa CSS (per uso inline)
@@ -1085,6 +1109,33 @@ export class GanttView implements OnInit, AfterViewInit {
   // Helper per etichette stato - restituisce direttamente il valore come stringa
   getStatusLabel(status: ProjectStatus | string): string {
     return status.toString();
+  }
+
+  // Ottiene la classe colore per lo stato (per testo o background)
+  // Restituisce una classe CSS compatibile con PrimeFlex/Tailwind
+  getStatusColorClass(status: ProjectStatus | string, type: 'text' | 'bg' = 'text'): string {
+    const statusStr = status.toString().toUpperCase();
+    const colors: Record<string, string> = {
+      'ON_GOING': 'blue-600',
+      'CRITICAL': 'rose-600',
+      'RUSH': 'red-700',
+      'HOLD_ON': 'amber-500',
+      'ON_HOLD': 'amber-600',
+      'TO_CHECK': 'violet-600',
+      'UPCOMING': 'slate-500',
+      'PUSHED_OUT': 'zinc-400',
+      'TO_BE_ASSIGNED': 'slate-400',
+      'COMPLETED': 'emerald-600'
+    };
+    
+    const color = colors[statusStr] || 'slate-500';
+    // Restituisce classi Tailwind-style che dovrebbero funzionare se Tailwind è configurato
+    // Altrimenti, questi colori possono essere gestiti via CSS custom
+    if (type === 'text') {
+      return `text-${color}`;
+    } else {
+      return `bg-${color}`;
+    }
   }
 
   // Tooltip per le barre

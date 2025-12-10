@@ -58,9 +58,77 @@ interface Column {
     TranslatePipe
   ],
   providers: [ConfirmationService, MessageService],
-  templateUrl: './project-list.html'
+  templateUrl: './project-list.html',
+  styles: [`
+    .project-status-svg {
+      flex-shrink: 0;
+      width: 12px;
+      height: 12px;
+    }
+    
+    .project-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      background: transparent;
+      flex-shrink: 0;
+    }
+    
+    .project-status-text {
+      font-size: 0.625rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+    
+    /* Status Text Colors */
+    .text-blue-600 {
+      color: #2563eb;
+    }
+    
+    .text-rose-600 {
+      color: #e11d48;
+    }
+    
+    .text-red-700 {
+      color: #b91c1c;
+    }
+    
+    .text-amber-500 {
+      color: #f59e0b;
+    }
+    
+    .text-amber-600 {
+      color: #d97706;
+    }
+    
+    .text-violet-600 {
+      color: #9333ea;
+    }
+    
+    .text-slate-500 {
+      color: #64748b;
+    }
+    
+    .text-zinc-400 {
+      color: #a1a1aa;
+    }
+    
+    .text-slate-400 {
+      color: #94a3b8;
+    }
+    
+    .text-emerald-600 {
+      color: #059669;
+    }
+  `]
 })
 export class ProjectList implements OnInit {
+  // Espone l'enum per uso nel template
+  ProjectStatus = ProjectStatus;
+
   projects: Project[] = [];
   filteredProjects: Project[] = [];
   loading = false;
@@ -507,6 +575,33 @@ export class ProjectList implements OnInit {
       case ProjectStatus.ON_HOLD: return 'warning';
       case ProjectStatus.COMPLETED: return 'success';
       default: return 'secondary';
+    }
+  }
+
+  // Ottiene la classe colore per lo stato (per testo o background)
+  // Restituisce una classe CSS compatibile con PrimeFlex/Tailwind
+  getStatusColorClass(status: ProjectStatus | string | undefined, type: 'text' | 'bg' = 'text'): string {
+    if (!status) return 'text-slate-500';
+    
+    const statusStr = status.toString().toUpperCase();
+    const colors: Record<string, string> = {
+      'ON_GOING': 'blue-600',
+      'CRITICAL': 'rose-600',
+      'RUSH': 'red-700',
+      'HOLD_ON': 'amber-500',
+      'ON_HOLD': 'amber-600',
+      'TO_CHECK': 'violet-600',
+      'UPCOMING': 'slate-500',
+      'PUSHED_OUT': 'zinc-400',
+      'TO_BE_ASSIGNED': 'slate-400',
+      'COMPLETED': 'emerald-600'
+    };
+    
+    const color = colors[statusStr] || 'slate-500';
+    if (type === 'text') {
+      return `text-${color}`;
+    } else {
+      return `bg-${color}`;
     }
   }
 

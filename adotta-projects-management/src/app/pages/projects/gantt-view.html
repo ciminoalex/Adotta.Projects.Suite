@@ -92,27 +92,81 @@
               <!-- Sticky Sidebar Cell -->
               <div class="gantt-corner-sticky gantt-project-header">
                 <div class="gantt-project-info">
+                  <!-- Linea 1: Nome + Codice -->
                   <div class="gantt-project-name-row">
-                    <span class="gantt-project-dot"></span>
-                    <h3 class="gantt-project-name">{{ project.name }}</h3>
+                    <h3 class="gantt-project-name" [title]="project.name">{{ project.name }}</h3>
                     <span class="gantt-project-code">#{{ project.code }}</span>
                   </div>
+                  
+                  <!-- Linea 2: Stato (Icona + Label) -->
                   <div class="gantt-project-status-row">
-                    <!-- Status Icon -->
-                    <span *ngIf="project.status === ProjectStatus.COMPLETED" class="gantt-status-icon completed">
-                      <i class="pi pi-check"></i>
+                    <div [class]="getStatusColorClass(project.status, 'text')">
+                      <ng-container [ngSwitch]="project.status">
+                        <svg *ngSwitchCase="ProjectStatus.COMPLETED" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <path d="m9 11 3 3L22 4"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.CRITICAL" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                          <line x1="12" x2="12" y1="9" y2="13"/>
+                          <line x1="12" x2="12.01" y1="17" y2="17"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.RUSH" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.ON_GOING" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                          <path d="m9 12 2 2 4-4"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.ON_HOLD" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="10" x2="10" y1="15" y2="9"/>
+                          <line x1="14" x2="14" y1="15" y2="9"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.HOLD_ON" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="10" x2="10" y1="15" y2="9"/>
+                          <line x1="14" x2="14" y1="15" y2="9"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.PUSHED_OUT" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                          <line x1="12" x2="12" y1="9" y2="13"/>
+                          <line x1="12" x2="12.01" y1="17" y2="17"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.UPCOMING" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                          <line x1="16" x2="16" y1="2" y2="6"/>
+                          <line x1="8" x2="8" y1="2" y2="6"/>
+                          <line x1="3" x2="21" y1="10" y2="10"/>
+                          <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.TO_CHECK" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M9 11l3 3L22 4"/>
+                          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        <svg *ngSwitchCase="ProjectStatus.TO_BE_ASSIGNED" class="gantt-status-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <line x1="19" x2="19" y1="8" y2="14"/>
+                          <line x1="22" x2="16" y1="11" y2="11"/>
+                        </svg>
+                        <div *ngSwitchDefault class="gantt-status-dot"></div>
+                      </ng-container>
+                    </div>
+                    
+                    <span class="gantt-project-status-text" [class]="getStatusColorClass(project.status, 'text')">
+                      {{ getStatusLabel(project.status) }}
                     </span>
-                    <span *ngIf="project.status === ProjectStatus.CRITICAL || project.status === ProjectStatus.PUSHED_OUT" class="gantt-status-icon delayed">
-                      <i class="pi pi-clock"></i>
-                    </span>
-                    <span *ngIf="project.status === ProjectStatus.ON_GOING || project.status === ProjectStatus.RUSH" class="gantt-status-icon progress">
-                      <div class="gantt-status-dot"></div>
-                    </span>
-                    <span *ngIf="project.status === ProjectStatus.UPCOMING || project.status === ProjectStatus.TO_BE_ASSIGNED || project.status === ProjectStatus.TO_CHECK || project.status === ProjectStatus.HOLD_ON || project.status === ProjectStatus.ON_HOLD" class="gantt-status-icon planned">
-                      <div class="gantt-status-dot"></div>
-                    </span>
-                    <span class="gantt-project-status-text">{{ getStatusLabel(project.status) }}</span>
                   </div>
+                </div>
+              </div>
+              
+              <!-- Chart Background Row -->
+              <div class="gantt-project-chart-bg">
+                <div *ngFor="let day of allDays; trackBy: trackByDay" 
+                     class="gantt-day-bg-cell"
+                     [style.width.px]="colWidth"
+                     [class.weekend-bg]="day.isWeekend">
                 </div>
               </div>
             </div>
@@ -125,9 +179,17 @@
                 <div class="gantt-task-info">
                   <span class="gantt-task-name" [title]="task.name">{{ task.name }}</span>
                 </div>
+                
+                <!-- ASSIGNEE Badge -->
                 <div class="gantt-assignee-avatar" [title]="task.assigneeName || task.assigneeCode">
                   <p-skeleton *ngIf="task.assigneeLoading" width="2rem" height="1.5rem" styleClass="mb-0"></p-skeleton>
-                  <span *ngIf="!task.assigneeLoading">{{ task.assigneeName || task.assigneeCode }}</span>
+                  <div *ngIf="!task.assigneeLoading" class="gantt-assignee-badge">
+                    <svg class="gantt-assignee-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span class="gantt-assignee-text">{{ task.assigneeName || task.assigneeCode }}</span>
+                  </div>
                 </div>
               </div>
 
@@ -145,10 +207,9 @@
                 <!-- The Bar Element -->
                 <div *ngIf="task.start" 
                      class="gantt-bar-modern"
-                     [ngClass]="task.color === 'bg-team-color' ? '' : task.color"
+                     [ngClass]="task.color"
                      [style.left.px]="getTaskLeft(task.start)"
                      [style.width.px]="getTaskWidth(task.duration)"
-                     [style.background-color]="task.color === 'bg-team-color' ? getTeamColorString(task.row.teamInstallazione) : undefined"
                      [pTooltip]="getTaskTooltip(task)"
                      tooltipPosition="top"
                      (click)="onBarClick(task.row, $event)">
