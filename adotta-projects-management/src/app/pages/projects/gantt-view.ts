@@ -372,8 +372,8 @@ export class GanttView implements OnInit, AfterViewInit {
               nomeLivello: livello.nome,
               teamTecnico: project.teamTecnico,
               teamInstallazione: project.teamInstallazione,
-              dataInizio: livello.dataInizioInstallazione ? new Date(livello.dataInizioInstallazione) : undefined,
-              dataFine: livello.dataFineInstallazione ? new Date(livello.dataFineInstallazione) : undefined,
+              dataInizio: this.normalizeDate(livello.dataInizioInstallazione),
+              dataFine: this.normalizeDate(livello.dataFineInstallazione),
               progetto: project,
               livello: livello
             });
@@ -388,8 +388,8 @@ export class GanttView implements OnInit, AfterViewInit {
             nomeLivello: this.translationService.translate('projects.fullProject'),
             teamTecnico: project.teamTecnico,
             teamInstallazione: project.teamInstallazione,
-            dataInizio: project.dataInizioInstallazione ? new Date(project.dataInizioInstallazione) : undefined,
-            dataFine: project.dataFineInstallazione ? new Date(project.dataFineInstallazione) : undefined,
+            dataInizio: this.normalizeDate(project.dataInizioInstallazione),
+            dataFine: this.normalizeDate(project.dataFineInstallazione),
             progetto: project
           });
         }
@@ -449,11 +449,15 @@ export class GanttView implements OnInit, AfterViewInit {
         assigneeName = 'N/A';
       }
       
-      // Calcola la durata
+      // Calcola la durata usando date normalizzate
       let duration = 0;
       if (row.dataInizio && row.dataFine) {
-        const diffTime = new Date(row.dataFine).getTime() - new Date(row.dataInizio).getTime();
-        duration = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        const startDate = this.normalizeDate(row.dataInizio);
+        const endDate = this.normalizeDate(row.dataFine);
+        if (startDate && endDate) {
+          const diffTime = endDate.getTime() - startDate.getTime();
+          duration = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 per includere il giorno finale
+        }
       } else if (row.dataInizio) {
         duration = 1; // Durata minima se manca la data fine
       } else if (row.dataFine) {
@@ -470,8 +474,8 @@ export class GanttView implements OnInit, AfterViewInit {
         assigneeCode: assigneeCode,
         assigneeName: assigneeName,
         assigneeLoading: assigneeLoading,
-        start: row.dataInizio ? new Date(row.dataInizio) : null,
-        end: row.dataFine ? new Date(row.dataFine) : null,
+        start: this.normalizeDate(row.dataInizio) || null,
+        end: this.normalizeDate(row.dataFine) || null,
         duration: duration,
         color: color,
         row: row
@@ -890,9 +894,13 @@ export class GanttView implements OnInit, AfterViewInit {
     const dateToUse = row.dataInizio || row.dataFine;
     if (!dateToUse) return 0;
     
-    const startDate = new Date(dateToUse);
-    const diffTime = startDate.getTime() - this.minDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // Normalizza entrambe le date per evitare problemi di fuso orario
+    const normalizedStart = this.normalizeDate(dateToUse);
+    const normalizedMin = this.normalizeDate(this.minDate);
+    if (!normalizedStart || !normalizedMin) return 0;
+    
+    const diffTime = normalizedStart.getTime() - normalizedMin.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     return Math.max(0, diffDays * this.dayWidth);
   }
@@ -904,19 +912,57 @@ export class GanttView implements OnInit, AfterViewInit {
       return this.dayWidth; // Larghezza minima se manca una data
     }
     
-    const startDate = new Date(row.dataInizio);
-    const endDate = new Date(row.dataFine);
+    // Normalizza le date per evitare problemi di fuso orario
+    const startDate = this.normalizeDate(row.dataInizio);
+    const endDate = this.normalizeDate(row.dataFine);
+    if (!startDate || !endDate) return this.dayWidth;
+    
     const diffTime = endDate.getTime() - startDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 per includere il giorno finale
     
     return Math.max(this.dayWidth, diffDays * this.dayWidth); // Minimo dayWidth pixel
+  }
+
+  // Normalizza una data impostando le ore a mezzanotte nel fuso orario locale
+  // Questo evita problemi di conversione UTC che causano spostamenti di un giorno
+  private normalizeDate(date: Date | string | undefined): Date | undefined {
+    if (!date) return undefined;
+    
+    let d: Date;
+    if (typeof date === 'string') {
+      // Se è una stringa, prova a parsarla come data locale
+      // Gestisce formati come "YYYY-MM-DD", "DD/MM/YYYY", ecc.
+      const dateStr = date.trim();
+      // Se è nel formato ISO (YYYY-MM-DD), parsalo manualmente per evitare problemi UTC
+      if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+        const parts = dateStr.split(/[T\s]/)[0].split('-');
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // I mesi sono 0-indexed
+        const day = parseInt(parts[2], 10);
+        d = new Date(year, month, day);
+      } else {
+        // Per altri formati, usa il parsing standard
+        d = new Date(dateStr);
+      }
+    } else {
+      d = new Date(date);
+    }
+    
+    // Imposta le ore a mezzanotte nel fuso orario locale
+    d.setHours(0, 0, 0, 0);
+    return d;
   }
 
   // Helper per posizionare i task nella timeline
   getTaskLeft(startDate: Date | null): number {
     if (!startDate) return 0;
-    const diffTime = startDate.getTime() - this.minDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // Normalizza entrambe le date per evitare problemi di fuso orario
+    const normalizedStart = this.normalizeDate(startDate);
+    const normalizedMin = this.normalizeDate(this.minDate);
+    if (!normalizedStart || !normalizedMin) return 0;
+    
+    const diffTime = normalizedStart.getTime() - normalizedMin.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return Math.max(0, diffDays * this.colWidth);
   }
 

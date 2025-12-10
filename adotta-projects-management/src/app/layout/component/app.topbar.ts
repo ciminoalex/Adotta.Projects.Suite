@@ -58,7 +58,7 @@ type LanguageMenuItem = MenuItem & { flag: 'us' | 'it'; lang: SupportedLanguage;
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
-                <!--div class="relative">
+                <!--iv class="relative">
                     <button
                         class="layout-topbar-action layout-topbar-action-highlight"
                         pStyleClass="@next"
