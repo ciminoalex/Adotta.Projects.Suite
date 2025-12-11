@@ -161,13 +161,28 @@
                 </div>
               </div>
               
-              <!-- Chart Background Row -->
+              <!-- Chart Background Row with PROJECT SUMMARY BAR -->
               <div class="gantt-project-chart-bg">
-                <div *ngFor="let day of allDays; trackBy: trackByDay" 
-                     class="gantt-day-bg-cell"
-                     [style.width.px]="colWidth"
-                     [class.weekend-bg]="day.isWeekend">
+                <!-- Grid Lines Background -->
+                <div class="gantt-project-grid-bg">
+                  <div *ngFor="let day of allDays; trackBy: trackByDay" 
+                       class="gantt-day-bg-cell"
+                       [style.width.px]="colWidth"
+                       [class.weekend-bg]="day.isWeekend">
+                  </div>
                 </div>
+
+                <!-- PROJECT DURATION BAR (Summary Task) -->
+                <ng-container *ngIf="getProjectMeta(project) as meta">
+                  <div *ngIf="meta.display" 
+                       class="gantt-project-bar"
+                       [ngClass]="getStatusColorClass(project.status, 'bg')"
+                       [style.left.px]="meta.left"
+                       [style.width.px]="meta.width"
+                       [pTooltip]="'Durata progetto: ' + meta.durationDays + ' giorni'"
+                       tooltipPosition="top">
+                  </div>
+                </ng-container>
               </div>
             </div>
 

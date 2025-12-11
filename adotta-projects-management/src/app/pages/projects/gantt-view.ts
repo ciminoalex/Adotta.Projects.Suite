@@ -1157,6 +1157,64 @@ export class GanttView implements OnInit, AfterViewInit {
     return status.toString();
   }
 
+  // Calcola i metadati per la barra di durata del progetto
+  // La durata è calcolata tra la data inizio livello più piccola e la data fine livello più grande
+  // (non la somma dei giorni perché i livelli potrebbero essere sovrapposti)
+  getProjectMeta(project: GanttProject): { left: number, width: number, display: boolean, durationDays: number } {
+    if (!project.tasks || project.tasks.length === 0) {
+      return { left: 0, width: 0, display: false, durationDays: 0 };
+    }
+
+    // Calcola dalla data minima e massima dei task/livelli
+    let minStart: Date | null = null;
+    let maxEnd: Date | null = null;
+
+    project.tasks.forEach(task => {
+      if (task.start) {
+        if (!minStart || task.start < minStart) {
+          minStart = task.start;
+        }
+      }
+      if (task.end) {
+        const taskEnd = new Date(task.end);
+        if (!maxEnd || taskEnd > maxEnd) {
+          maxEnd = taskEnd;
+        }
+      } else if (task.start && task.duration > 0) {
+        // Se non c'è data fine, calcola dalla durata
+        const taskEnd = new Date(task.start);
+        taskEnd.setDate(taskEnd.getDate() + task.duration - 1);
+        if (!maxEnd || taskEnd > maxEnd) {
+          maxEnd = taskEnd;
+        }
+      }
+    });
+
+    if (!minStart || !maxEnd) {
+      return { left: 0, width: 0, display: false, durationDays: 0 };
+    }
+
+    const normalizedMin = this.normalizeDate(this.minDate);
+    const normalizedStart = this.normalizeDate(minStart);
+    const normalizedEnd = this.normalizeDate(maxEnd);
+    if (!normalizedMin || !normalizedStart || !normalizedEnd) return { left: 0, width: 0, display: false, durationDays: 0 };
+
+    const diffTime = normalizedStart.getTime() - normalizedMin.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const left = Math.max(0, diffDays * this.colWidth);
+
+    const durationTime = normalizedEnd.getTime() - normalizedStart.getTime();
+    const durationDays = Math.floor(durationTime / (1000 * 60 * 60 * 24)) + 1;
+    const width = durationDays * this.colWidth;
+
+    return {
+      left: left,
+      width: width,
+      display: true,
+      durationDays: durationDays
+    };
+  }
+
   // Ottiene la classe colore per lo stato (per testo o background)
   // Restituisce una classe CSS compatibile con PrimeFlex/Tailwind
   getStatusColorClass(status: ProjectStatus | string, type: 'text' | 'bg' = 'text'): string {
