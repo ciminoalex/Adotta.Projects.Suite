@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 import { TranslationService, SupportedLanguage } from '../../services/translation.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { filter } from 'rxjs/operators';
+import packageJson from '../../../../package.json';
 
 type LanguageMenuItem = MenuItem & { flag: 'us' | 'it'; lang: SupportedLanguage; selected?: boolean };
 
@@ -26,6 +27,14 @@ type LanguageMenuItem = MenuItem & { flag: 'us' | 'it'; lang: SupportedLanguage;
             <a class="layout-topbar-logo" routerLink="/">
 
                 <span>{{ 'auth.branding' | translate }}</span>
+                <!-- VERSION TAG -->
+                <span
+                    class="px-2 py-0.5 rounded-full border border-transparent text-[10px] font-mono tracking-wide select-none"
+                    style="margin-left: 10px; color: #7b7b7b; background-color: #ebebeb;"
+                    title="App Version"
+                >
+                    v{{ appVersion }}
+                </span>
             </a>
         </div>
 
@@ -114,6 +123,7 @@ export class AppTopbar implements OnInit {
     languageMenuItems: LanguageMenuItem[] = [];
     userInitials: string = '';
     currentLanguage: SupportedLanguage = 'en';
+    appVersion: string = packageJson.version ?? '';
     flagPlaceholderSrc = 'https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png';
 
     constructor(

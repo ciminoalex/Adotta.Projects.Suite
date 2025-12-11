@@ -22,7 +22,8 @@
             "@/*": [
                 "src/app/*"
             ]
-        }
+        },
+        "resolveJsonModule": true
     },
     "angularCompilerOptions": {
         "enableI18nLegacyMessageIdFormat": false,
