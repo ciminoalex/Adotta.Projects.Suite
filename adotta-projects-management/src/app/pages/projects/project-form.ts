@@ -288,11 +288,11 @@ export class ProjectForm implements OnInit, OnDestroy {
       this.loadingOrdineCliente = false;
       if (ordineCliente) {
         this.populateFormFromOrdineCliente(ordineCliente as OrdineCliente);
-        // Mostra toast di successo
+        // Mostra toast di successo (traducibile)
         this.messageService.add({
           severity: 'success',
-          summary: 'Ordine Cliente caricato',
-          detail: 'I dati dell\'ordine cliente sono stati caricati e i campi del form sono stati popolati automaticamente.',
+          summary: this.translationService.translate('projects.ordineClienteLoadedTitle'),
+          detail: this.translationService.translate('projects.ordineClienteLoadedMessage'),
           life: 3000
         });
       }

@@ -228,7 +228,9 @@
     "timesheetDeleted": "Timesheet entry deleted successfully",
     "timesheetDeleteError": "Error deleting timesheet entry",
     "ordineClienteNotFoundTitle": "Customer Order not found",
-    "ordineClienteNotFoundMessage": "The customer order corresponding to project number {{docNum}} is not present in SAP. Do you still want to continue?"
+    "ordineClienteNotFoundMessage": "The customer order corresponding to project number {{docNum}} is not present in SAP. Do you still want to continue?",
+    "ordineClienteLoadedTitle": "Customer Order loaded",
+    "ordineClienteLoadedMessage": "The customer order data have been loaded and the form fields have been populated automatically."
   },
   "timesheet": {
     "title": "Timesheet",

@@ -228,7 +228,9 @@
     "timesheetDeleted": "Rendicontazione eliminata con successo",
     "timesheetDeleteError": "Errore durante l'eliminazione della rendicontazione",
     "ordineClienteNotFoundTitle": "Ordine Cliente non trovato",
-    "ordineClienteNotFoundMessage": "L'ordine cliente corrispondente al numero progetto {{docNum}} non è presente su SAP. Vuoi continuare comunque?"
+    "ordineClienteNotFoundMessage": "L'ordine cliente corrispondente al numero progetto {{docNum}} non è presente su SAP. Vuoi continuare comunque?",
+    "ordineClienteLoadedTitle": "Ordine Cliente caricato",
+    "ordineClienteLoadedMessage": "I dati dell'ordine cliente sono stati caricati e i campi del form sono stati popolati automaticamente."
   },
   "timesheet": {
     "title": "Timesheet",
