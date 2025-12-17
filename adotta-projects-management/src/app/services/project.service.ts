@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, MessaggioProgetto, ChangeLog } from '../models/project.model';
+import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, MessaggioProgetto, ChangeLog, OrdineClienteDto } from '../models/project.model';
 
 @Injectable({
   providedIn: 'root'
@@ -140,5 +140,10 @@ export class ProjectService {
   exportProjects(format: 'excel' | 'pdf' | 'csv', filters?: any): Observable<Blob> {
     const body = filters ? { filters: JSON.stringify(filters) } : {};
     return this.http.post(`${this.apiUrl}/export/${format}`, body, { responseType: 'blob' });
+  }
+
+  // Ordine Cliente da SAP
+  getOrdineCliente(docNum: number): Observable<OrdineClienteDto> {
+    return this.http.get<OrdineClienteDto>(`${this.apiUrl}/ordine-cliente/${docNum}`);
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
@@ -15,14 +15,18 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
-import { Project, LivelloProgetto, ProdottoProgetto, ProjectStatus } from '../../models/project.model';
+import { Project, LivelloProgetto, ProdottoProgetto, ProjectStatus, OrdineClienteDto } from '../../models/project.model';
 import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione, ProdottoMaster } from '../../models/lookup.model';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-project-form',
@@ -45,12 +49,13 @@ import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, Squ
     ConfirmDialogModule,
     SkeletonModule,
     TranslatePipe,
-    TooltipModule
+    TooltipModule,
+    ProgressSpinnerModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './project-form.html'
 })
-export class ProjectForm implements OnInit {
+export class ProjectForm implements OnInit, OnDestroy {
   projectForm: FormGroup;
   levelForm?: FormGroup;
   productForm?: FormGroup;
@@ -61,6 +66,11 @@ export class ProjectForm implements OnInit {
   // Loading states
   loadingProject = false;
   loadingLookupData = false;
+  loadingOrdineCliente = false;
+  
+  // Subject per debounce del campo numeroProgetto
+  private numeroProgettoSubject = new Subject<string>();
+  private numeroProgettoSubscription?: Subscription;
 
   // Services
   private projectService: ProjectService | any;
@@ -168,7 +178,7 @@ export class ProjectForm implements OnInit {
     this.projectService = this.serviceProvider.provideProjectService();
     this.lookupService = this.serviceProvider.provideLookupService();
     this.projectForm = this.fb.group({
-      numeroProgetto: ['', Validators.required],
+      numeroProgetto: ['', [Validators.required, this.validateNumeroProgettoLength]],
       nomeProgetto: ['', Validators.required],
       cliente: ['', Validators.required],
       citta: [''],
@@ -207,9 +217,212 @@ export class ProjectForm implements OnInit {
         setTimeout(() => {
           this.loadProject();
         }, 500);
+      } else {
+        // Setup debounce per il campo numeroProgetto (solo in modalità creazione)
+        this.setupNumeroProgettoListener();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    // Cleanup subscription
+    if (this.numeroProgettoSubscription) {
+      this.numeroProgettoSubscription.unsubscribe();
+    }
+  }
+
+  // Validatore custom per il numero progetto: deve essere esattamente 8 caratteri
+  private validateNumeroProgettoLength(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null; // Il validatore required gestisce il caso vuoto
+    }
+    if (typeof value === 'string' && value.length !== 8) {
+      return { invalidLength: true };
+    }
+    return null;
+  }
+
+  private setupNumeroProgettoListener() {
+    // Sottoscrivi ai cambiamenti del campo numeroProgetto con debounce
+    this.numeroProgettoSubscription = this.numeroProgettoSubject.pipe(
+      debounceTime(800), // Attendi 800ms dopo l'ultima digitazione
+      distinctUntilChanged(), // Ignora se il valore non è cambiato
+      switchMap((docNum: string) => {
+        // Verifica che il valore sia esattamente 8 caratteri
+        if (!docNum || docNum.length !== 8) {
+          this.loadingOrdineCliente = false;
+          return of(null);
+        }
+        
+        // Verifica che il valore sia un numero valido
+        const numValue = parseInt(docNum, 10);
+        if (isNaN(numValue) || numValue <= 0) {
+          this.loadingOrdineCliente = false;
+          return of(null);
+        }
+        
+        this.loadingOrdineCliente = true;
+        return this.projectService.getOrdineCliente(numValue).pipe(
+          catchError((error) => {
+            console.error('Error loading ordine cliente:', error);
+            this.loadingOrdineCliente = false;
+            // Se l'API restituisce 404 o nessun risultato, mostra popup
+            if (error.status === 404 || error.status === 0) {
+              this.showOrdineClienteNotFoundDialog(docNum);
+            }
+            return of(null);
+          })
+        );
+      })
+    ).subscribe((ordineCliente) => {
+      this.loadingOrdineCliente = false;
+      if (ordineCliente) {
+        this.populateFormFromOrdineCliente(ordineCliente as OrdineClienteDto);
+        // Mostra toast di successo
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Ordine Cliente caricato',
+          detail: 'I dati dell\'ordine cliente sono stati caricati e i campi del form sono stati popolati automaticamente.',
+          life: 3000
+        });
       }
     });
 
+    // Ascolta i cambiamenti del campo numeroProgetto
+    this.projectForm.get('numeroProgetto')?.valueChanges.subscribe((value: string) => {
+      if (value && !this.isEdit) {
+        // Chiama l'API solo se la lunghezza è esattamente 8 caratteri
+        if (value.length === 8) {
+          this.numeroProgettoSubject.next(value);
+        } else {
+          // Se la lunghezza non è 8, ferma il caricamento se era attivo
+          this.loadingOrdineCliente = false;
+        }
+      }
+    });
+  }
+
+  private populateFormFromOrdineCliente(ordineCliente: OrdineClienteDto) {
+    // Mappa i campi dal DTO al form
+    // IMPORTANTE: Includiamo sempre i campi, anche se null/undefined, per resettare i valori precedenti
+    const updates: any = {};
+
+    // CardCode -> codiceSAP (sempre aggiornato, anche se null)
+    updates.codiceSAP = ordineCliente.cardCode ?? '';
+
+    // CardName -> cliente (cerca nell'autocomplete)
+    if (ordineCliente.cardName) {
+      // Cerca il cliente per nome o cardCode
+      this.lookupService.searchClienti(ordineCliente.cardName).subscribe({
+        next: (response: any) => {
+          const clienti = this.extractArray<Cliente>(response);
+          const cliente = clienti.find(c => 
+            c.nome === ordineCliente.cardName || 
+            c.cardCode === ordineCliente.cardCode
+          );
+          if (cliente) {
+            this.projectForm.patchValue({ cliente: cliente });
+            // Se il cliente ha un cardCode, aggiorna anche codiceSAP
+            if (cliente.cardCode) {
+              this.projectForm.patchValue({ codiceSAP: cliente.cardCode });
+            }
+          } else {
+            // Se non trovato, imposta solo il nome come stringa
+            this.projectForm.patchValue({ cliente: ordineCliente.cardName });
+          }
+        },
+        error: (error: any) => {
+          console.error('Error searching cliente:', error);
+          // In caso di errore, imposta comunque il nome
+          this.projectForm.patchValue({ cliente: ordineCliente.cardName ?? '' });
+        }
+      });
+    } else {
+      // Se cardName è null/undefined, resetta il campo cliente
+      updates.cliente = '';
+    }
+
+    // Comments -> note (sempre aggiornato, anche se null)
+    updates.note = ordineCliente.comments ?? '';
+
+    // City -> citta (sempre aggiornato, anche se null)
+    updates.citta = ordineCliente.city ?? '';
+
+    // Country -> stato (cerca nello stato)
+    if (ordineCliente.country) {
+      const stato = this.stati.find(s => 
+        s.codiceISO === ordineCliente.country || 
+        s.nome === ordineCliente.country
+      );
+      updates.stato = stato ? stato.id : '';
+    } else {
+      // Se country è null/undefined, resetta il campo stato
+      updates.stato = '';
+    }
+
+    // DocTotal -> valoreProgetto (sempre aggiornato, anche se null)
+    updates.valoreProgetto = ordineCliente.docTotal !== null && ordineCliente.docTotal !== undefined 
+      ? ordineCliente.docTotal 
+      : null;
+
+    // SalesPersonCode -> sales (cerca nel sales)
+    if (ordineCliente.salesPersonCode) {
+      const sales = this.sales.find(s => 
+        s.id === ordineCliente.salesPersonCode
+      );
+      updates.sales = sales ? sales.id : '';
+    } else {
+      // Se salesPersonCode è null/undefined, resetta il campo sales
+      updates.sales = '';
+    }
+
+    // DocDate -> dataCreazione (sempre aggiornato, anche se null)
+    if (ordineCliente.docDate) {
+      const docDate = new Date(ordineCliente.docDate);
+      if (!isNaN(docDate.getTime())) {
+        updates.dataCreazione = this.convertDateForInput(docDate);
+      } else {
+        // Non resettiamo se la data non è valida
+      }
+    } else {
+      // Se docDate è null/undefined, non resettiamo dataCreazione se è già impostata
+      // (manteniamo il valore esistente se non c'è un nuovo valore)
+    }
+
+    // DocDueDate -> dataFineInstallazione (sempre aggiornato, anche se null)
+    if (ordineCliente.docDueDate) {
+      const docDueDate = new Date(ordineCliente.docDueDate);
+      if (!isNaN(docDueDate.getTime())) {
+        updates.dataFineInstallazione = this.convertDateForInput(docDueDate);
+      } else {
+        updates.dataFineInstallazione = '';
+      }
+    } else {
+      // Se docDueDate è null/undefined, resetta il campo
+      updates.dataFineInstallazione = '';
+    }
+
+    // Applica gli aggiornamenti al form
+    // Usa patchValue con emitEvent: false per evitare trigger multipli
+    this.projectForm.patchValue(updates, { emitEvent: false });
+  }
+
+  private showOrdineClienteNotFoundDialog(docNum: string) {
+    this.confirmationService.confirm({
+      message: `L'ordine cliente corrispondente al numero progetto ${docNum} non è presente su SAP. Vuoi continuare comunque?`,
+      header: 'Ordine Cliente non trovato',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Continua',
+      rejectLabel: 'Annulla',
+      accept: () => {
+        // L'utente ha scelto di continuare, non fare nulla
+      },
+      reject: () => {
+        // L'utente ha scelto di annullare, pulisci il campo numeroProgetto
+        this.projectForm.patchValue({ numeroProgetto: '' });
+      }
+    });
   }
 
   // Helper function to extract array from either direct array or paginated response

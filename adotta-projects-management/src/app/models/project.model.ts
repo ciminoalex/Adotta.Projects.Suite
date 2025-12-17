@@ -118,3 +118,23 @@ export enum ProjectStatus {
   ON_HOLD = 'ON_HOLD',
   COMPLETED = 'COMPLETED'
 }
+
+// DTO per Ordine Cliente da SAP
+export interface OrdineClienteDto {
+  docNum?: number;
+  docEntry?: number;
+  cardCode?: string | null;
+  cardName?: string | null;
+  docDate?: string | null; // ISO date-time string
+  docDueDate?: string | null; // ISO date-time string
+  taxDate?: string | null; // ISO date-time string
+  docTotal?: number | null;
+  docStatus?: string | null;
+  comments?: string | null;
+  city?: string | null;
+  zipCode?: string | null;
+  country?: string | null;
+  salesPersonCode?: string | null;
+  currency?: string | null;
+  numAtCard?: number | null;
+}
