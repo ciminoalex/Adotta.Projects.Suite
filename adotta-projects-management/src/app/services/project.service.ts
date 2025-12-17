@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, MessaggioProgetto, ChangeLog, OrdineClienteDto } from '../models/project.model';
+import { Project, LivelloProgetto, ProdottoProgetto, StoricoModifica, MessaggioProgetto, ChangeLog, OrdineCliente } from '../models/project.model';
 
 @Injectable({
   providedIn: 'root'
@@ -143,7 +143,7 @@ export class ProjectService {
   }
 
   // Ordine Cliente da SAP
-  getOrdineCliente(docNum: number): Observable<OrdineClienteDto> {
-    return this.http.get<OrdineClienteDto>(`${this.apiUrl}/ordine-cliente/${docNum}`);
+  getOrdineCliente(docNum: number): Observable<OrdineCliente> {
+    return this.http.get<OrdineCliente>(`${this.apiUrl}/ordine-cliente/${docNum}`);
   }
 }

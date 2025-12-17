@@ -119,8 +119,8 @@ export enum ProjectStatus {
   COMPLETED = 'COMPLETED'
 }
 
-// DTO per Ordine Cliente da SAP
-export interface OrdineClienteDto {
+// Ordine Cliente da SAP
+export interface OrdineCliente {
   docNum?: number;
   docEntry?: number;
   cardCode?: string | null;

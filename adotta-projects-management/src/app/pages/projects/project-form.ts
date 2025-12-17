@@ -22,7 +22,7 @@ import { TranslationService } from '../../services/translation.service';
 import { ProjectService } from '../../services/project.service';
 import { LookupService } from '../../services/lookup.service';
 import { ServiceProviderService } from '../../services/service-provider.service';
-import { Project, LivelloProgetto, ProdottoProgetto, ProjectStatus, OrdineClienteDto } from '../../models/project.model';
+import { Project, LivelloProgetto, ProdottoProgetto, ProjectStatus, OrdineCliente } from '../../models/project.model';
 import { Cliente, Stato, Citta, TeamTecnico, TeamAPL, Sales, ProjectManager, SquadraInstallazione, ProdottoMaster } from '../../models/lookup.model';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
@@ -213,6 +213,15 @@ export class ProjectForm implements OnInit, OnDestroy {
         this.isEdit = true;
         this.projectId = params['id'];
         this.loadingProject = true;
+
+        // In modalità edit non applichiamo le regole di validazione sul numero progetto
+        // per non bloccare progetti creati prima dell'introduzione delle nuove regole
+        const numeroProgettoControl = this.projectForm.get('numeroProgetto');
+        if (numeroProgettoControl) {
+          numeroProgettoControl.clearValidators();
+          numeroProgettoControl.updateValueAndValidity();
+        }
+
         // Wait a bit for lookup data to load before loading project
         setTimeout(() => {
           this.loadProject();
@@ -278,7 +287,7 @@ export class ProjectForm implements OnInit, OnDestroy {
     ).subscribe((ordineCliente) => {
       this.loadingOrdineCliente = false;
       if (ordineCliente) {
-        this.populateFormFromOrdineCliente(ordineCliente as OrdineClienteDto);
+        this.populateFormFromOrdineCliente(ordineCliente as OrdineCliente);
         // Mostra toast di successo
         this.messageService.add({
           severity: 'success',
@@ -303,7 +312,7 @@ export class ProjectForm implements OnInit, OnDestroy {
     });
   }
 
-  private populateFormFromOrdineCliente(ordineCliente: OrdineClienteDto) {
+  private populateFormFromOrdineCliente(ordineCliente: OrdineCliente) {
     // Mappa i campi dal DTO al form
     // IMPORTANTE: Includiamo sempre i campi, anche se null/undefined, per resettare i valori precedenti
     const updates: any = {};
@@ -350,8 +359,11 @@ export class ProjectForm implements OnInit, OnDestroy {
     updates.citta = ordineCliente.city ?? '';
 
     // Country -> stato (cerca nello stato)
+    // Esempio: ordineCliente.country = "US-NJ"
+    // Stato corrispondente: { id: "US-NJ", nome: "New Jersey", codiceISO: "USA", ... }
     if (ordineCliente.country) {
-      const stato = this.stati.find(s => 
+      const stato = this.stati.find(s =>
+        s.id === ordineCliente.country ||       // match diretto su id (es. "US-NJ")
         s.codiceISO === ordineCliente.country || 
         s.nome === ordineCliente.country
       );
@@ -410,11 +422,11 @@ export class ProjectForm implements OnInit, OnDestroy {
 
   private showOrdineClienteNotFoundDialog(docNum: string) {
     this.confirmationService.confirm({
-      message: `L'ordine cliente corrispondente al numero progetto ${docNum} non è presente su SAP. Vuoi continuare comunque?`,
-      header: 'Ordine Cliente non trovato',
+      message: this.translationService.translate('projects.ordineClienteNotFoundMessage', { docNum }),
+      header: this.translationService.translate('projects.ordineClienteNotFoundTitle'),
       icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Continua',
-      rejectLabel: 'Annulla',
+      acceptLabel: this.translationService.translate('common.continue'),
+      rejectLabel: this.translationService.translate('common.cancel'),
       accept: () => {
         // L'utente ha scelto di continuare, non fare nulla
       },

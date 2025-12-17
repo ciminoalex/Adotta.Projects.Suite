@@ -27,7 +27,8 @@
     "last": "Ultime",
     "all": "Tutte",
     "user": "Utente",
-    "logout": "Esci"
+    "logout": "Esci",
+    "continue": "Continua"
   },
   "menu": {
     "projectManagement": "Gestione Progetti",
@@ -225,7 +226,9 @@
     "confirmDeleteTimesheet": "Conferma Eliminazione",
     "confirmDeleteTimesheetMessage": "Sei sicuro di voler eliminare questa rendicontazione?",
     "timesheetDeleted": "Rendicontazione eliminata con successo",
-    "timesheetDeleteError": "Errore durante l'eliminazione della rendicontazione"
+    "timesheetDeleteError": "Errore durante l'eliminazione della rendicontazione",
+    "ordineClienteNotFoundTitle": "Ordine Cliente non trovato",
+    "ordineClienteNotFoundMessage": "L'ordine cliente corrispondente al numero progetto {{docNum}} non è presente su SAP. Vuoi continuare comunque?"
   },
   "timesheet": {
     "title": "Timesheet",

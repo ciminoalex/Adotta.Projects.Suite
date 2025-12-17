@@ -27,7 +27,8 @@
     "last": "Last",
     "all": "All",
     "user": "User",
-    "logout": "Logout"
+    "logout": "Logout",
+    "continue": "Continue"
   },
   "menu": {
     "projectManagement": "Project Management",
@@ -225,7 +226,9 @@
     "confirmDeleteTimesheet": "Confirm Deletion",
     "confirmDeleteTimesheetMessage": "Are you sure you want to delete this timesheet entry?",
     "timesheetDeleted": "Timesheet entry deleted successfully",
-    "timesheetDeleteError": "Error deleting timesheet entry"
+    "timesheetDeleteError": "Error deleting timesheet entry",
+    "ordineClienteNotFoundTitle": "Customer Order not found",
+    "ordineClienteNotFoundMessage": "The customer order corresponding to project number {{docNum}} is not present in SAP. Do you still want to continue?"
   },
   "timesheet": {
     "title": "Timesheet",
